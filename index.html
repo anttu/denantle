@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P2P chat</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px; font: 16px/1.5 system-ui, sans-serif; color: #202020; background: #fafafa; }
+    main { max-width: 640px; margin: 0 auto; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 { margin: 0; font-size: 28px; }
+    #status, time, .hint { font-size: 14px; color: #666; }
+    .hint { margin: 8px 0 20px; }
+    label { display: block; margin-bottom: 6px; }
+    input, textarea, button { font: inherit; border: 1px solid #aaa; border-radius: 4px; padding: 10px 12px; }
+    input, textarea { min-width: 0; background: white; color: inherit; }
+    textarea { width: 100%; resize: vertical; font: 13px/1.4 monospace; }
+    fieldset { margin: 20px 0; padding: 16px; border: 1px solid #ccc; border-radius: 4px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    #signal-form { display: block; margin: 16px 0; }
+    #signal-form button, #copy-code { margin-top: 6px; }
+    #setup-status { margin-bottom: 0; }
+    #name { width: 100%; }
+    #messages { list-style: none; height: 35vh; min-height: 180px; overflow-y: auto; padding: 16px; margin: 20px 0; border: 1px solid #ccc; border-radius: 4px; background: white; }
+    #messages:empty::before { content: "No messages yet. Say hello!"; color: #666; }
+    li + li { margin-top: 16px; }
+    time { margin-left: 10px; }
+    li p { margin: 2px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+    form { display: flex; gap: 8px; }
+    #message { flex: 1; }
+    button { background: #202020; color: white; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    :focus-visible { outline: 2px solid #1769d2; outline-offset: 3px; }
+    #error { color: #b00020; min-height: 24px; margin: 8px 0 0; }
+    @media (max-width: 420px) { body { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>P2P chat</h1>
+      <span id="status" role="status">Not connected</span>
+    </header>
+    <p class="hint">Connect by exchanging codes. No account or signaling service.</p>
+    <fieldset>
+      <legend>Connect</legend>
+      <p class="hint">Host: create an invitation and send the offer code to a guest.<br>
+        Guest: paste the offer below and send your answer code back.<br>
+        Host: paste the answer below to connect. Repeat for each guest.</p>
+      <div class="actions">
+        <button id="create-offer" type="button">Create invitation</button>
+        <button id="reset" type="button" disabled>Leave / start over</button>
+      </div>
+      <label><input id="use-stun" type="checkbox" checked> Use public STUN to help connect across networks</label>
+      <form id="signal-form">
+        <label for="remote-code">Code from the other person</label>
+        <textarea id="remote-code" rows="3" maxlength="65536" placeholder="Paste an offer or answer code here" required spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+        <button id="use-code">Use code</button>
+      </form>
+      <label for="local-code">Your code — copy and send to the other person</label>
+      <textarea id="local-code" rows="3" readonly spellcheck="false" placeholder="Your offer or answer will appear here"></textarea>
+      <button id="copy-code" type="button" disabled>Copy code</button>
+      <p id="setup-status" class="hint" role="status">Create an invitation, or paste an offer to join.</p>
+    </fieldset>
+    <label for="name">Your name (optional)</label>
+    <input id="name" maxlength="40" placeholder="Anonymous" autocomplete="nickname">
+    <ol id="messages" role="log" aria-label="Messages" aria-live="polite" aria-relevant="additions"></ol>
+    <form id="form">
+      <input id="message" aria-label="Message" placeholder="Write a message…" maxlength="2000" required autocomplete="off">
+      <button id="send" disabled>Send</button>
+    </form>
+    <p id="error" role="alert"></p>
+    <p class="hint">Keep the host tab open: it forwards messages between guests.
+      Refreshing leaves the room and clears this tab’s messages.
+      Some networks block direct connections; no TURN relay is configured.
+      Uncheck STUN on both sides to try without any external service.</p>
+  </main>
+  <script src="chat.js"></script>
+</body>
+</html>
