@@ -133,7 +133,7 @@ async function loadRandomArticle() {
     articleTitle.textContent = page.title;
     articleBody.textContent = body;
     articleSource.href = `https://simple.wikipedia.org/wiki/${encodeURIComponent(page.title.replaceAll(" ", "_"))}`;
-    document.title = `${page.title} | Wikipedia-lukija`;
+    document.title = `${page.title} | Denantle`;
     article.hidden = false;
     void buildArticleVectors(page.title, body);
   } catch (error) {

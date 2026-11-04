@@ -1,15 +1,16 @@
-# Wikipedia reader
+# Denantle
 
 A static page that fetches a Simple English Wikipedia article and displays its
 title and body text. Word embeddings are computed locally in the browser. No
 application server, API key, package installation, or build step is required.
 
 Keep `index.html`, `wikipedia.js`, `categories.js`, `embeddings.js`,
-`embedding-worker.js`, and `favicon.ico` in the same directory, with the icon PNGs
+`embedding-worker.js`, and `favicon.ico` in the same directory, with the PNG assets
 in `images/`. Run `./start-local.sh` and open `http://localhost:8000` in a current
-browser, or upload these files and the icon PNGs to a static web host.
-`images/denantle-icon.png` is the transparent face icon displayed beside the page
-heading; the smaller PNGs and `favicon.ico` provide browser and touch icons.
+browser, or upload these files and the PNG assets to a static web host.
+`images/denantle-icon.png` is the transparent face icon displayed beside
+`images/denantle-wordmark.png`, the hand-lettered Denantle heading with three black
+bars. The smaller icon PNGs and `favicon.ico` provide browser and touch icons.
 The embedding worker requires HTTP(S); opening `index.html` directly
 still displays articles but cannot create word vectors. An internet connection
 is required to fetch articles and initially download the embedding runtime and model.
