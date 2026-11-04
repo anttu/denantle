@@ -1,37 +1,22 @@
-# P2P chat
+# Wikipedia reader
 
-A static HTML page with JavaScript in `chat.js`, using built-in WebRTC data
-channels. No application server, signaling service, dependencies, accounts,
-or build step.
+A static page that fetches an English Wikipedia article and displays its title
+and body text. No application server, dependencies, API key, or build step.
 
-Keep `index.html` and `chat.js` in the same directory. Open `index.html` in a
-current browser, or upload both files to any HTTPS static web host.
-Each participant opens their own copy of the same page.
+Keep `index.html` and `wikipedia.js` in the same directory. Open `index.html` in
+a current browser, or upload both files to a static web host. An internet
+connection is required to fetch articles.
 
-## Connect
+The page loads **Helsinki** automatically. Enter another English article title
+and click **Hae artikkeli** or press Enter to load it. Redirects are followed,
+and missing articles and connection failures are shown on the page.
 
-1. The host clicks **Create invitation**, waits for an offer code, and sends the
-   complete code to a guest using an existing communication channel.
-2. The guest pastes the offer into **Code from the other person** and clicks
-   **Use code**. They send their generated answer code back to the host.
-3. The host pastes the answer and clicks **Use code**. When connected, both can
-   send chat messages.
-4. For more guests, the host creates a fresh invitation and repeats the exchange
-   with each guest. Guests can chat with each other through the host browser.
+Content comes from the [MediaWiki Action API](https://www.mediawiki.org/wiki/API:Main_page)
+at `https://en.wikipedia.org/w/api.php`, using `prop=extracts` and
+`explaintext=1`. The page requests the full text extract, including sections
+after the introduction. Images, tables, and other content excluded by
+[TextExtracts](https://www.mediawiki.org/wiki/Extension:TextExtracts) are not displayed.
+Text is rendered as text, preserving line breaks without inserting remote HTML.
 
-Only share each invitation with one guest. **Replace invitation** invalidates
-the unanswered offer without disconnecting existing guests. **Leave / start
-over** disconnects this tab and clears its chat log.
-
-## Connection details
-
-- Connection codes include all gathered ICE candidates, so no background
-  signaling endpoint is needed. Exchange complete codes while keeping both tabs open.
-- The host browser forwards messages between guests and must remain open. If the
-  host leaves, guests must exchange fresh codes with a host to reconnect.
-- No external ICE servers or TURN relays are configured. Peers need a direct
-  network route, such as the same local network. Some routers, mobile networks,
-  VPNs, or firewalls prevent direct connections; try another network if setup fails.
-- WebRTC encrypts each peer connection. The host sees and forwards guest messages.
-- Each tab displays its last 100 messages. New guests see messages sent after they
-  connect. Refreshing the page clears that tab's messages and disconnects it.
+Each article includes a link to the original Wikipedia page and its
+[CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/).

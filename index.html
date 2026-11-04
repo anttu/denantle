@@ -1,79 +1,64 @@
 <!doctype html>
-<html lang="en">
+<html lang="fi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>P2P chat</title>
+  <meta name="description" content="Lue englanninkielisen Wikipedian artikkeleita yksinkertaisella sivulla.">
+  <title>Wikipedia-lukija</title>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 24px; font: 16px/1.5 system-ui, sans-serif; color: #202020; background: #fafafa; }
-    main { max-width: 640px; margin: 0 auto; }
-    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-    h1 { margin: 0; font-size: 28px; }
-    #status, time, .hint { font-size: 14px; color: #666; }
-    .hint { margin: 8px 0 20px; }
+    body { margin: 0; padding: 40px 24px; font: 16px/1.6 system-ui, sans-serif; color: #202020; background: #fafafa; }
+    main { max-width: 760px; margin: 0 auto; }
+    header { border-bottom: 1px solid #ddd; padding-bottom: 24px; }
+    h1 { margin: 0; font-size: 28px; line-height: 1.3; }
+    .hint, #status, .source { color: #666; font-size: 14px; }
+    .hint { margin: 8px 0 24px; }
     label { display: block; margin-bottom: 6px; }
-    input, textarea, button { font: inherit; border: 1px solid #aaa; border-radius: 4px; padding: 10px 12px; }
-    input, textarea { min-width: 0; background: white; color: inherit; }
-    textarea { width: 100%; resize: vertical; font: 13px/1.4 monospace; }
-    fieldset { margin: 20px 0; padding: 16px; border: 1px solid #ccc; border-radius: 4px; }
-    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-    #signal-form { display: block; margin: 16px 0; }
-    #signal-form button, #copy-code { margin-top: 6px; }
-    #setup-status { margin-bottom: 0; }
-    #name { width: 100%; }
-    #messages { list-style: none; height: 35vh; min-height: 180px; overflow-y: auto; padding: 16px; margin: 20px 0; border: 1px solid #ccc; border-radius: 4px; background: white; }
-    #messages:empty::before { content: "No messages yet. Say hello!"; color: #666; }
-    li + li { margin-top: 16px; }
-    time { margin-left: 10px; }
-    li p { margin: 2px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-    form { display: flex; gap: 8px; }
-    #message { flex: 1; }
-    button { background: #202020; color: white; cursor: pointer; }
-    button:disabled { opacity: .5; cursor: default; }
+    .search { display: flex; gap: 8px; }
+    input, button { font: inherit; border: 1px solid #aaa; border-radius: 4px; padding: 10px 12px; }
+    input { flex: 1; min-width: 0; background: white; color: inherit; }
+    button { border-color: #202020; background: #202020; color: white; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: wait; }
     :focus-visible { outline: 2px solid #1769d2; outline-offset: 3px; }
-    #error { color: #b00020; min-height: 24px; margin: 8px 0 0; }
-    @media (max-width: 420px) { body { padding: 16px; } }
+    #status { min-height: 1.6em; margin: 12px 0 0; }
+    #error { color: #b00020; margin: 0; }
+    article { padding-top: 32px; }
+    #article-title { margin: 0 0 12px; font: bold 36px/1.2 Georgia, serif; overflow-wrap: anywhere; }
+    #article-body { font: 18px/1.8 Georgia, serif; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .source { margin: 0 0 24px; }
+    a { color: #1769d2; }
+    @media (max-width: 480px) {
+      body { padding: 24px 16px; }
+      .search { flex-direction: column; }
+      #article-title { font-size: 30px; }
+    }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <h1>P2P chat</h1>
-      <span id="status" role="status">Not connected</span>
-    </header>
-    <p class="hint">Connect by exchanging codes. No account or signaling service.</p>
-    <fieldset>
-      <legend>Connect</legend>
-      <p class="hint">Host: create an invitation and send the offer code to a guest.<br>
-        Guest: paste the offer below and send your answer code back.<br>
-        Host: paste the answer below to connect. Repeat for each guest.</p>
-      <div class="actions">
-        <button id="create-offer" type="button">Create invitation</button>
-        <button id="reset" type="button" disabled>Leave / start over</button>
-      </div>
-      <form id="signal-form">
-        <label for="remote-code">Code from the other person</label>
-        <textarea id="remote-code" rows="3" maxlength="65536" placeholder="Paste an offer or answer code here" required spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
-        <button id="use-code">Use code</button>
+      <h1>Wikipedia-lukija</h1>
+      <p class="hint">Hae englanninkielinen Wikipedia-artikkeli ja lue sen teksti.</p>
+      <form id="article-form">
+        <label for="article-name">Artikkelin nimi englanniksi</label>
+        <div class="search">
+          <input id="article-name" name="title" value="Helsinki" placeholder="Esimerkiksi Solar System" required>
+          <button id="load-article" type="submit">Hae artikkeli</button>
+        </div>
       </form>
-      <label for="local-code">Your code — copy and send to the other person</label>
-      <textarea id="local-code" rows="3" readonly spellcheck="false" placeholder="Your offer or answer will appear here"></textarea>
-      <button id="copy-code" type="button" disabled>Copy code</button>
-      <p id="setup-status" class="hint" role="status">Create an invitation, or paste an offer to join.</p>
-    </fieldset>
-    <label for="name">Your name (optional)</label>
-    <input id="name" maxlength="40" placeholder="Anonymous" autocomplete="nickname">
-    <ol id="messages" role="log" aria-label="Messages" aria-live="polite" aria-relevant="additions"></ol>
-    <form id="form">
-      <input id="message" aria-label="Message" placeholder="Write a message…" maxlength="2000" required autocomplete="off">
-      <button id="send" disabled>Send</button>
-    </form>
-    <p id="error" role="alert"></p>
-    <p class="hint">Keep the host tab open: it forwards messages between guests.
-      Refreshing leaves the room and clears this tab’s messages.
-      Some networks block direct connections; no TURN relay is configured.</p>
+      <p id="status" role="status"></p>
+      <p id="error" role="alert"></p>
+    </header>
+    <article id="article" lang="en" aria-labelledby="article-title" hidden>
+      <h2 id="article-title"></h2>
+      <p class="source" lang="fi">
+        Lähde: <a id="article-source">Wikipedia</a> ·
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+      </p>
+      <div id="article-body"></div>
+    </article>
+    <noscript><p>Artikkelin hakeminen edellyttää JavaScriptin sallimista selaimessa.</p></noscript>
   </main>
-  <script src="chat.js"></script>
+  <script src="wikipedia.js"></script>
 </body>
 </html>
