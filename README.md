@@ -3,9 +3,13 @@
 A static page that fetches a Simple English Wikipedia article and displays its
 title and body text. No application server, dependencies, API key, or build step.
 
-Keep `index.html`, `wikipedia.js`, and `categories.js` in the same directory. Open `index.html` in
-a current browser, or upload all three files to a static web host. An internet
+Keep `index.html`, `wikipedia.js`, `categories.js`, and `favicon.ico` in the same
+directory, with the icon PNGs in `images/`. Open `index.html` in a current browser,
+or upload these files and the icon PNGs to a static web host. An internet
 connection is required to fetch articles.
+
+`images/denantle-icon.png` is the transparent face icon displayed beside the page
+heading; the smaller PNGs and `favicon.ico` provide browser and touch icons.
 
 The page automatically loads a random Simple English Wikipedia article. Click
 **Satunnainen artikkeli** to choose another one. Redirects are followed, and
