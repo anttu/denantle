@@ -36,7 +36,7 @@ async function loadArticle() {
       formatversion: "2",
       origin: "*",
     });
-    const response = await fetch(`https://en.wikipedia.org/w/api.php?${params}`, {
+    const response = await fetch(`https://simple.wikipedia.org/w/api.php?${params}`, {
       signal: AbortSignal.timeout(15000),
     });
     if (!response.ok) {
@@ -58,7 +58,7 @@ async function loadArticle() {
 
     articleTitle.textContent = page.title;
     articleBody.textContent = page.extract;
-    articleSource.href = `https://en.wikipedia.org/wiki/${encodeURIComponent(page.title.replaceAll(" ", "_"))}`;
+    articleSource.href = `https://simple.wikipedia.org/wiki/${encodeURIComponent(page.title.replaceAll(" ", "_"))}`;
     document.title = `${page.title} | Wikipedia-lukija`;
     article.hidden = false;
   } catch (error) {
