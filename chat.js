@@ -11,7 +11,6 @@ const remoteCode = document.querySelector('#remote-code');
 const localCode = document.querySelector('#local-code');
 const copyCode = document.querySelector('#copy-code');
 const reset = document.querySelector('#reset');
-const useStun = document.querySelector('#use-stun');
 const setupStatus = document.querySelector('#setup-status');
 const supported = typeof RTCPeerConnection !== 'undefined';
 const peers = new Map();
@@ -35,7 +34,6 @@ function updateControls() {
   document.querySelector('#use-code').disabled = !supported || busy;
   copyCode.disabled = busy || !localCode.value;
   reset.disabled = busy || !role;
-  useStun.disabled = !!role;
 }
 
 function removePeer(peer) {
@@ -97,7 +95,7 @@ function attachChannel(peer, channel) {
 
 function makePeer(id) {
   const pc = new RTCPeerConnection({
-    iceServers: useStun.checked ? [{ urls: 'stun:stun.l.google.com:19302' }] : [],
+    iceServers: [],
   });
   const peer = { id, pc, channel: null };
   peers.set(id, peer);
@@ -117,7 +115,7 @@ function waitForIce(pc) {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       pc.removeEventListener('icegatheringstatechange', check);
-      reject(new Error('Connection code preparation timed out. Try again, or disable STUN on the same network.'));
+      reject(new Error('Connection code preparation timed out. Try again on the same local network.'));
     }, 20000);
     function check() {
       if (pc.iceGatheringState !== 'complete') return;

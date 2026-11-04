@@ -52,7 +52,6 @@
         <button id="create-offer" type="button">Create invitation</button>
         <button id="reset" type="button" disabled>Leave / start over</button>
       </div>
-      <label><input id="use-stun" type="checkbox" checked> Use public STUN to help connect across networks</label>
       <form id="signal-form">
         <label for="remote-code">Code from the other person</label>
         <textarea id="remote-code" rows="3" maxlength="65536" placeholder="Paste an offer or answer code here" required spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
@@ -73,8 +72,7 @@
     <p id="error" role="alert"></p>
     <p class="hint">Keep the host tab open: it forwards messages between guests.
       Refreshing leaves the room and clears this tab’s messages.
-      Some networks block direct connections; no TURN relay is configured.
-      Uncheck STUN on both sides to try without any external service.</p>
+      Some networks block direct connections; no TURN relay is configured.</p>
   </main>
   <script src="chat.js"></script>
 </body>

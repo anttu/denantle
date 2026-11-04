@@ -29,12 +29,9 @@ over** disconnects this tab and clears its chat log.
   signaling endpoint is needed. Exchange complete codes while keeping both tabs open.
 - The host browser forwards messages between guests and must remain open. If the
   host leaves, guests must exchange fresh codes with a host to reconnect.
-- Public Google STUN (`stun:stun.l.google.com:19302`) is enabled by default to help
-  peers find a direct route across networks. It does not carry chat messages.
-  Uncheck STUN on both sides before connecting to try without external services,
-  for example on the same local network.
-- No TURN relay is configured. Some routers, mobile networks, VPNs, or firewalls
-  prevent direct connections, even with STUN; try another network if setup fails.
+- No external ICE servers or TURN relays are configured. Peers need a direct
+  network route, such as the same local network. Some routers, mobile networks,
+  VPNs, or firewalls prevent direct connections; try another network if setup fails.
 - WebRTC encrypts each peer connection. The host sees and forwards guest messages.
 - Each tab displays its last 100 messages. New guests see messages sent after they
   connect. Refreshing the page clears that tab's messages and disconnects it.
