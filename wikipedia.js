@@ -5,6 +5,20 @@ const article = document.getElementById("article");
 const articleTitle = document.getElementById("article-title");
 const articleBody = document.getElementById("article-body");
 const articleSource = document.getElementById("article-source");
+const vectorStatus = document.getElementById("vector-status");
+
+async function buildArticleVectors(title, body) {
+  try {
+    const info = await articleVectors.build(title, body, (progress) => {
+      vectorStatus.textContent = progress.stage === "model"
+        ? "Valmistellaan sanavektorimallia… Ensimmäinen lataus voi kestää hetken."
+        : `Luodaan sanavektoreita: ${progress.completed} / ${progress.total} sanaa…`;
+    });
+    vectorStatus.textContent = `Sanavektorit valmiina: ${info.wordCount} eri sanaa.`;
+  } catch (error) {
+    if (error.name !== "AbortError") vectorStatus.textContent = error.message;
+  }
+}
 
 function removeUnwantedSections(text) {
   const excludedSections = new Set(["gallery", "references", "other websites"]);
@@ -86,6 +100,8 @@ async function loadRandomArticle() {
   if (randomButton.disabled) return;
 
   randomButton.disabled = true;
+  articleVectors.clear();
+  vectorStatus.textContent = "";
   article.hidden = true;
   article.setAttribute("aria-busy", "true");
   errorMessage.textContent = "";
@@ -117,6 +133,7 @@ async function loadRandomArticle() {
     articleSource.href = `https://simple.wikipedia.org/wiki/${encodeURIComponent(page.title.replaceAll(" ", "_"))}`;
     document.title = `${page.title} | Wikipedia-lukija`;
     article.hidden = false;
+    void buildArticleVectors(page.title, body);
   } catch (error) {
     errorMessage.textContent = error.name === "TimeoutError"
       ? "Haku kesti liian kauan. Yritä uudelleen."
