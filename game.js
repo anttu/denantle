@@ -1,5 +1,6 @@
 // Cosine similarity between the model's normalized word vectors.
 const SIMILARITY_THRESHOLD = 0.6;
+const DETAIL_SIMILARITY_THRESHOLD = 0.5;
 
 function normalizeGuess(text) {
   return text.normalize("NFKC").replaceAll("’", "'").toLowerCase();
@@ -138,11 +139,12 @@ class ArticleGuessGame {
   wordDetails(node) {
     const { original, entry } = this.nodeDetails.get(node);
     const lines = [`Pituus: ${[...original].length} merkkiä`];
-    if (entry.guess) lines.push(`Vihje ”${entry.guess}”: läheisyys ${Math.round(entry.score * 100)} %`);
-    if (this.latestGuess && this.latestGuess !== entry.guess) {
-      const score = entry.latestScore === null ? "ei saatavilla" : `${Math.round(entry.latestScore * 100)} %`;
-      lines.push(`Uusin arvaus ”${this.latestGuess}”: läheisyys ${score}`);
-    } else if (!entry.guess) {
+    if (entry.guess && entry.score >= DETAIL_SIMILARITY_THRESHOLD) {
+      lines.push(`Vihje ”${entry.guess}”: läheisyys ${Math.round(entry.score * 100)} %`);
+    }
+    if (this.latestGuess && this.latestGuess !== entry.guess && entry.latestScore >= DETAIL_SIMILARITY_THRESHOLD) {
+      lines.push(`Uusin arvaus ”${this.latestGuess}”: läheisyys ${Math.round(entry.latestScore * 100)} %`);
+    } else if (!this.latestGuess && !entry.guess) {
       lines.push("Läheisyys: ei vielä arvausta");
     }
     return lines.join("\n");
@@ -176,18 +178,16 @@ class ArticleGuessGame {
     this.tooltip.hidden = true;
   }
 
-  showRecentGuess(guess, score) {
+  showRecentGuess(guess) {
     this.recentGuesses = [
-      { guess, score },
-      ...this.recentGuesses.filter((entry) => entry.guess !== guess),
+      guess,
+      ...this.recentGuesses.filter((word) => word !== guess),
     ].slice(0, 10);
     const list = document.createElement("ol");
-    for (const entry of this.recentGuesses) {
+    for (const word of this.recentGuesses) {
       const chip = document.createElement("li");
       chip.className = "proximity-chip";
-      chip.textContent = `${entry.guess} · ${entry.score === null ? "läheisyys ei saatavilla" : `${Math.round(entry.score * 100)} %`}`;
-      chip.style.color = entry.score === null ? "white" : proximityColor(entry.score);
-      chip.title = "Läheisyys lähimpään artikkelin sanaan";
+      chip.textContent = word;
       list.append(chip);
     }
     this.recent.replaceChildren(document.createTextNode("Viimeisimmät arvaukset:"), list);
@@ -255,7 +255,7 @@ class ArticleGuessGame {
     }
     if (this.guesses.has(guess) && !this.vectors.info) {
       this.showHints([], guess);
-      this.showRecentGuess(guess, this.words.has(guess) ? 1 : null);
+      this.showRecentGuess(guess);
       this.feedback.textContent = `Olet jo arvannut sanan ”${guess}”.`;
       return;
     }
@@ -278,8 +278,7 @@ class ArticleGuessGame {
         : [];
       if (revision !== this.revision) return;
       this.showHints(results, guess);
-      const score = exact ? 1 : results.length ? results.reduce((best, result) => Math.max(best, result.score), -1) : null;
-      this.showRecentGuess(guess, score);
+      this.showRecentGuess(guess);
       this.guesses.set(guess, canSearch);
       this.updateProgress();
       this.input.value = "";
@@ -287,7 +286,7 @@ class ArticleGuessGame {
       if (revision !== this.revision || error.name === "AbortError") return;
       if (revealed > 0) {
         this.showHints([], guess);
-        this.showRecentGuess(guess, 1);
+        this.showRecentGuess(guess);
         this.guesses.set(guess, false);
         this.updateProgress();
         this.input.value = "";

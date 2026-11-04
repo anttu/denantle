@@ -38,14 +38,14 @@ revealed occurrences; choosing another article resets the game and cancels pendi
 searches. Game progress is not saved across page reloads.
 
 Hover, click, or focus a black bar to see the original word's character count and
-its proximity to the displayed hint and latest guess. Click again, click elsewhere,
-or press Escape to close the details. Answers are not included in these details.
-The ten most recent accepted guesses are also shown below the input, newest first,
-with a proximity color and score for each guess's nearest article word, even below
-the hint threshold or when it does not improve any existing hints. Exact matches
-show `100 %`. Retrying an early exact guess updates its existing history entry;
-choosing another article clears the history.
-Repeating a guess refreshes its proximity feedback without increasing the count.
+its proximity to the displayed hint and latest guess when the similarity is at
+least `50 %`. Lower and unavailable scores are omitted from these details,
+including screen-reader labels. Click again, click elsewhere, or press Escape to
+close the details. Answers are not included in these details.
+The ten most recent accepted guesses are also shown below the input as plain words,
+newest first, without proximity colors or scores. Repeating a guess moves it to the
+front and refreshes its hints without increasing the guess count. Choosing another
+article clears the history.
 
 Articles are chosen from the groups listed in
 `categories.js`, including their subcategories. The search starts from Everyday
