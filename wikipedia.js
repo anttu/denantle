@@ -2,10 +2,9 @@ const randomButton = document.getElementById("random-article");
 const status = document.getElementById("status");
 const errorMessage = document.getElementById("error");
 const article = document.getElementById("article");
-const articleTitle = document.getElementById("article-title");
-const articleBody = document.getElementById("article-body");
 const articleSource = document.getElementById("article-source");
 const vectorStatus = document.getElementById("vector-status");
+const articleGame = new ArticleGuessGame(articleVectors);
 
 async function buildArticleVectors(title, body) {
   try {
@@ -102,6 +101,7 @@ async function loadRandomArticle() {
   if (randomButton.disabled) return;
 
   randomButton.disabled = true;
+  articleGame.reset();
   articleVectors.clear();
   vectorStatus.textContent = "";
   article.hidden = true;
@@ -130,10 +130,8 @@ async function loadRandomArticle() {
       throw new Error("Artikkelissa ei ole näytettävää leipätekstiä.");
     }
 
-    articleTitle.textContent = page.title;
-    articleBody.textContent = body;
+    articleGame.start(page.title, body);
     articleSource.href = `https://simple.wikipedia.org/wiki/${encodeURIComponent(page.title.replaceAll(" ", "_"))}`;
-    document.title = `${page.title} | Denantle`;
     article.hidden = false;
     void buildArticleVectors(page.title, body);
   } catch (error) {

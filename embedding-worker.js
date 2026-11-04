@@ -27,7 +27,7 @@ function normalizeText(text) {
 
 async function indexArticle(message) {
   const counts = new Map();
-  const words = normalizeText(`${message.title}\n${message.text}`).match(/\p{L}+(?:['-]\p{L}+)*/gu) || [];
+  const words = normalizeText(`${message.title}\n${message.text}`).match(/\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*/gu) || [];
   for (const word of words) counts.set(word, (counts.get(word) || 0) + 1);
   if (counts.size === 0) throw new Error("Artikkelissa ei ole vektoroitavia sanoja.");
 

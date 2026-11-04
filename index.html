@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Lue satunnaisia Simple English Wikipedian artikkeleita.">
+  <meta name="description" content="Arvaa peitetyn Wikipedia-artikkelin sanat. Läheiset arvaukset auttavat paljastamaan tekstin.">
   <title>Denantle</title>
   <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
@@ -18,10 +18,21 @@
     .site-icon { display: block; width: 64px; height: 64px; flex-shrink: 0; }
     h1 { margin: 0; min-width: 0; }
     .site-wordmark { display: block; width: 200px; max-width: 100%; height: auto; }
-    .hint, #status, #vector-status, .source { color: #666; font-size: 14px; }
+    .hint, #status, #vector-status, #game-progress, .source { color: #666; font-size: 14px; }
     .hint { margin: 8px 0 24px; }
     button { font: inherit; border: 1px solid #202020; border-radius: 4px; padding: 10px 12px; background: #202020; color: white; cursor: pointer; }
     button:disabled { opacity: .5; cursor: wait; }
+    #guess-form { margin-top: 24px; }
+    #guess-form label { display: block; margin-bottom: 6px; font-weight: 600; }
+    .guess-controls { display: flex; gap: 8px; }
+    #guess-input { min-width: 0; flex: 1; font: inherit; padding: 10px 12px; border: 1px solid #888; border-radius: 4px; background: white; }
+    #guess-feedback { margin: 8px 0 0; }
+    #guess-feedback:empty { display: none; }
+    #recent-guesses { margin: 8px 0 0; }
+    #recent-guesses ol { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
+    .proximity-chip { display: inline-block; max-width: 100%; padding: 2px 8px; border-radius: 4px; background: #111; font-weight: 600; overflow-wrap: anywhere; }
+    #word-tooltip { position: fixed; z-index: 10; max-width: min(340px, calc(100vw - 16px)); padding: 8px 12px; border: 1px solid #bbb; border-radius: 4px; background: white; color: #202020; box-shadow: 0 2px 8px #0002; font: 14px/1.5 system-ui, sans-serif; white-space: pre-line; overflow-wrap: anywhere; pointer-events: none; }
+    #game-progress { margin: 8px 0 0; }
     :focus-visible { outline: 2px solid #1769d2; outline-offset: 3px; }
     #status { min-height: 1.6em; margin: 12px 0 0; }
     #vector-status { margin: 8px 0 0; }
@@ -29,6 +40,8 @@
     article { padding-top: 32px; }
     #article-title { margin: 0 0 12px; font: bold 36px/1.2 Georgia, serif; overflow-wrap: anywhere; }
     #article-body { font: 18px/1.8 Georgia, serif; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .redacted { display: inline-block; min-width: min(100%, max(1ch, calc(var(--word-length) * .55em))); max-width: 100%; height: 1.1em; vertical-align: -.15em; border-radius: 2px; background: #111; color: white; font-size: inherit; line-height: 1.1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: none; cursor: help; }
+    .revealed { color: #202020; }
     .source { margin: 0 0 24px; }
     a { color: #1769d2; }
     @media (max-width: 480px) {
@@ -44,8 +57,19 @@
         <img class="site-icon" src="images/denantle-icon.png" alt="Denantle-hahmo" width="64" height="64">
         <h1><img class="site-wordmark" src="images/denantle-wordmark.png" alt="Denantle" width="1000" height="400"></h1>
       </div>
-      <p class="hint">Lue satunnainen artikkeli Simple English Wikipediasta.</p>
+      <p class="hint">Arvaa peitetyn artikkelin sanoja englanniksi. Oikea sana paljastuu, merkitykseltään läheinen arvaus näkyy mustan palkin päällä.</p>
+      <p class="hint">Sininen on kaukana, punainen lähellä. Vie osoitin palkin päälle tai klikkaa sitä nähdäksesi sanan pituuden ja läheisyyden.</p>
       <button id="random-article" type="button">Satunnainen artikkeli</button>
+      <form id="guess-form" hidden>
+        <label for="guess-input">Arvaa sana</label>
+        <div class="guess-controls">
+          <input id="guess-input" name="guess" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="guess-feedback" disabled>
+          <button id="guess-submit" type="submit" disabled>Arvaa</button>
+        </div>
+      </form>
+      <p id="guess-feedback" role="status"></p>
+      <div id="recent-guesses" role="status" hidden></div>
+      <p id="game-progress"></p>
       <p id="status" role="status"></p>
       <p id="vector-status" role="status"></p>
       <p id="error" role="alert"></p>
@@ -60,8 +84,10 @@
     </article>
     <noscript><p>Satunnaisen artikkelin näyttäminen edellyttää JavaScriptin sallimista selaimessa.</p></noscript>
   </main>
+  <div id="word-tooltip" role="tooltip" lang="fi" hidden></div>
   <script src="categories.js"></script>
   <script src="embeddings.js"></script>
+  <script src="game.js"></script>
   <script src="wikipedia.js"></script>
 </body>
 </html>

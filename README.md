@@ -1,10 +1,10 @@
 # Denantle
 
-A static page that fetches a Simple English Wikipedia article and displays its
-title and body text. Word embeddings are computed locally in the browser. No
+A word guessing game that hides a Simple English Wikipedia article's title and
+body behind black bars. Word embeddings are computed locally in the browser. No
 application server, API key, package installation, or build step is required.
 
-Keep `index.html`, `wikipedia.js`, `categories.js`, `embeddings.js`,
+Keep `index.html`, `wikipedia.js`, `game.js`, `categories.js`, `embeddings.js`,
 `embedding-worker.js`, and `favicon.ico` in the same directory, with the PNG assets
 in `images/`. Run `./start-local.sh` and open `http://localhost:8000` in a current
 browser, or upload these files and the PNG assets to a static web host.
@@ -18,6 +18,34 @@ is required to fetch articles and initially download the embedding runtime and m
 The page automatically loads a random Simple English Wikipedia article. Click
 **Satunnainen artikkeli** to choose another one. Redirects are followed, and
 missing articles and connection failures are shown on the page.
+
+Enter one English word in **Arvaa sana** and press Enter or **Arvaa**. An exact
+guess reveals every occurrence, preserving the original spelling and case.
+Matching ignores case, Unicode compatibility forms, and curly apostrophes.
+Punctuation, numbers, spaces, and line breaks remain visible. The browser tab title
+does not reveal the article title.
+
+Once word vectors are ready, guesses also provide semantic hints: a cosine
+similarity of at least `0.6` displays the guessed word on the matching black bars.
+Hint text changes continuously from blue (farther) to red (closer). Each word keeps
+its closest guess so far; hints never replace revealed
+words. The threshold is defined by `SIMILARITY_THRESHOLD` in `game.js`. Similarity
+is a model score, not a probability that the guess is correct. Exact guesses work
+while vectors are loading or if the model fails; retry an early exact guess after
+indexing to use it for semantic hints too, without increasing the guess count.
+The page tracks guesses and
+revealed occurrences; choosing another article resets the game and cancels pending
+searches. Game progress is not saved across page reloads.
+
+Hover, click, or focus a black bar to see the original word's character count and
+its proximity to the displayed hint and latest guess. Click again, click elsewhere,
+or press Escape to close the details. Answers are not included in these details.
+The ten most recent accepted guesses are also shown below the input, newest first,
+with a proximity color and score for each guess's nearest article word, even below
+the hint threshold or when it does not improve any existing hints. Exact matches
+show `100 %`. Retrying an early exact guess updates its existing history entry;
+choosing another article clears the history.
+Repeating a guess refreshes its proximity feedback without increasing the count.
 
 Articles are chosen from the groups listed in
 `categories.js`, including their subcategories. The search starts from Everyday
@@ -49,10 +77,10 @@ available. Article text and search terms are processed locally.
 Each distinct word has one normalized, 384-dimensional vector and an occurrence
 count. Case, Unicode compatibility forms, and curly apostrophes are normalized;
 punctuation and numbers are excluded, and internal apostrophes and hyphens are
-preserved. Words are processed in batches of 32. The page shows progress, stays
-readable while indexing, and lets you choose another article. Choosing another
+preserved. Words are processed in batches of 32. The page shows progress, accepts
+exact guesses while indexing, and lets you choose another article. Choosing another
 article clears the previous index and cancels its remaining work; vectors are
-not persisted across page reloads. A model failure leaves the article readable.
+not persisted across page reloads. A model failure still allows exact guesses.
 
 The `articleVectors` object provides a search API, also usable in the browser's
 developer console after the ready message appears:
