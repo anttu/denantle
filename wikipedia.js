@@ -21,7 +21,9 @@ async function buildArticleVectors(title, body) {
 }
 
 function removeUnwantedSections(text) {
-  const excludedSections = new Set(["gallery", "references", "other websites"]);
+  const excludedSections = new Set([
+    "gallery", "references", "other websites", "related pages", "bibliography",
+  ]);
   const lines = [];
   let skippedLevel = null;
 

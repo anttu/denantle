@@ -27,8 +27,9 @@ random, so articles do not all have the same probability of being selected.
 Content comes from the [MediaWiki Action API](https://www.mediawiki.org/wiki/API:Main_page)
 at `https://simple.wikipedia.org/w/api.php`, using `prop=extracts` and
 `explaintext=1`. The page requests the full text extract, including sections
-after the introduction. Gallery, References, and Other websites sections and their
-subsections are removed from the displayed text. Images, tables, and other content excluded by
+after the introduction. Gallery, References, Other websites, Related pages, and
+Bibliography sections and their subsections are removed from the displayed text.
+Images, tables, and other content excluded by
 [TextExtracts](https://www.mediawiki.org/wiki/Extension:TextExtracts) are not displayed.
 Text is rendered as text, preserving line breaks without inserting remote HTML.
 
