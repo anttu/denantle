@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Lue Simple English Wikipedian artikkeleita yksinkertaisella sivulla.">
+  <meta name="description" content="Lue satunnaisia Simple English Wikipedian artikkeleita.">
   <title>Wikipedia-lukija</title>
   <style>
     * { box-sizing: border-box; }
@@ -13,11 +13,7 @@
     h1 { margin: 0; font-size: 28px; line-height: 1.3; }
     .hint, #status, .source { color: #666; font-size: 14px; }
     .hint { margin: 8px 0 24px; }
-    label { display: block; margin-bottom: 6px; }
-    .search { display: flex; gap: 8px; }
-    input, button { font: inherit; border: 1px solid #aaa; border-radius: 4px; padding: 10px 12px; }
-    input { flex: 1; min-width: 0; background: white; color: inherit; }
-    button { border-color: #202020; background: #202020; color: white; cursor: pointer; }
+    button { font: inherit; border: 1px solid #202020; border-radius: 4px; padding: 10px 12px; background: #202020; color: white; cursor: pointer; }
     button:disabled { opacity: .5; cursor: wait; }
     :focus-visible { outline: 2px solid #1769d2; outline-offset: 3px; }
     #status { min-height: 1.6em; margin: 12px 0 0; }
@@ -29,7 +25,6 @@
     a { color: #1769d2; }
     @media (max-width: 480px) {
       body { padding: 24px 16px; }
-      .search { flex-direction: column; }
       #article-title { font-size: 30px; }
     }
   </style>
@@ -38,14 +33,8 @@
   <main>
     <header>
       <h1>Wikipedia-lukija</h1>
-      <p class="hint">Hae Simple English Wikipedian artikkeli ja lue sen teksti.</p>
-      <form id="article-form">
-        <label for="article-name">Artikkelin nimi englanniksi</label>
-        <div class="search">
-          <input id="article-name" name="title" value="Helsinki" placeholder="Esimerkiksi Solar System" required>
-          <button id="load-article" type="submit">Hae artikkeli</button>
-        </div>
-      </form>
+      <p class="hint">Lue satunnainen artikkeli Simple English Wikipediasta.</p>
+      <button id="random-article" type="button">Satunnainen artikkeli</button>
       <p id="status" role="status"></p>
       <p id="error" role="alert"></p>
     </header>
@@ -57,8 +46,9 @@
       </p>
       <div id="article-body"></div>
     </article>
-    <noscript><p>Artikkelin hakeminen edellyttää JavaScriptin sallimista selaimessa.</p></noscript>
+    <noscript><p>Satunnaisen artikkelin näyttäminen edellyttää JavaScriptin sallimista selaimessa.</p></noscript>
   </main>
+  <script src="categories.js"></script>
   <script src="wikipedia.js"></script>
 </body>
 </html>
