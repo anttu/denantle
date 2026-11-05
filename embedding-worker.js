@@ -1,18 +1,21 @@
-const MODEL = "Xenova/all-MiniLM-L6-v2";
+const MODELS = {
+  en: "Xenova/all-MiniLM-L6-v2",
+  fi: "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
+};
 const BATCH_SIZE = 32;
 let extractorPromise;
 let revision = 0;
 let database = null;
 let queue = Promise.resolve();
 
-async function getExtractor() {
+async function getExtractor(model) {
   if (!extractorPromise) {
     extractorPromise = (async () => {
       const { pipeline, env } = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1");
       env.allowLocalModels = false;
       // A single WASM thread also works without cross-origin isolation or WebGPU.
       env.backends.onnx.wasm.numThreads = 1;
-      return pipeline("feature-extraction", MODEL, { dtype: "q8", device: "wasm" });
+      return pipeline("feature-extraction", model, { dtype: "q8", device: "wasm" });
     })().catch((error) => {
       extractorPromise = null;
       throw error;
@@ -32,7 +35,8 @@ async function indexArticle(message) {
   if (counts.size === 0) throw new Error("Artikkelissa ei ole vektoroitavia sanoja.");
 
   self.postMessage({ id: message.id, type: "progress", stage: "model" });
-  const extractor = await getExtractor();
+  const model = MODELS[message.language] || MODELS.en;
+  const extractor = await getExtractor(model);
   if (message.revision !== revision) return;
 
   const entries = [];
@@ -53,13 +57,13 @@ async function indexArticle(message) {
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
   if (message.revision !== revision) return;
-  database = { entries, dimensions };
-  return { title: message.title, wordCount: entries.length, dimensions, model: MODEL };
+  database = { entries, dimensions, model };
+  return { title: message.title, wordCount: entries.length, dimensions, model };
 }
 
 async function search(message) {
   if (!database) throw new Error("Artikkelin sanavektorit eivät ole vielä valmiit.");
-  const extractor = await getExtractor();
+  const extractor = await getExtractor(database.model);
   const output = await extractor([normalizeText(message.text.trim())], { pooling: "mean", normalize: true });
   if (message.revision !== revision) return;
 

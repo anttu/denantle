@@ -17,11 +17,15 @@
     .site-heading { display: flex; align-items: center; gap: 16px; }
     .site-icon { display: block; width: 64px; height: 64px; flex-shrink: 0; }
     h1 { margin: 0; min-width: 0; }
-    .site-wordmark { display: block; width: 200px; max-width: 100%; height: auto; }
+    .site-brand { width: 200px; max-width: 100%; }
+    .site-mark { display: block; width: 100%; height: auto; aspect-ratio: 2172 / 430; object-fit: cover; }
+    .site-wordmark { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 240; object-fit: cover; object-position: bottom; }
     .hint, #status, #vector-status, #game-progress, .source { color: #666; font-size: 14px; }
     .hint { margin: 8px 0 24px; }
     button { font: inherit; border: 1px solid #202020; border-radius: 4px; padding: 10px 12px; background: #202020; color: white; cursor: pointer; }
     button:disabled { opacity: .5; cursor: wait; }
+    .article-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    #wikipedia-source { max-width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #888; border-radius: 4px; background: white; color: inherit; }
     #guess-form { margin-top: 24px; }
     #guess-form label { display: block; margin-bottom: 6px; font-weight: 600; }
     .guess-controls { display: flex; gap: 8px; }
@@ -30,7 +34,9 @@
     #guess-feedback:empty { display: none; }
     #recent-guesses { margin: 8px 0 0; }
     #recent-guesses ol { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
-    .proximity-chip { display: inline-block; max-width: 100%; padding: 2px 8px; border-radius: 4px; background: #111; color: white; font-weight: 600; overflow-wrap: anywhere; }
+    .proximity-chip { display: inline-block; max-width: 100%; padding: 2px 8px; border-radius: 4px; background: white; color: #111; font-weight: 600; overflow-wrap: anywhere; }
+    .proximity-chip[data-proximity="near"] { color: #c24e00; }
+    .proximity-chip[data-proximity="cold"] { color: #1769d2; }
     #word-tooltip { position: fixed; z-index: 10; max-width: min(340px, calc(100vw - 16px)); padding: 8px 12px; border: 1px solid #bbb; border-radius: 4px; background: white; color: #202020; box-shadow: 0 2px 8px #0002; font: 14px/1.5 system-ui, sans-serif; white-space: pre-line; overflow-wrap: anywhere; pointer-events: none; }
     #game-progress { margin: 8px 0 0; }
     #title-celebration { margin: 8px 0 0; color: #176437; font-weight: 600; }
@@ -67,11 +73,21 @@
     <header>
       <div class="site-heading">
         <img class="site-icon" src="images/denantle-icon.png" alt="Denantle-hahmo" width="64" height="64">
-        <h1><img class="site-wordmark" src="images/denantle-wordmark.png" alt="Denantle" width="1000" height="400"></h1>
+        <h1 class="site-brand">
+          <img class="site-mark" src="images/drafts/denantle-logo-draft.png" alt="" width="2172" height="724">
+          <img class="site-wordmark" src="images/denantle-wordmark.png" alt="Denantle" width="1000" height="400">
+        </h1>
       </div>
-      <p class="hint">Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.</p>
+      <p id="guess-hint" class="hint">Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.</p>
       <p class="hint">Sininen on kaukana, punainen lähellä. Vie osoitin palkin päälle tai klikkaa sitä nähdäksesi sanan pituuden ja läheisyyden.</p>
-      <button id="random-article" type="button">Satunnainen artikkeli</button>
+      <div class="article-controls">
+        <label for="wikipedia-source">Datalähde</label>
+        <select id="wikipedia-source" name="source">
+          <option value="simple" selected>Simple English Wikipedia</option>
+          <option value="fi">Suomenkielinen Wikipedia</option>
+        </select>
+        <button id="random-article" type="button">Satunnainen artikkeli</button>
+      </div>
       <form id="guess-form" hidden>
         <label for="guess-input">Arvaa sana</label>
         <div class="guess-controls">

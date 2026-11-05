@@ -1,4 +1,6 @@
 const randomButton = document.getElementById("random-article");
+const sourceSelect = document.getElementById("wikipedia-source");
+const guessHint = document.getElementById("guess-hint");
 const status = document.getElementById("status");
 const errorMessage = document.getElementById("error");
 const article = document.getElementById("article");
@@ -6,23 +8,21 @@ const articleSource = document.getElementById("article-source");
 const vectorStatus = document.getElementById("vector-status");
 const articleGame = new ArticleGuessGame(articleVectors);
 
-async function buildArticleVectors(title, body) {
+async function buildArticleVectors(title, body, language) {
   try {
     const info = await articleVectors.build(title, body, (progress) => {
       vectorStatus.textContent = progress.stage === "model"
         ? "Valmistellaan sanavektorimallia… Ensimmäinen lataus voi kestää hetken."
         : `Luodaan sanavektoreita: ${progress.completed} / ${progress.total} sanaa…`;
-    });
+    }, language);
     vectorStatus.textContent = `Sanavektorit valmiina: ${info.wordCount} eri sanaa.`;
   } catch (error) {
     if (error.name !== "AbortError") vectorStatus.textContent = error.message;
   }
 }
 
-function removeUnwantedSections(text) {
-  const excludedSections = new Set([
-    "gallery", "references", "other websites", "related pages", "bibliography",
-  ]);
+function removeUnwantedSections(text, source) {
+  const excludedSections = new Set(source.excludedSections);
   const lines = [];
   let skippedLevel = null;
 
@@ -41,7 +41,7 @@ function removeUnwantedSections(text) {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-async function queryWikipedia(parameters, signal) {
+async function queryWikipedia(source, parameters, signal) {
   const params = new URLSearchParams({
     action: "query",
     format: "json",
@@ -49,7 +49,7 @@ async function queryWikipedia(parameters, signal) {
     origin: "*",
     ...parameters,
   });
-  const response = await fetch(`https://simple.wikipedia.org/w/api.php?${params}`, { signal });
+  const response = await fetch(`${source.baseUrl}/w/api.php?${params}`, { signal });
   if (!response.ok) {
     throw new Error(`Artikkelin haku epäonnistui (HTTP ${response.status}). Yritä uudelleen.`);
   }
@@ -61,8 +61,8 @@ async function queryWikipedia(parameters, signal) {
   return data;
 }
 
-async function getRandomArticleTitle(signal) {
-  const candidates = categories.map((name) => ({ ns: 14, title: `Category:${name}` }));
+async function getRandomArticleTitle(source, signal) {
+  const candidates = source.categories.map((title) => ({ ns: 14, title }));
   const visited = new Set();
 
   while (candidates.length > 0) {
@@ -74,7 +74,7 @@ async function getRandomArticleTitle(signal) {
 
     let continuation;
     do {
-      const data = await queryWikipedia({
+      const data = await queryWikipedia(source, {
         list: "categorymembers",
         cmtitle: candidate.title,
         cmnamespace: "0|14",
@@ -86,7 +86,7 @@ async function getRandomArticleTitle(signal) {
 
       for (const member of data.query.categorymembers) {
         if (member.ns === 0 || (member.ns === 14
-          && member.title !== "Category:People" && !visited.has(member.title))) {
+          && member.title !== source.excludedCategory && !visited.has(member.title))) {
           candidates.push(member);
         }
       }
@@ -100,7 +100,13 @@ async function getRandomArticleTitle(signal) {
 async function loadRandomArticle() {
   if (randomButton.disabled) return;
 
+  const source = wikipediaSources[sourceSelect.value];
   randomButton.disabled = true;
+  sourceSelect.disabled = true;
+  guessHint.textContent = source.language === "fi"
+    ? "Arvaa peitetyn artikkelin sanoja suomeksi. Arvaa sana tekstissä esiintyvässä muodossa. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä."
+    : "Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.";
+  document.getElementById("guess-input").lang = source.language;
   articleGame.reset();
   articleVectors.clear();
   vectorStatus.textContent = "";
@@ -111,9 +117,9 @@ async function loadRandomArticle() {
 
   try {
     const signal = AbortSignal.timeout(15000);
-    const title = await getRandomArticleTitle(signal);
+    const title = await getRandomArticleTitle(source, signal);
 
-    const data = await queryWikipedia({
+    const data = await queryWikipedia(source, {
       prop: "extracts",
       titles: title,
       explaintext: "1",
@@ -125,15 +131,17 @@ async function loadRandomArticle() {
     if (!page || page.missing) {
       throw new Error("Artikkelia ei löytynyt. Kokeile uutta satunnaista artikkelia.");
     }
-    const body = typeof page.extract === "string" ? removeUnwantedSections(page.extract) : "";
+    const body = typeof page.extract === "string" ? removeUnwantedSections(page.extract, source) : "";
     if (!body) {
       throw new Error("Artikkelissa ei ole näytettävää leipätekstiä.");
     }
 
-    articleGame.start(page.title, body);
-    articleSource.href = `https://simple.wikipedia.org/wiki/${encodeURIComponent(page.title.replaceAll(" ", "_"))}`;
+    articleGame.start(page.title, body, source.language);
+    article.lang = source.language;
+    articleSource.textContent = source.name;
+    articleSource.href = `${source.baseUrl}/wiki/${encodeURIComponent(page.title.replaceAll(" ", "_"))}`;
     article.hidden = false;
-    void buildArticleVectors(page.title, body);
+    void buildArticleVectors(page.title, body, source.language);
   } catch (error) {
     errorMessage.textContent = error.name === "TimeoutError"
       ? "Haku kesti liian kauan. Yritä uudelleen."
@@ -144,10 +152,15 @@ async function loadRandomArticle() {
     status.textContent = "";
     article.setAttribute("aria-busy", "false");
     randomButton.disabled = false;
+    sourceSelect.disabled = false;
   }
 }
 
 randomButton.addEventListener("click", () => {
+  void loadRandomArticle();
+});
+
+sourceSelect.addEventListener("change", () => {
   void loadRandomArticle();
 });
 

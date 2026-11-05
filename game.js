@@ -7,8 +7,10 @@ function normalizeGuess(text) {
   return text.normalize("NFKC").replaceAll("’", "'").toLowerCase();
 }
 
-function guessForms(guess) {
+function guessForms(guess, language = "en") {
   const forms = new Set([guess]);
+  // Compromise generates English inflections only.
+  if (language !== "en") return forms;
   const add = (form) => {
     const word = normalizeGuess(form);
     if (GUESS_PATTERN.test(word)) forms.add(word);
@@ -94,8 +96,9 @@ class ArticleGuessGame {
     this.body.replaceChildren();
   }
 
-  start(title, body) {
+  start(title, body, language = "en") {
     this.reset();
+    this.language = language;
     this.render(this.title, title);
     this.render(this.body, body);
     this.active = true;
@@ -225,10 +228,10 @@ class ArticleGuessGame {
       const chip = document.createElement("li");
       chip.className = "proximity-chip";
       const count = matches || nearMatches;
-      const label = matches === 0 && nearMatches > 0
-        ? (count === 1 ? "lähiosuma" : "lähiosumaa")
-        : (count === 1 ? "osuma" : "osumaa");
-      chip.textContent = `${word} · ${count} ${label}`;
+      chip.dataset.proximity = matches > 0 ? "exact" : nearMatches > 0 ? "near" : "cold";
+      const proximity = matches > 0 ? "tarkka" : nearMatches > 0 ? "lähellä" : "kaukana";
+      chip.textContent = `${word} · ${count}`;
+      chip.setAttribute("aria-label", `${word} · ${count} · ${proximity}`);
       list.append(chip);
     }
     this.recent.replaceChildren(document.createTextNode("Viimeisimmät arvaukset:"), list);
@@ -335,10 +338,12 @@ class ArticleGuessGame {
     if (!this.active || this.busy) return;
     const guess = normalizeGuess(this.input.value.trim());
     if (!GUESS_PATTERN.test(guess)) {
-      this.feedback.textContent = "Syötä yksi sana englanniksi.";
+      this.feedback.textContent = this.language === "fi"
+        ? "Syötä yksi sana suomeksi."
+        : "Syötä yksi sana englanniksi.";
       return;
     }
-    const matches = [...guessForms(guess)].map((form) => this.words.get(form)).filter(Boolean);
+    const matches = [...guessForms(guess, this.language)].map((form) => this.words.get(form)).filter(Boolean);
     const matchCount = matches.reduce((count, entry) => count + entry.occurrences.length, 0);
     if (this.guesses.has(guess) && !this.vectors.info) {
       this.showHints([], guess);

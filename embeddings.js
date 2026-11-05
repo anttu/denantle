@@ -5,6 +5,7 @@ class ArticleVectorDatabase {
     this.nextId = 0;
     this.revision = 0;
     this.info = null;
+    this.language = null;
   }
 
   clear() {
@@ -17,10 +18,16 @@ class ArticleVectorDatabase {
     this.worker?.postMessage({ type: "clear", revision: this.revision });
   }
 
-  async build(title, text, onProgress) {
+  async build(title, text, onProgress, language = "en") {
     this.clear();
+    if (this.language !== language) {
+      // Release the old model and cancel inference when the article language changes.
+      this.worker?.terminate();
+      this.worker = null;
+      this.language = language;
+    }
     const revision = this.revision;
-    const info = await this.request("index", { title, text }, onProgress);
+    const info = await this.request("index", { title, text, language }, onProgress);
     if (revision !== this.revision) {
       throw new DOMException("Artikkeli vaihtui.", "AbortError");
     }
