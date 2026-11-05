@@ -10,11 +10,9 @@ and `favicon.ico` in the same directory, with the PNG assets
 in `images/` and the bundled language library in `vendor/`. Run `./start-local.sh`
 and open `http://localhost:8000` in a current browser, or upload these files and
 asset directories to a static web host.
-`images/denantle-icon.png` is the transparent face icon displayed beside
-`images/denantle-wordmark.png`, cropped on the page to show only the hand-lettered
-Denantle text. `images/drafts/denantle-logo-draft.png` supplies the black bars
-stacked above the text. The smaller icon PNGs and `favicon.ico` provide browser
-and touch icons.
+`images/denantle-mark.png` is the transparent seven-bar logo displayed beside
+the Denantle name, set as text in the page heading. The smaller icon PNGs and
+`favicon.ico` provide browser and touch icons.
 The embedding worker requires HTTP(S); opening `index.html` directly
 still displays articles but cannot create word vectors. An internet connection
 is required to fetch articles and initially download the embedding runtime and model.

@@ -14,12 +14,10 @@
     body { margin: 0; padding: 40px 24px; font: 16px/1.6 system-ui, sans-serif; color: #202020; background: #fafafa; overflow-wrap: anywhere; }
     main { max-width: 760px; margin: 0 auto; }
     header { border-bottom: 1px solid #ddd; padding-bottom: 24px; }
-    .site-heading { display: flex; align-items: center; gap: 16px; }
-    .site-icon { display: block; width: 64px; height: 64px; flex-shrink: 0; }
+    .site-heading { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .site-icon { display: block; width: 72px; height: auto; flex-shrink: 0; }
     h1 { margin: 0; min-width: 0; }
-    .site-brand { width: 200px; max-width: 100%; }
-    .site-mark { display: block; width: 100%; height: auto; aspect-ratio: 2172 / 430; object-fit: cover; }
-    .site-wordmark { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 240; object-fit: cover; object-position: bottom; }
+    .site-brand { max-width: 100%; font-size: 29px; font-weight: 650; line-height: 1.15; letter-spacing: -.055em; white-space: nowrap; }
     .hint, #status, #vector-status, #inflection-status, #game-progress, .source { color: #666; font-size: 14px; }
     .hint { margin: 8px 0 24px; }
     button { font: inherit; border: 1px solid #202020; border-radius: 4px; padding: 10px 12px; background: #202020; color: white; cursor: pointer; }
@@ -66,6 +64,9 @@
     a { color: #1769d2; }
     @media (max-width: 480px) {
       body { padding: 24px 16px; }
+      .site-heading { gap: 10px; }
+      .site-icon { width: 59px; }
+      .site-brand { font-size: 26px; }
       #article-title { font-size: 30px; }
     }
   </style>
@@ -74,11 +75,8 @@
   <main>
     <header>
       <div class="site-heading">
-        <img class="site-icon" src="images/denantle-icon.png" alt="Denantle-hahmo" width="64" height="64">
-        <h1 class="site-brand">
-          <img class="site-mark" src="images/drafts/denantle-logo-draft.png" alt="" width="2172" height="724">
-          <img class="site-wordmark" src="images/denantle-wordmark.png" alt="Denantle" width="1000" height="400">
-        </h1>
+        <img class="site-icon" src="images/denantle-mark.png" alt="" width="2172" height="724">
+        <h1 class="site-brand">Denantle</h1>
       </div>
       <p id="guess-hint" class="hint">Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.</p>
       <p class="hint">Sininen on kaukana, punainen lähellä. Vie osoitin palkin päälle tai klikkaa sitä nähdäksesi sanan pituuden ja läheisyyden.</p>
