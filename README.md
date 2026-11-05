@@ -1,4 +1,24 @@
-# Denantle
+<p align="center">
+  <img src="images/denantle-icon.png" alt="" width="80">
+</p>
+
+<h1 align="center">
+  <img src="images/denantle-mark.png" alt="" width="280"><br>
+  <img src="images/denantle-wordmark.png" alt="Denantle" width="280">
+</h1>
+
+<p align="center">
+  <strong>Pieni arvoitus. Sana kerrallaan.</strong><br>
+  Paljasta Wikipedia-artikkeli arvaamalla sanoja.
+</p>
+
+<p align="center">
+  <a href="https://anttu.github.io/denantle/"><strong>Pelaa selaimessa</strong></a>
+  &middot;
+  <a href="#paikallinen-käynnistys">Käynnistä paikallisesti</a>
+  &middot;
+  <a href="GAMEPLAY_AND_IMPLEMENTATION.md">Näin peli toimii</a>
+</p>
 
 Denantle on selaimessa pelattava sananarvauspeli, jossa Wikipedia-artikkelin
 otsikko ja teksti on peitetty. Tarkoituksena on päätellä artikkelin aihe ja
