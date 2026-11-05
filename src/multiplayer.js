@@ -175,6 +175,7 @@ class MultiplayerGame {
     this.local = document.getElementById("multiplayer-local");
     this.localLabel = document.getElementById("multiplayer-local-label");
     this.remote = document.getElementById("multiplayer-remote");
+    this.remotePanel = document.getElementById("multiplayer-remote-panel");
     this.payloadDebug = document.getElementById("multiplayer-debug");
     this.payloadDebugPanel = document.getElementById("multiplayer-debug-panel");
     this.payloadDebugLocal = document.getElementById("multiplayer-debug-local");
@@ -253,6 +254,7 @@ class MultiplayerGame {
 
   setNegotiating(busy) {
     this.negotiating = busy;
+    this.remotePanel.hidden = this.isGuest;
     this.create.disabled = busy || Boolean(this.peer);
     this.accept.disabled = busy || Boolean(this.peer
       && (this.isGuest || this.peer.peer.signalingState !== "have-local-offer"));
@@ -273,11 +275,11 @@ class MultiplayerGame {
       this.error.textContent = error.message;
       return;
     }
+    if (!this.peer) this.role = create ? "host" : "guest";
     this.setNegotiating(true);
     let peer = this.peer;
     try {
       if (!peer) {
-        this.role = create ? "host" : "guest";
         peer = new ManualPeerConnection({ useStun: this.stun.checked });
         this.peer = peer;
         if (this.isGuest) {

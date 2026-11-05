@@ -68,9 +68,11 @@
           <label id="multiplayer-local-label" for="multiplayer-local">Oma yhteystieto – kopioi ja lähetä pelikaverille</label>
           <textarea id="multiplayer-local" readonly spellcheck="false" aria-describedby="multiplayer-status"></textarea>
           <div class="multiplayer-actions"><button id="multiplayer-copy" class="secondary" type="button" disabled>Kopioi yhteystieto</button></div>
-          <label for="multiplayer-remote">Pelikaverin yhteystieto – liitä koko kutsu tai vastaus</label>
-          <textarea id="multiplayer-remote" spellcheck="false" autocapitalize="none"></textarea>
-          <div class="multiplayer-actions"><button id="multiplayer-accept" type="button">Hyväksy kutsu</button></div>
+          <div id="multiplayer-remote-panel">
+            <label for="multiplayer-remote">Pelikaverin yhteystieto – liitä koko kutsu tai vastaus</label>
+            <textarea id="multiplayer-remote" spellcheck="false" autocapitalize="none"></textarea>
+            <div class="multiplayer-actions"><button id="multiplayer-accept" type="button">Hyväksy kutsu</button></div>
+          </div>
           <label class="multiplayer-toggle"><input id="multiplayer-debug" type="checkbox" aria-controls="multiplayer-debug-panel"> payload debug</label>
           <div id="multiplayer-debug-panel" hidden>
             <p>Oma payload (JSON)</p>
