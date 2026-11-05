@@ -51,10 +51,14 @@ docker compose -f tests/compose.yaml run --build --rm playwright
 Container käynnistää paikallisen palvelimen ja ajaa Playwright-testit
 headless-Firefoxilla. Testit tarkistavat sivun avautumisen, pelimuodon vaihtamisen,
 kutsujan yhteyspaneelin mobiiliasettelun sekä käsin liittymisen virhetilan.
+Yhteystesti muodostaa oikean WebRTC-yhteyden kahden erillisen Firefox-istunnon
+välille kutsulinkillä ja vastauksella. Se tarkistaa pelaajamäärän, käytettyjen
+yhteystietojen tyhjentämisen ja viestin saapumisen datakanavan kautta.
 Virheellinen pelitunniste ohittaa Wikipedia-haun,
-joten testi ei tarvitse Wikipediaa tai kielimalleja. Containerin verkkoyhteys on
-testin aikana pois käytöstä. Ensimmäinen koonti tarvitsee internetyhteyden imagen
-ja npm-pakettien lataamiseen. Komennon paluuarvo kertoo testin tuloksen.
+joten testit eivät tarvitse Wikipediaa tai kielimalleja. Container käyttää
+Dockerin bridge-verkkoa, jotta Firefoxilla on WebRTC:n vaatima verkkoliitäntä ja
+oletusreitti. Ensimmäinen koonti tarvitsee internetyhteyden imagen ja npm-pakettien
+lataamiseen. Komennon paluuarvo kertoo testin tuloksen.
 JUnit-raportti tallentuu tiedostoon `tests/reports/junit.xml`.
 
 GitHub Actions ajaa saman komennon jokaisella pushilla ja pull requestissa.

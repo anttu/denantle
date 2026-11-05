@@ -46,3 +46,37 @@ test("kutsun voi liittää käsin ja palata omaan kutsuun virheellisen kutsun j�
   await expect(page.locator("#multiplayer-remote")).toHaveValue("");
   await expect(page.locator("#multiplayer-error")).toBeEmpty();
 });
+
+test("kutsulinkki ja vastaus muodostavat moninpeliyhteyden kahden pelaajan välille", async ({ page: host, browser }) => {
+  const guestContext = await browser.newContext();
+  try {
+    const guest = await guestContext.newPage();
+    await host.getByRole("button", { name: "Luo kutsu", exact: true }).click();
+    const invitation = host.locator("#multiplayer-local");
+    await expect(invitation).toHaveValue(/^http:\/\/127\.0\.0\.1:8000\/\?game=invalid#join=.+/);
+
+    // The guest opens the real invitation in an independent browser session.
+    await guest.goto(await invitation.inputValue());
+    await expect(guest.getByRole("radio", { name: "Moninpeli samassa lähiverkossa" })).toBeChecked();
+    const answer = guest.locator("#multiplayer-local");
+    await expect(answer).not.toHaveValue("");
+    await expect(host.locator("#multiplayer-connected")).toBeHidden();
+    await expect(guest.locator("#multiplayer-connected")).toBeHidden();
+
+    await host.getByLabel("Liitä kaverin vastaus").fill(await answer.inputValue());
+    await host.getByRole("button", { name: "Hyväksy vastaus", exact: true }).click();
+
+    for (const player of [host, guest]) {
+      await expect(player.locator("#multiplayer-connected")).toBeVisible();
+      await expect(player.locator("#multiplayer-player-count")).toHaveText("2 pelaajaa");
+      await expect(player.locator("#multiplayer-local")).toHaveValue("");
+      await expect(player.locator("#multiplayer-remote")).toHaveValue("");
+      await expect(player.locator("#multiplayer-error")).toBeEmpty();
+    }
+    await expect(guest.locator("#multiplayer-invitations")).toBeHidden();
+    // This status arrives over the real data channel; no article or model is needed.
+    await expect(guest.locator("#multiplayer-status")).toHaveText("Kutsuja valitsee uutta artikkelia…");
+  } finally {
+    await guestContext.close();
+  }
+});

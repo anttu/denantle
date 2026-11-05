@@ -6,6 +6,7 @@ services:
       context: ..
       dockerfile: tests/Dockerfile
     init: true
-    network_mode: none
+    # Firefox's WebRTC ICE gathering requires an interface and a default route.
+    network_mode: bridge
     volumes:
       - ./reports:/app/tests/reports
