@@ -175,10 +175,15 @@ class MultiplayerGame {
     this.local = document.getElementById("multiplayer-local");
     this.localLabel = document.getElementById("multiplayer-local-label");
     this.remote = document.getElementById("multiplayer-remote");
+    this.payloadDebug = document.getElementById("multiplayer-debug");
+    this.payloadDebugPanel = document.getElementById("multiplayer-debug-panel");
+    this.payloadDebugLocal = document.getElementById("multiplayer-debug-local");
+    this.payloadDebugRemote = document.getElementById("multiplayer-debug-remote");
     this.status = document.getElementById("multiplayer-status");
     this.error = document.getElementById("multiplayer-error");
     this.role = null;
     this.localPayload = "";
+    this.remotePayload = "";
     this.queue = Promise.resolve();
     this.requestCounter = 0;
     this.enabled.addEventListener("change", () => {
@@ -190,11 +195,29 @@ class MultiplayerGame {
     this.accept.addEventListener("click", () => void this.negotiate(false));
     this.restart.addEventListener("click", () => this.disconnect());
     this.copy.addEventListener("click", () => void this.copyDescription());
+    this.payloadDebug.addEventListener("change", () => this.renderPayloadDebug());
+    this.remote.addEventListener("input", () => this.renderPayloadDebug());
     window.addEventListener("hashchange", () => this.acceptInviteFromLocation());
     this.game.onGuessRequest = (guess) => this.requestGuess(guess);
+    this.renderPayloadDebug();
   }
 
   get isGuest() { return this.role === "guest"; }
+
+  renderPayloadDebug() {
+    this.payloadDebugPanel.hidden = !this.payloadDebug.checked;
+    const show = (element, value) => {
+      element.textContent = "";
+      if (!this.payloadDebug.checked || !value) return;
+      try {
+        element.textContent = JSON.stringify(JSON.parse(SignalingPayload.decode(value)), null, 2);
+      } catch {
+        element.textContent = "Yhteystietoa ei voi purkaa JSON-muotoon.";
+      }
+    };
+    show(this.payloadDebugLocal, this.local.value);
+    show(this.payloadDebugRemote, this.remote.value.trim() || this.remotePayload);
+  }
 
   refreshInviteLink() {
     if (this.role === "host" && this.localPayload) {
@@ -242,7 +265,10 @@ class MultiplayerGame {
     this.error.textContent = "";
     // Validate pasted data before disturbing an existing invitation or solo game.
     try {
-      if (!create) ManualPeerConnection.readDescription(this.remote.value.trim(), this.role === "host" ? "answer" : "offer");
+      if (!create) {
+        ManualPeerConnection.readDescription(this.remote.value.trim(), this.role === "host" ? "answer" : "offer");
+        this.remotePayload = SignalingPayload.decode(this.remote.value.trim());
+      }
     } catch (error) {
       this.error.textContent = error.message;
       return;
@@ -251,9 +277,9 @@ class MultiplayerGame {
     let peer = this.peer;
     try {
       if (!peer) {
+        this.role = create ? "host" : "guest";
         peer = new ManualPeerConnection({ useStun: this.stun.checked });
         this.peer = peer;
-        this.role = create ? "host" : "guest";
         if (this.isGuest) {
           this.cancelLoading();
           this.game.setBusy(true);
@@ -306,7 +332,10 @@ class MultiplayerGame {
       this.disconnect("Yhteyden muodostaminen epäonnistui. Voit kokeilla uudelleen.");
       this.error.textContent = error.message;
     } finally {
-      if (peer === this.peer) this.setNegotiating(false);
+      if (peer === this.peer) {
+        this.setNegotiating(false);
+        this.renderPayloadDebug();
+      }
     }
   }
 
@@ -421,6 +450,7 @@ class MultiplayerGame {
     this.pendingRequest = null;
     this.local.value = "";
     this.localPayload = "";
+    this.remotePayload = "";
     this.remote.value = "";
     this.localLabel.textContent = "Oma yhteystieto – kopioi ja lähetä pelikaverille";
     this.copy.textContent = "Kopioi yhteystieto";
@@ -428,6 +458,7 @@ class MultiplayerGame {
     this.error.textContent = "";
     this.status.textContent = message;
     this.setNegotiating(false);
+    this.renderPayloadDebug();
     this.game.setBusy(!this.game.active);
     this.refreshControls();
     if (wasGuest) this.resumeSolo();

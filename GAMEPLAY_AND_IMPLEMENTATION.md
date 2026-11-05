@@ -64,6 +64,9 @@ including browser-specific fields and multiple candidates. The codec has no
 dependencies and does not require compression APIs. The receiving browser
 removes the invitation fragment before starting the handshake. Invitations
 remain tied to the inviter's open peer connection.
+The optional **payload debug** checkbox reveals the decoded local and remote
+JSON descriptions, including every SDP field restored by the codec. It is off by
+default; hiding it or disconnecting clears the displayed payloads.
 `src/multiplayer.js` uses the browser's native
 `RTCPeerConnection` and an ordered, reliable data channel. Both descriptions wait
 for ICE gathering to complete, so candidates travel in the copied text and no

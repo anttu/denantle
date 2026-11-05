@@ -71,6 +71,13 @@
           <label for="multiplayer-remote">Pelikaverin yhteystieto – liitä koko kutsu tai vastaus</label>
           <textarea id="multiplayer-remote" spellcheck="false" autocapitalize="none"></textarea>
           <div class="multiplayer-actions"><button id="multiplayer-accept" type="button">Hyväksy kutsu</button></div>
+          <label class="multiplayer-toggle"><input id="multiplayer-debug" type="checkbox" aria-controls="multiplayer-debug-panel"> payload debug</label>
+          <div id="multiplayer-debug-panel" hidden>
+            <p>Oma payload (JSON)</p>
+            <pre id="multiplayer-debug-local" aria-label="Oma payload JSON-muodossa"></pre>
+            <p>Pelikaverin payload (JSON)</p>
+            <pre id="multiplayer-debug-remote" aria-label="Pelikaverin payload JSON-muodossa"></pre>
+          </div>
           <p id="multiplayer-status" role="status">Yhteyttä ei ole vielä muodostettu. Yksinpeli jatkuu, kunnes liityt toisen peliin.</p>
           <p id="multiplayer-error" role="alert"></p>
         </div>

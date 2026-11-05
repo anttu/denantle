@@ -48,6 +48,7 @@ button:disabled { opacity: .5; cursor: wait; }
 #multiplayer-status { margin-bottom: 0; color: var(--muted); }
 #multiplayer-error { color: #a63228; margin-bottom: 0; }
 #multiplayer-error:empty { display: none; }
+#multiplayer-debug-panel pre { max-height: 20rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 8px; border: 1px solid var(--rule); border-radius: 4px; background: white; font: 12px/1.4 monospace; }
 #game-progress { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; color: var(--muted); font-size: 12px; margin: 20px 0 9px; }
 #game-progress:empty { display: none; }
 #game-progress strong { color: var(--ink); font-weight: 600; }

@@ -90,7 +90,7 @@ class SignalingPayload {
     while (reader.remaining()) {
       const code = reader.take(1)[0];
       const part = code === 0
-        ? new TextDecoder("utf-8", { fatal: true }).decode(reader.take(Number(reader.number())))
+        ? new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(reader.take(Number(reader.number())))
         : this.dictionary[code - 1];
       if (part === undefined || result.length + part.length > this.maxLength) throw new Error();
       result += part;

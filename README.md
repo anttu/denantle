@@ -55,6 +55,8 @@ Linkin osoitteen pitää olla myös pelikaverin saavutettavissa.
 Kutsun voi edelleen liittää ja hyväksyä käsin. Kutsulinkin yhteystiedot
 kulkevat osoitteen #join=-osassa. Selain purkaa ne häviöttömästi ennen
 yhteyden muodostamista. Pelin tunniste ja sivun nykyinen polku säilyvät linkissä.
+Moninpelin **payload debug** -valinta näyttää oman ja pelikaverin yhteystiedot
+kokonaisina, purettuina JSON-kuvauksina. Valinta on oletuksena pois päältä.
 
 Yhteys kulkee suoraan selainten välillä WebRTC:llä. Ilman yhteyspalveluja se toimii
 yleensä samassa lähiverkossa. Eri verkoissa voi kokeilla valinnaista **julkista
