@@ -44,8 +44,10 @@ function proximityColor(score) {
 }
 
 class ArticleGuessGame {
-  constructor(vectors) {
+  constructor(vectors, inflections = null) {
     this.vectors = vectors;
+    this.inflections = inflections;
+    this.inflectionStatus = document.getElementById("inflection-status");
     this.title = document.getElementById("article-title");
     this.body = document.getElementById("article-body");
     this.form = document.getElementById("guess-form");
@@ -70,6 +72,9 @@ class ArticleGuessGame {
     this.hideTooltip();
     this.clearFireworks();
     this.revision += 1;
+    this.inflections?.clear();
+    this.inflectionsLoading = false;
+    this.inflectionStatus.textContent = "";
     this.words = new Map();
     this.titleWords = new Set();
     this.titleSolved = false;
@@ -105,6 +110,23 @@ class ArticleGuessGame {
     this.form.hidden = false;
     this.setBusy(false);
     this.updateProgress();
+    if (language === "fi" && this.inflections) void this.buildFinnishInflections();
+  }
+
+  async buildFinnishInflections() {
+    const revision = this.revision;
+    this.inflectionsLoading = true;
+    this.inflectionStatus.textContent = "Valmistellaan suomen taivutusmuotoja… Voit jo arvata tarkkoja kirjoitusasuja.";
+    try {
+      await this.inflections.build([...this.words.keys()]);
+      if (revision !== this.revision) return;
+      this.inflectionStatus.textContent = "Suomen taivutusmuodot valmiina. Voit arvata sanan perusmuodon.";
+    } catch (error) {
+      if (revision !== this.revision || error.name === "AbortError") return;
+      this.inflectionStatus.textContent = "Suomen taivutusmuotoja ei voitu ladata. Voit edelleen arvata sanojen tarkkoja kirjoitusasuja.";
+    } finally {
+      if (revision === this.revision) this.inflectionsLoading = false;
+    }
   }
 
   render(element, text) {
@@ -343,16 +365,21 @@ class ArticleGuessGame {
         : "Syötä yksi sana englanniksi.";
       return;
     }
-    const matches = [...guessForms(guess, this.language)].map((form) => this.words.get(form)).filter(Boolean);
+    const forms = this.language === "fi" && this.inflections
+      ? this.inflections.matchingForms(guess)
+      : guessForms(guess, this.language);
+    const matches = [...forms].map((form) => this.words.get(form)).filter(Boolean);
     const matchCount = matches.reduce((count, entry) => count + entry.occurrences.length, 0);
-    if (this.guesses.has(guess) && !this.vectors.info) {
+    if (this.guesses.has(guess) && !this.vectors.info && matches.every((entry) => entry.revealed)) {
       this.showHints([], guess);
       this.showRecentGuess(guess, matchCount);
       this.feedback.textContent = `Olet jo arvannut sanan ”${guess}”.`;
       return;
     }
     if (matches.length === 0 && !this.vectors.info) {
-      this.feedback.textContent = "Lähisanojen haku ei ole vielä käytettävissä. Voit arvata tarkkoja sanoja jo nyt.";
+      this.feedback.textContent = this.inflectionsLoading
+        ? "Taivutusmuotoja valmistellaan. Voit arvata tarkkoja sanoja jo nyt ja kokeilla perusmuotoa uudelleen hetken kuluttua."
+        : "Lähisanojen haku ei ole vielä käytettävissä. Voit arvata tarkkoja sanoja jo nyt.";
       return;
     }
 

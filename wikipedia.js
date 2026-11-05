@@ -6,7 +6,7 @@ const errorMessage = document.getElementById("error");
 const article = document.getElementById("article");
 const articleSource = document.getElementById("article-source");
 const vectorStatus = document.getElementById("vector-status");
-const articleGame = new ArticleGuessGame(articleVectors);
+const articleGame = new ArticleGuessGame(articleVectors, finnishInflections);
 
 async function buildArticleVectors(title, body, language) {
   try {
@@ -104,7 +104,7 @@ async function loadRandomArticle() {
   randomButton.disabled = true;
   sourceSelect.disabled = true;
   guessHint.textContent = source.language === "fi"
-    ? "Arvaa peitetyn artikkelin sanoja suomeksi. Arvaa sana tekstissä esiintyvässä muodossa. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä."
+    ? "Arvaa peitetyn artikkelin sanoja suomeksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä."
     : "Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.";
   document.getElementById("guess-input").lang = source.language;
   articleGame.reset();
