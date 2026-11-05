@@ -48,9 +48,10 @@ Tarvitset Dockerin ja Docker Composen. Suorita projektin juurihakemistossa:
 docker compose -f tests/compose.yaml run --build --rm playwright
 ```
 
-Container käynnistää paikallisen palvelimen ja ajaa yhden Playwright-testin
-headless-Firefoxilla. Testi tarkistaa sivun avautumisen sekä vaihdon yksinpelistä
-kaksinpeliin ja takaisin. Virheellinen pelitunniste ohittaa Wikipedia-haun,
+Container käynnistää paikallisen palvelimen ja ajaa Playwright-testit
+headless-Firefoxilla. Testit tarkistavat sivun avautumisen, pelimuodon vaihtamisen,
+kutsujan yhteyspaneelin mobiiliasettelun sekä käsin liittymisen virhetilan.
+Virheellinen pelitunniste ohittaa Wikipedia-haun,
 joten testi ei tarvitse Wikipediaa tai kielimalleja. Containerin verkkoyhteys on
 testin aikana pois käytöstä. Ensimmäinen koonti tarvitsee internetyhteyden imagen
 ja npm-pakettien lataamiseen. Komennon paluuarvo kertoo testin tuloksen.
@@ -62,29 +63,44 @@ Työnkulku on tiedostossa [.github/workflows/playwright.yaml](.github/workflows/
 
 ## Moninpeli
 
-Kaksi pelaajaa voi ratkaista samaa artikkelia yhdessä ilman peli- tai
+Useampi pelaaja voi ratkaista samaa artikkelia yhdessä ilman peli- tai
 signalointipalvelinta. Oletuksena valittuna on **Yksinpeli**. Kutsuja valitsee
-**Kaksinpeli samassa lähiverkossa**.
+**Moninpeli samassa lähiverkossa**.
 
 1. Kutsuja painaa **Luo kutsu** tai aloittaa uuden pelin moninpelin ollessa
    päällä ja kopioi syntyvän **kutsulinkin** pelikaverille.
 2. Pelikaveri avaa linkin. Moninpeli käynnistyy ja hyväksyy kutsun
    automaattisesti. Pelikaveri kopioi syntyvän vastauksensa takaisin kutsujalle.
-3. Kutsuja liittää vastauksen kenttään **Pelikaverin yhteystieto** ja painaa
+3. Kutsuja liittää vastauksen kenttään **Liitä kaverin vastaus** ja painaa
    **Hyväksy vastaus**.
 
-Yhteyden avauduttua molemmat näkevät kutsujan artikkelin, aiemmat arvaukset,
-paljastukset ja lähisanavihjeet. Kumpikin voi arvata; kutsuja valitsee uuden pelin
-ja kielen. Valitsemalla **Yksinpeli** voit jatkaa yksin. Sivun lataaminen
-uudelleen katkaisee yhteyden, ja uudelleen yhdistäminen vaatii uuden kättelyn.
+Kutsujan paneelissa kutsulinkki ja vastaus ovat rinnakkain, mobiilissa allekkain.
+**Aloita alusta** peruu keskeneräisen kutsun. Kutsun voi liittää myös käsin
+valitsemalla **Saitko kutsun? Liity kaverin peliin**.
+
+Yhteyden avauduttua **Yhteys muodostettu** -palkki näyttää pelaajamäärän.
+Kaikki näkevät kutsujan artikkelin, aiemmat arvaukset, paljastukset ja
+lähisanavihjeet. Kaikki voivat arvata; kutsuja valitsee uuden pelin ja kielen.
+Kutsutun yhteystietokentät piilotetaan, ja käytetyt yhteystiedot tyhjennetään.
+
+Kutsuja voi avata **Kutsu lisää pelaajia** -osion ja painaa **Luo uusi kutsu**.
+Jokaiselle uudelle pelaajalle luodaan oma kutsu, jonka vastaus hyväksytään kuten
+ensimmäisen pelaajan. **Peru kutsu** peruu vain keskeneräisen kutsun.
+Uuden pelaajan kutsuminen tai yhden pelaajan poistuminen ei katkaise muiden
+yhteyksiä. Kutsujan **Katkaise yhteydet** sulkee kaikki hänen yhteytensä;
+kutsutun **Poistu moninpelistä** sulkee vain hänen oman yhteytensä.
+
+Valitsemalla **Yksinpeli** voit jatkaa yksin. Sivun lataaminen uudelleen
+katkaisee kyseisen selaimen yhteydet, ja uudelleen yhdistäminen vaatii uuden kättelyn.
 Kutsulinkki toimii vain niin kauan kuin kutsujan sivu ja kutsu ovat avoinna.
 Linkin osoitteen pitää olla myös pelikaverin saavutettavissa.
 
 Kutsun voi edelleen liittää ja hyväksyä käsin. Kutsulinkin yhteystiedot
 kulkevat osoitteen #join=-osassa. Selain purkaa ne häviöttömästi ennen
 yhteyden muodostamista. Pelin tunniste ja sivun nykyinen polku säilyvät linkissä.
-Moninpelin **payload debug** -valinta näyttää oman ja pelikaverin yhteystiedot
-kokonaisina, purettuina JSON-kuvauksina. Valinta on oletuksena pois päältä.
+**Yhteyden tekniset tiedot** -osion **payload debug** -valinta näyttää oman ja pelikaverin yhteystiedot
+kokonaisina, purettuina JSON-kuvauksina yhteyden muodostamisen aikana.
+Valinta on oletuksena pois päältä, ja se nollataan yhteyden avauduttua.
 
 Yhteys kulkee suoraan selainten välillä WebRTC:llä ilman yhteys- tai
 välityspalveluja ja toimii yleensä samassa lähiverkossa. Osa palomuureista ja

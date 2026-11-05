@@ -47,15 +47,61 @@ button:disabled { opacity: .5; cursor: wait; }
 .game-mode-options input:checked + span { background: var(--ink); color: white; }
 .game-mode-options input:focus-visible + span { position: relative; z-index: 1; outline: 2px solid #66754e; outline-offset: 3px; }
 .multiplayer input[type="checkbox"] { width: 16px; height: 16px; margin: 0; accent-color: #62694e; }
-#multiplayer-panel { margin-top: 10px; padding: 16px; border: 1px solid var(--rule); border-radius: 7px; }
-#multiplayer-panel > p:first-child { margin-top: 0; }
-.multiplayer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+#multiplayer-panel { margin-top: 10px; }
+.multiplayer-connected { padding: 13px 15px; border: 1px solid #d4ddca; border-radius: 5px; background: #edf1e7; }
+.multiplayer-connected-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 5px 16px; }
+.multiplayer-connected-heading strong { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.multiplayer-connected-heading strong::before { content: ""; width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: #587747; }
+#multiplayer-player-count { color: #59684f; font-size: 11px; font-variant-numeric: tabular-nums; }
+#multiplayer-connected-note { margin: 3px 0 0 14px; color: #59684f; font-size: 11px; }
+#multiplayer-invitations { margin: 0; }
+#multiplayer-invitations > summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; list-style: none; cursor: pointer; }
+#multiplayer-invitations > summary::-webkit-details-marker { display: none; }
+#multiplayer-invitations > summary::after { content: "+"; color: #62694e; font-size: 18px; line-height: 1; }
+#multiplayer-invitations[open] > summary::after { content: "−"; }
+.multiplayer-invitation-card { border: 1px solid #ced1be; border-radius: 7px; overflow: hidden; }
+.multiplayer-invitation-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 18px 20px 16px; border-bottom: 1px solid var(--rule); background: #f3f3eb; }
+.multiplayer-invitation-heading h3 { margin: 0 0 5px; font: 24px/1.2 Georgia, serif; letter-spacing: -.025em; }
+.multiplayer-invitation-heading p { margin: 0; color: var(--muted); font-size: 11px; }
+.multiplayer-network { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; padding-top: 4px; color: var(--muted); font-size: 10px; }
+.multiplayer-network svg { width: 14px; height: 14px; }
+.multiplayer-invitation-body { padding: 18px 20px 15px; }
+.multiplayer-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.multiplayer-columns > div { min-width: 0; }
+.multiplayer-columns > div + div { padding-left: 24px; border-left: 1px solid var(--rule); }
+.multiplayer .multiplayer-columns .multiplayer-step { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 12px; }
+.multiplayer-step strong { font-weight: 600; }
+.multiplayer-step-number { display: grid; place-items: center; width: 22px; height: 22px; flex-shrink: 0; border: 1px solid #b8bda6; border-radius: 50%; color: #62694e; font-size: 10px; font-weight: 600; }
+.multiplayer-step-description { margin: 0 0 13px; font-size: 11px; color: var(--muted); }
+.multiplayer .multiplayer-invite-link { display: block; width: 100%; min-width: 0; height: 38px; margin: 0 0 8px; padding: 9px 10px; border: 1px solid var(--rule); border-radius: 4px; background: #f8f8f2; color: #737967; font: 10px/1.5 ui-monospace, monospace; text-overflow: ellipsis; }
+.multiplayer .multiplayer-columns button { width: 100%; min-height: 38px; padding: 8px 10px; font-size: 11px; font-weight: 550; }
+#multiplayer-copy, #multiplayer-accept { display: flex; align-items: center; justify-content: center; gap: 9px; }
+#multiplayer-copy svg { width: 15px; height: 15px; flex-shrink: 0; }
+.multiplayer #multiplayer-remote { min-height: 46px; height: 46px; margin: 0 0 8px; padding: 10px 11px; font: 11px/1.5 system-ui, sans-serif; }
+#multiplayer-panel[data-role="guest"] .multiplayer-columns, #multiplayer-panel[data-role="joining"] .multiplayer-columns { grid-template-columns: minmax(0, 1fr); }
+#multiplayer-panel[data-role="joining"] #multiplayer-remote-panel { padding: 0; border: 0; }
+#multiplayer-panel[data-role="joining"] .multiplayer-step-number { display: none; }
+.multiplayer-invitation-footer { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.multiplayer .multiplayer-text-button { min-height: 28px; padding: 3px 0; border: 0; border-radius: 0; background: transparent; color: var(--muted); font-size: 11px; font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.multiplayer .multiplayer-text-button:hover { color: var(--ink); }
+#multiplayer-cancel-invite { flex-shrink: 0; }
+.multiplayer-extra-controls { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 5px 15px; padding: 8px 0 0; }
+.multiplayer-technical { min-width: 0; max-width: 100%; color: var(--muted); font-size: 10px; }
+.multiplayer-technical > summary { padding: 5px 0; cursor: pointer; }
+.multiplayer-technical[open] { flex: 1 0 100%; }
+#multiplayer-panel.is-connected #multiplayer-invitations { padding-bottom: 0; border-bottom: 1px solid var(--rule); }
+#multiplayer-panel.is-connected .multiplayer-invitation-content { padding-bottom: 12px; }
 .multiplayer button { padding: 7px 11px; font-size: 12px; }
 .multiplayer .secondary { background: transparent; color: var(--ink); border-color: var(--rule); }
 .multiplayer .secondary:hover { background: #efefe6; }
 .multiplayer label:not(.multiplayer-toggle) { display: block; margin-top: 12px; }
 .multiplayer textarea { display: block; width: 100%; min-height: 72px; margin-top: 5px; padding: 8px; border: 1px solid var(--rule); border-radius: 4px; font: 12px/1.4 monospace; background: white; color: var(--ink); resize: vertical; overflow-wrap: anywhere; }
-#multiplayer-status { margin-bottom: 0; color: var(--muted); }
+#multiplayer-status { margin: 0; color: var(--muted); font-size: 11px; }
+.multiplayer-invitation-footer #multiplayer-status::before { content: ""; display: inline-block; width: 6px; height: 6px; margin: 0 8px 1px 0; border-radius: 50%; background: #b18842; }
+#multiplayer-session-status:not(:empty) { margin-top: 10px; }
+#multiplayer-status:empty { display: none; }
+#multiplayer-restart.multiplayer-disconnect { margin-top: 10px; padding: 3px 0; border: 0; border-radius: 0; background: transparent; color: var(--muted); font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+#multiplayer-restart.multiplayer-disconnect:hover { color: var(--ink); }
 #multiplayer-error { color: #a63228; margin-bottom: 0; }
 #multiplayer-error:empty { display: none; }
 #multiplayer-debug-panel pre { max-height: 20rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 8px; border: 1px solid var(--rule); border-radius: 4px; background: white; font: 12px/1.4 monospace; }
@@ -114,6 +160,16 @@ article > .eyebrow { margin-bottom: 16px; }
 a { color: inherit; text-decoration-color: #b0b39e; text-underline-offset: 3px; }
 a:hover { color: var(--ink); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (max-width: 600px) {
+  .multiplayer-invitation-heading { flex-direction: column; gap: 9px; padding: 16px; }
+  .multiplayer-network { padding-top: 0; }
+  .multiplayer-invitation-body { padding: 16px; }
+  .multiplayer-columns { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .multiplayer-columns > div + div { padding: 18px 0 0; border-left: 0; border-top: 1px solid var(--rule); }
+  .multiplayer-invitation-footer { align-items: flex-start; gap: 10px; }
+  .multiplayer-invitation-footer #multiplayer-status { font-size: 10px; }
+  #multiplayer-cancel-invite { min-height: 0; font-size: 10px; }
+}
 @media (max-width: 480px) {
   body { padding: 22px 20px 40px; }
   .masthead { gap: 12px; padding-bottom: 17px; }

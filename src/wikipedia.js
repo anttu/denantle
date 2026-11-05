@@ -258,7 +258,7 @@ async function loadArticle(gameId = null, { invite = false } = {}) {
     displayArticle({ title: page.title, body, sourceKey,
       version: `${sourceKey}-${page.revid}`, session: crypto.getRandomValues(new Uint32Array(4)).join("-") });
     multiplayer.shareGame();
-    if (invite && multiplayer.enabled.checked && !multiplayer.peer && !multiplayer.negotiating) {
+    if (invite && multiplayer.enabled.checked && !multiplayer.connected && !multiplayer.peer && !multiplayer.negotiating) {
       void multiplayer.negotiate(true);
     }
     void buildArticleVectors(page.title, body, source.language);

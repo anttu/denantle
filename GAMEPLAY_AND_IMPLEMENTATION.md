@@ -53,11 +53,20 @@ article text. Guess and revealed-word counts sit above the input, with a progres
 bar tracking revealed occurrences. The **?** button opens the playing instructions.
 
 The game-mode radio buttons default to **Yksinpeli**. Selecting
-**Kaksinpeli samassa lähiverkossa** opens a two-player cooperative mode. The
+**Moninpeli samassa lähiverkossa** opens cooperative multiplayer. The
 inviter creates an offer and shares an invitation URL. Opening the link enables
 multiplayer and accepts the offer; the guest returns an answer for the inviter
-to paste. Starting a new game with multiplayer enabled also creates an invitation.
+to paste. Starting a new game with multiplayer enabled creates an invitation
+when there are no established connections.
 Manual pasting of invitations and answers remains available.
+The host's invitation card places the invitation link and answer side by side,
+stacking them on mobile. A manual-join toggle opens an offer input without
+starting a host invitation. The answer action stays disabled until an invitation
+exists and a reply has been entered. Technical payload controls are collapsed.
+Once connected, a compact status strip shows the player count. Guest signaling
+controls disappear, and used payloads are cleared. The host's **Kutsu lisää
+pelaajia** disclosure creates a separate invitation for each additional guest.
+The host can cancel a pending invitation without closing established channels.
 `src/signaling-payload.js` stores invitations in the URL fragment, preserving the
 current path and query. Its D2 binary profile reconstructs matching single-host
 offers exactly; the D1 dictionary format preserves all other descriptions,
@@ -67,7 +76,7 @@ removes the invitation fragment before starting the handshake. Invitations
 remain tied to the inviter's open peer connection.
 The optional **payload debug** checkbox reveals the decoded local and remote
 JSON descriptions, including every SDP field restored by the codec. It is off by
-default; hiding it or disconnecting clears the displayed payloads.
+default; hiding it, connecting or disconnecting clears the displayed payloads.
 `src/multiplayer.js` uses the browser's native
 `RTCPeerConnection` and an ordered, reliable data channel. Both descriptions wait
 for ICE gathering to complete, so candidates travel in the copied text and no
@@ -77,17 +86,23 @@ between peers. Expect local-network or directly reachable peers; restrictive
 networks may prevent a connection.
 This follows the native [WebRTC offer/answer and ICE flow](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Connectivity).
 
-The inviter's browser owns the shared article and processes guesses from both
-players in order. The guest receives the exact article text and a snapshot of
+The inviter's browser owns the shared article and one peer connection per guest.
+It processes all players' guesses in order and broadcasts state to connected
+guests. Request acknowledgements go only to the requesting guest, since each
+guest has its own request counter. Player counts are updated when guests join
+or leave. Each guest receives the exact article text and a snapshot of
 reveals, hint scores, guess history and counts, including progress made before
 joining. Only the inviter builds semantic vectors for the shared game. Messages
 are bounded and split into small chunks with send-buffer backpressure to support
 large articles. A new article has a fresh session ID, so delayed guesses from an
 older board cannot affect it. Joining cancels any pending local article request;
 only the inviter can select an article or change the language during a session.
-Disabling multiplayer or losing the connection restores solo controls and local
-semantic indexing while keeping the current board when available. Reloading a
-page closes the connection; reconnection requires a fresh offer/answer exchange.
+Disabling multiplayer or losing the host connection restores a guest's solo
+controls and local semantic indexing while keeping the current board when
+available. A guest disconnect or invalid message closes only that guest's
+connection; other guests and pending invitations remain unaffected. The host
+can disconnect everyone explicitly. Reloading a page closes that browser's
+connections; reconnection requires a fresh offer/answer exchange.
 
 Enter one word in the article's language in **Arvaa sana** and press Enter or
 **Arvaa**. A base-form guess reveals that word and its inflected forms, preserving the original spelling
