@@ -251,6 +251,10 @@ class ArticleGuessGame {
       { word: guess, matches, nearMatches },
       ...this.recentGuesses.filter(({ word }) => word !== guess),
     ].slice(0, 10);
+    this.renderRecentGuesses();
+  }
+
+  renderRecentGuesses() {
     const list = document.createElement("ol");
     for (const { word, matches, nearMatches } of this.recentGuesses) {
       const chip = document.createElement("li");
@@ -264,6 +268,59 @@ class ArticleGuessGame {
     }
     this.recent.replaceChildren(document.createTextNode("Viimeisimmät arvaukset:"), list);
     this.recent.hidden = false;
+  }
+
+  exportSharedState() {
+    return {
+      guesses: [...this.guesses],
+      recent: this.recentGuesses,
+      latestGuess: this.latestGuess,
+      words: [...this.words].map(([word, entry]) => ({
+        word, revealed: entry.revealed, score: entry.score,
+        guess: entry.guess, latestScore: entry.latestScore,
+      })),
+    };
+  }
+
+  applySharedState(state) {
+    const validWord = (word) => typeof word === "string" && word.length <= 200 && GUESS_PATTERN.test(word);
+    const validScore = (score) => Number.isFinite(score) && score >= -1 && score <= 1;
+    if (!state || !Array.isArray(state.guesses) || state.guesses.length > 10000
+      || !state.guesses.every((item) => Array.isArray(item) && validWord(item[0]) && typeof item[1] === "boolean")
+      || !Array.isArray(state.recent) || state.recent.length > 10
+      || !state.recent.every((item) => item && validWord(item.word)
+        && Number.isSafeInteger(item.matches) && item.matches >= 0
+        && Number.isSafeInteger(item.nearMatches) && item.nearMatches >= 0)
+      || !(state.latestGuess === null || validWord(state.latestGuess))
+      || !Array.isArray(state.words) || state.words.length !== this.words.size
+      || new Set(state.words.map((item) => item?.word)).size !== this.words.size
+      || !state.words.every((item) => item && this.words.has(item.word)
+        && typeof item.revealed === "boolean" && validScore(item.score)
+        && (item.latestScore === null || validScore(item.latestScore))
+        && (item.guess === null || validWord(item.guess)))) {
+      throw new Error("Toisen pelaajan pelitiedot eivät kelpaa.");
+    }
+    this.guesses = new Map(state.guesses);
+    this.recentGuesses = state.recent;
+    this.latestGuess = state.latestGuess;
+    for (const item of state.words) {
+      const entry = this.words.get(item.word);
+      if (item.revealed && !entry.revealed) this.reveal(entry);
+      entry.score = item.score;
+      entry.guess = item.guess;
+      entry.latestScore = item.latestScore;
+      if (entry.revealed) continue;
+      for (const { node } of entry.occurrences) {
+        node.textContent = item.guess || "";
+        node.style.color = item.guess ? proximityColor(item.score) : "";
+        node.setAttribute("aria-label", this.wordDetails(node));
+      }
+    }
+    this.renderRecentGuesses();
+    this.recent.hidden = state.recent.length === 0;
+    this.updateProgress();
+    this.checkTitleCompletion();
+    if (this.tooltipTarget) this.showTooltip(this.tooltipTarget);
   }
 
   setBusy(busy) {
@@ -373,15 +430,16 @@ class ArticleGuessGame {
     return count;
   }
 
-  async submitGuess() {
-    if (!this.active || this.busy) return;
-    const guess = normalizeGuess(this.input.value.trim());
-    if (!GUESS_PATTERN.test(guess)) {
+  async submitGuess(value = this.input.value, { shared = false, focus = true, clearInput = true } = {}) {
+    if (!this.active || this.busy) return false;
+    const guess = normalizeGuess(value.trim());
+    if (guess.length > 200 || !GUESS_PATTERN.test(guess)) {
       this.feedback.textContent = this.language === "fi"
         ? "Syötä yksi sana suomeksi."
         : "Syötä yksi sana englanniksi.";
-      return;
+      return false;
     }
+    if (!shared && this.onGuessRequest) return this.onGuessRequest(guess);
     const forms = this.language === "fi" && this.inflections
       ? this.inflections.matchingForms(guess)
       : guessForms(guess, this.language);
@@ -417,7 +475,8 @@ class ArticleGuessGame {
       this.showRecentGuess(guess, matchCount, nearMatches);
       this.guesses.set(guess, canSearch);
       this.updateProgress();
-      this.input.value = "";
+      if (clearInput) this.input.value = "";
+      return true;
     } catch (error) {
       if (revision !== this.revision || error.name === "AbortError") return;
       if (revealed > 0) {
@@ -425,15 +484,16 @@ class ArticleGuessGame {
         this.showRecentGuess(guess, matchCount);
         this.guesses.set(guess, false);
         this.updateProgress();
-        this.input.value = "";
+        if (clearInput) this.input.value = "";
       }
       this.feedback.textContent = revealed > 0
         ? "Lähisanojen haku epäonnistui."
         : "Lähisanojen haku epäonnistui. Yritä arvausta uudelleen.";
+      return revealed > 0;
     } finally {
       if (revision === this.revision) {
         this.setBusy(false);
-        this.input.focus();
+        if (focus) this.input.focus();
       }
     }
   }

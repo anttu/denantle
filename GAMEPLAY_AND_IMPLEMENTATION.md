@@ -52,6 +52,30 @@ The warm paper layout pairs a compact logo and controls with a serif heading and
 article text. Guess and revealed-word counts sit above the input, with a progress
 bar tracking revealed occurrences. The **?** button opens the playing instructions.
 
+The optional **Moninpeli** checkbox opens a two-player cooperative mode. The
+inviter creates an offer, the guest pastes it and returns an answer, and the
+inviter pastes that answer. `src/multiplayer.js` uses the browser's native
+`RTCPeerConnection` and an ordered, reliable data channel. Both descriptions wait
+for ICE gathering to complete, so candidates travel in the copied text and no
+signaling service is needed. There are no additional packages or application
+servers. No STUN service is used by default. The optional STUN checkbox uses
+`stun:stun.l.google.com:19302` to discover public addresses; game data still travels
+directly between peers. Without STUN, expect local-network or directly reachable
+peers. There is no TURN relay, so restrictive networks may prevent a connection.
+This follows the native [WebRTC offer/answer and ICE flow](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Connectivity).
+
+The inviter's browser owns the shared article and processes guesses from both
+players in order. The guest receives the exact article text and a snapshot of
+reveals, hint scores, guess history and counts, including progress made before
+joining. Only the inviter builds semantic vectors for the shared game. Messages
+are bounded and split into small chunks with send-buffer backpressure to support
+large articles. A new article has a fresh session ID, so delayed guesses from an
+older board cannot affect it. Joining cancels any pending local article request;
+only the inviter can select an article or change the language during a session.
+Disabling multiplayer or losing the connection restores solo controls and local
+semantic indexing while keeping the current board when available. Reloading a
+page closes the connection; reconnection requires a fresh offer/answer exchange.
+
 Enter one word in the article's language in **Arvaa sana** and press Enter or
 **Arvaa**. A base-form guess reveals that word and its inflected forms, preserving the original spelling
 and case: `dog` reveals `dogs`, `child` reveals `children`, and `run` reveals `ran`

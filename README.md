@@ -33,6 +33,29 @@ Sovellus tarvitsee internetyhteyden Wikipedia-artikkelien hakemiseen sekä
 kielimallien ja niiden ajoympäristön ensimmäiseen lataamiseen. Käytä paikallista
 palvelinta, jotta myös sanojen merkityksiä vertaileva toiminto toimii.
 
+## Moninpeli
+
+Kaksi pelaajaa voi ratkaista samaa artikkelia yhdessä ilman peli- tai
+signalointipalvelinta. Kytke **Moninpeli** päälle molemmissa selaimissa.
+
+1. Kutsuja painaa **Luo kutsu** ja kopioi oman yhteystietonsa pelikaverille.
+2. Pelikaveri liittää kutsun kenttään **Pelikaverin yhteystieto**, painaa
+   **Hyväksy kutsu** ja kopioi syntyvän oman vastauksensa takaisin kutsujalle.
+3. Kutsuja liittää vastauksen kenttään **Pelikaverin yhteystieto** ja painaa
+   **Hyväksy vastaus**.
+
+Yhteyden avauduttua molemmat näkevät kutsujan artikkelin, aiemmat arvaukset,
+paljastukset ja lähisanavihjeet. Kumpikin voi arvata; kutsuja valitsee uuden pelin
+ja kielen. Poistamalla moninpelin valinnan voit jatkaa yksin. Sivun lataaminen
+uudelleen katkaisee yhteyden, ja uudelleen yhdistäminen vaatii uuden kättelyn.
+
+Yhteys kulkee suoraan selainten välillä WebRTC:llä. Ilman yhteyspalveluja se toimii
+yleensä samassa lähiverkossa. Eri verkoissa voi kokeilla valinnaista **julkista
+STUN-apua**, joka kysyy julkisen verkko-osoitteen Googlen STUN-palvelulta.
+STUN ei välitä pelitietoja. Osa palomuureista ja NAT-verkoista estää suoran yhteyden
+myös STUN-avulla; peli ei käytä TURN-välityspalvelinta. Vaihda yhteystiedot vain
+pelikaverisi kanssa, sillä ne sisältävät yhteyden muodostamiseen tarvittavat tiedot.
+
 ## Lisätiedot ja lisenssit
 
 Pelin toiminta ja tekninen toteutus on kuvattu tarkemmin dokumentissa

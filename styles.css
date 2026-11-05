@@ -34,6 +34,20 @@ button:disabled { opacity: .5; cursor: wait; }
 #random-article span { display: inline-block; margin-right: 4px; }
 #game-version { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
 #game-version-link { font-variant-numeric: tabular-nums; }
+.multiplayer { margin-top: 14px; font-size: 12px; }
+.multiplayer-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.multiplayer input[type="checkbox"] { width: 16px; height: 16px; margin: 0; accent-color: #62694e; }
+#multiplayer-panel { margin-top: 10px; padding: 16px; border: 1px solid var(--rule); border-radius: 7px; }
+#multiplayer-panel > p:first-child { margin-top: 0; }
+.multiplayer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.multiplayer button { padding: 7px 11px; font-size: 12px; }
+.multiplayer .secondary { background: transparent; color: var(--ink); border-color: var(--rule); }
+.multiplayer .secondary:hover { background: #efefe6; }
+.multiplayer label:not(.multiplayer-toggle) { display: block; margin-top: 12px; }
+.multiplayer textarea { display: block; width: 100%; min-height: 72px; margin-top: 5px; padding: 8px; border: 1px solid var(--rule); border-radius: 4px; font: 12px/1.4 monospace; background: white; color: var(--ink); resize: vertical; overflow-wrap: anywhere; }
+#multiplayer-status { margin-bottom: 0; color: var(--muted); }
+#multiplayer-error { color: #a63228; margin-bottom: 0; }
+#multiplayer-error:empty { display: none; }
 #game-progress { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; color: var(--muted); font-size: 12px; margin: 20px 0 9px; }
 #game-progress:empty { display: none; }
 #game-progress strong { color: var(--ink); font-weight: 600; }
