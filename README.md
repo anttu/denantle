@@ -36,6 +36,11 @@ Matching ignores case, Unicode compatibility forms, and curly apostrophes.
 Punctuation, numbers, spaces, and line breaks remain visible. The browser tab title
 does not reveal the article title.
 
+Revealing every word in the title shows a congratulations message and a short
+fireworks animation, once per article. Semantic hints do not count as solved words.
+The animation respects the browser's reduced-motion preference. You can continue
+guessing body words afterwards; choosing another article clears the celebration.
+
 Once word vectors are ready, guesses also provide semantic hints: a cosine
 similarity of at least `0.6` displays the guessed word on the matching black bars.
 Hint text changes continuously from blue (farther) to red (closer). Each word keeps

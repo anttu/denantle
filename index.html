@@ -33,6 +33,18 @@
     .proximity-chip { display: inline-block; max-width: 100%; padding: 2px 8px; border-radius: 4px; background: #111; color: white; font-weight: 600; overflow-wrap: anywhere; }
     #word-tooltip { position: fixed; z-index: 10; max-width: min(340px, calc(100vw - 16px)); padding: 8px 12px; border: 1px solid #bbb; border-radius: 4px; background: white; color: #202020; box-shadow: 0 2px 8px #0002; font: 14px/1.5 system-ui, sans-serif; white-space: pre-line; overflow-wrap: anywhere; pointer-events: none; }
     #game-progress { margin: 8px 0 0; }
+    #title-celebration { margin: 8px 0 0; color: #176437; font-weight: 600; }
+    .fireworks { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
+    .firework-burst { position: absolute; }
+    .firework-burst span { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; animation: firework-spark 1600ms cubic-bezier(.1, .6, .3, 1) var(--burst-delay) both; }
+    @keyframes firework-spark {
+      from { opacity: 0; transform: translate(0, 0) scale(1); }
+      10%, 60% { opacity: 1; }
+      to { opacity: 0; transform: translate(var(--spark-x), var(--spark-y)) scale(.3); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fireworks { display: none; }
+    }
     :focus-visible { outline: 2px solid #1769d2; outline-offset: 3px; }
     #status { min-height: 1.6em; margin: 12px 0 0; }
     #vector-status { margin: 8px 0 0; }
@@ -70,6 +82,7 @@
       <p id="guess-feedback" role="status"></p>
       <div id="recent-guesses" role="status" hidden></div>
       <p id="game-progress"></p>
+      <p id="title-celebration" role="status" hidden></p>
       <p id="status" role="status"></p>
       <p id="vector-status" role="status"></p>
       <p id="error" role="alert"></p>

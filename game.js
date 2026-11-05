@@ -51,6 +51,7 @@ class ArticleGuessGame {
     this.button = document.getElementById("guess-submit");
     this.feedback = document.getElementById("guess-feedback");
     this.progress = document.getElementById("game-progress");
+    this.celebration = document.getElementById("title-celebration");
     this.recent = document.getElementById("recent-guesses");
     this.tooltip = document.getElementById("word-tooltip");
     this.article = document.getElementById("article");
@@ -65,8 +66,13 @@ class ArticleGuessGame {
 
   reset() {
     this.hideTooltip();
+    this.clearFireworks();
     this.revision += 1;
     this.words = new Map();
+    this.titleWords = new Set();
+    this.titleSolved = false;
+    this.celebration.hidden = true;
+    this.celebration.textContent = "";
     this.nodeDetails = new WeakMap();
     this.latestGuess = null;
     this.recentGuesses = [];
@@ -114,6 +120,7 @@ class ArticleGuessGame {
         this.words.set(word, { occurrences: [], revealed: false, score: -1, guess: null, latestScore: null });
       }
       const entry = this.words.get(word);
+      if (element === this.title) this.titleWords.add(entry);
       const occurrence = { node, original, entry };
       entry.occurrences.push(occurrence);
       this.nodeDetails.set(node, occurrence);
@@ -239,6 +246,49 @@ class ArticleGuessGame {
     this.progress.textContent = `Arvauksia: ${this.guesses.size} · Paljastettuja sanoja: ${this.revealed} / ${this.total}`;
   }
 
+  checkTitleCompletion() {
+    if (this.titleSolved || this.titleWords.size === 0
+      || ![...this.titleWords].every((entry) => entry.revealed)) return;
+    this.titleSolved = true;
+    this.celebration.hidden = false;
+    this.celebration.textContent = "Hienoa! Arvasit koko otsikon oikein!";
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const fireworks = document.createElement("div");
+    fireworks.className = "fireworks";
+    fireworks.setAttribute("aria-hidden", "true");
+    const bursts = [
+      [22, 35, "#df4a17"], [76, 28, "#137dce"], [48, 45, "#ba268c"],
+      [32, 22, "#148754"], [72, 50, "#b07b00"],
+    ];
+    bursts.forEach(([left, top, color], burstIndex) => {
+      const burst = document.createElement("div");
+      burst.className = "firework-burst";
+      burst.style.left = `${left}%`;
+      burst.style.top = `${top}%`;
+      burst.style.color = color;
+      burst.style.setProperty("--burst-delay", `${burstIndex * 280}ms`);
+      for (let index = 0; index < 32; index += 1) {
+        const spark = document.createElement("span");
+        const angle = index * 2 * Math.PI / 32;
+        const distance = 12 + Math.random() * 12;
+        spark.style.setProperty("--spark-x", `${Math.cos(angle) * distance}vmin`);
+        spark.style.setProperty("--spark-y", `${Math.sin(angle) * distance + 6}vmin`);
+        burst.append(spark);
+      }
+      fireworks.append(burst);
+    });
+    document.body.append(fireworks);
+    this.fireworks = fireworks;
+    this.fireworksTimeout = window.setTimeout(() => this.clearFireworks(), 3200);
+  }
+
+  clearFireworks() {
+    window.clearTimeout(this.fireworksTimeout);
+    this.fireworks?.remove();
+    this.fireworks = null;
+  }
+
   reveal(entry) {
     entry.revealed = true;
     for (const { node, original } of entry.occurrences) {
@@ -303,6 +353,7 @@ class ArticleGuessGame {
 
     const revision = this.revision;
     const revealed = matches.reduce((count, entry) => count + (entry.revealed ? 0 : this.reveal(entry)), 0);
+    this.checkTitleCompletion();
     const canSearch = Boolean(this.vectors.info);
     this.setBusy(true);
     this.updateProgress();
