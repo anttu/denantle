@@ -179,6 +179,9 @@ class MultiplayerGame {
     this.sendPanel = document.getElementById("multiplayer-send-panel");
     this.sendTitle = document.getElementById("multiplayer-send-title");
     this.sendDescription = document.getElementById("multiplayer-send-description");
+    this.inviteNote = document.getElementById("multiplayer-invite-note");
+    this.inviteNoteTitle = document.getElementById("multiplayer-invite-note-title");
+    this.inviteNoteDescription = document.getElementById("multiplayer-invite-note-description");
     this.remoteLabel = document.getElementById("multiplayer-remote-label");
     this.remoteDescription = document.getElementById("multiplayer-remote-description");
     this.joinToggle = document.getElementById("multiplayer-join-toggle");
@@ -274,6 +277,17 @@ class MultiplayerGame {
     this.sendDescription.textContent = this.isGuest
       ? "Kopioi vastaus ja lähetä se takaisin kutsujalle."
       : "Kopioi kutsulinkki ja lähetä se pelikaverillesi.";
+    this.sendDescription.hidden = !this.isGuest;
+    this.inviteNote.hidden = this.isGuest || joining;
+    const invitationUsed = connected && !this.peer;
+    this.inviteNoteTitle.textContent = invitationUsed
+      ? "Liittynyt pelaaja käytti oman kutsunsa."
+      : "Kertakäyttöinen linkki yhdelle henkilölle.";
+    this.inviteNoteDescription.textContent = invitationUsed
+      ? "Kutsu seuraava henkilö uudella, kertakäyttöisellä linkillä."
+      : "Tällä linkillä voi liittyä vain yksi henkilö. Luo jokaiselle muulle pelaajalle oma kutsulinkki.";
+    this.local.setAttribute("aria-describedby", this.isGuest
+      ? "multiplayer-status" : "multiplayer-invite-note multiplayer-status");
     this.remoteLabel.textContent = joining ? "Liitä kaverin kutsu" : "Liitä kaverin vastaus";
     this.remoteDescription.textContent = joining
       ? "Liitä koko kutsulinkki tai kaverilta saamasi yhteystieto."

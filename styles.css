@@ -73,6 +73,9 @@ button:disabled { opacity: .5; cursor: wait; }
 .multiplayer-step strong { font-weight: 600; }
 .multiplayer-step-number { display: grid; place-items: center; width: 22px; height: 22px; flex-shrink: 0; border: 1px solid #b8bda6; border-radius: 50%; color: #62694e; font-size: 10px; font-weight: 600; }
 .multiplayer-step-description { margin: 0 0 13px; font-size: 11px; color: var(--muted); }
+.multiplayer-invite-note { margin: 0 0 13px; padding-left: 10px; border-left: 2px solid #8e9975; font-size: 11px; }
+.multiplayer-invite-note strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.multiplayer-invite-note p { margin: 0; color: var(--muted); }
 .multiplayer .multiplayer-invite-link { display: block; width: 100%; min-width: 0; height: 38px; margin: 0 0 8px; padding: 9px 10px; border: 1px solid var(--rule); border-radius: 4px; background: #f8f8f2; color: #737967; font: 10px/1.5 ui-monospace, monospace; text-overflow: ellipsis; }
 .multiplayer .multiplayer-columns button { width: 100%; min-height: 38px; padding: 8px 10px; font-size: 11px; font-weight: 550; }
 #multiplayer-copy, #multiplayer-accept { display: flex; align-items: center; justify-content: center; gap: 9px; }

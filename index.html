@@ -79,11 +79,15 @@
                   <div class="multiplayer-columns">
                     <div id="multiplayer-send-panel">
                       <p class="multiplayer-step"><span class="multiplayer-step-number" aria-hidden="true">1</span><strong id="multiplayer-send-title">Lähetä kutsu</strong></p>
-                      <p id="multiplayer-send-description" class="multiplayer-step-description">Kopioi kutsulinkki ja lähetä se pelikaverillesi.</p>
+                      <p id="multiplayer-send-description" class="multiplayer-step-description" hidden>Kopioi kutsulinkki ja lähetä se pelikaverillesi.</p>
+                      <div id="multiplayer-invite-note" class="multiplayer-invite-note">
+                        <strong id="multiplayer-invite-note-title">Kertakäyttöinen linkki yhdelle henkilölle.</strong>
+                        <p id="multiplayer-invite-note-description">Tällä linkillä voi liittyä vain yksi henkilö. Luo jokaiselle muulle pelaajalle oma kutsulinkki.</p>
+                      </div>
                       <button id="multiplayer-create" type="button">Luo kutsu</button>
                       <div id="multiplayer-local-panel" hidden>
                         <label id="multiplayer-local-label" class="visually-hidden" for="multiplayer-local">Kutsulinkki</label>
-                        <input id="multiplayer-local" class="multiplayer-invite-link" type="text" readonly spellcheck="false" aria-describedby="multiplayer-status">
+                        <input id="multiplayer-local" class="multiplayer-invite-link" type="text" readonly spellcheck="false" aria-describedby="multiplayer-invite-note multiplayer-status">
                         <button id="multiplayer-copy" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span id="multiplayer-copy-label">Kopioi kutsulinkki</span></button>
                       </div>
                     </div>
