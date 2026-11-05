@@ -53,10 +53,13 @@ its proximity to the displayed hint and latest guess when the similarity is at
 least `50 %`. Lower and unavailable scores are omitted from these details,
 including screen-reader labels. Click again, click elsewhere, or press Escape to
 close the details. Answers are not included in these details.
-The ten most recent accepted guesses are also shown below the input as plain words,
-newest first, without proximity colors or scores. Repeating a guess moves it to the
-front and refreshes its hints without increasing the guess count. Choosing another
-article clears the history.
+The ten most recent accepted guesses are also shown below the input, newest first.
+Each guess shows its exact matching occurrence count, including inflected forms
+and already revealed words. If there are no exact matches, it shows the number of
+still-hidden occurrences with a similarity of at least `0.6`, including those that
+already have a closer hint; if neither kind matches, it shows zero matches.
+Repeating a guess moves it to the front and refreshes its counts and hints without
+increasing the guess count. Choosing another article clears the history.
 
 Articles are chosen from the groups listed in
 `categories.js`, including their subcategories. The search starts from Everyday

@@ -208,16 +208,20 @@ class ArticleGuessGame {
     this.tooltip.hidden = true;
   }
 
-  showRecentGuess(guess) {
+  showRecentGuess(guess, matches, nearMatches = 0) {
     this.recentGuesses = [
-      guess,
-      ...this.recentGuesses.filter((word) => word !== guess),
+      { word: guess, matches, nearMatches },
+      ...this.recentGuesses.filter(({ word }) => word !== guess),
     ].slice(0, 10);
     const list = document.createElement("ol");
-    for (const word of this.recentGuesses) {
+    for (const { word, matches, nearMatches } of this.recentGuesses) {
       const chip = document.createElement("li");
       chip.className = "proximity-chip";
-      chip.textContent = word;
+      const count = matches || nearMatches;
+      const label = matches === 0 && nearMatches > 0
+        ? (count === 1 ? "lähiosuma" : "lähiosumaa")
+        : (count === 1 ? "osuma" : "osumaa");
+      chip.textContent = `${word} · ${count} ${label}`;
       list.append(chip);
     }
     this.recent.replaceChildren(document.createTextNode("Viimeisimmät arvaukset:"), list);
@@ -259,14 +263,15 @@ class ArticleGuessGame {
       const entry = this.words.get(word);
       if (!entry) continue;
       entry.latestScore = score;
-      if (entry.revealed || score < SIMILARITY_THRESHOLD || score <= entry.score) continue;
+      if (entry.revealed || score < SIMILARITY_THRESHOLD) continue;
+      count += entry.occurrences.length;
+      if (score <= entry.score) continue;
       entry.score = score;
       entry.guess = guess;
       for (const { node } of entry.occurrences) {
         node.textContent = guess;
         node.style.color = proximityColor(score);
       }
-      count += entry.occurrences.length;
     }
     for (const entry of this.words.values()) {
       if (entry.revealed) continue;
@@ -283,13 +288,14 @@ class ArticleGuessGame {
       this.feedback.textContent = "Syötä yksi sana englanniksi.";
       return;
     }
+    const matches = [...guessForms(guess)].map((form) => this.words.get(form)).filter(Boolean);
+    const matchCount = matches.reduce((count, entry) => count + entry.occurrences.length, 0);
     if (this.guesses.has(guess) && !this.vectors.info) {
       this.showHints([], guess);
-      this.showRecentGuess(guess);
+      this.showRecentGuess(guess, matchCount);
       this.feedback.textContent = `Olet jo arvannut sanan ”${guess}”.`;
       return;
     }
-    const matches = [...guessForms(guess)].map((form) => this.words.get(form)).filter(Boolean);
     if (matches.length === 0 && !this.vectors.info) {
       this.feedback.textContent = "Lähisanojen haku ei ole vielä käytettävissä. Voit arvata tarkkoja sanoja jo nyt.";
       return;
@@ -307,8 +313,8 @@ class ArticleGuessGame {
         ? await this.vectors.search(guess, this.vectors.info.wordCount)
         : [];
       if (revision !== this.revision) return;
-      this.showHints(results, guess);
-      this.showRecentGuess(guess);
+      const nearMatches = this.showHints(results, guess);
+      this.showRecentGuess(guess, matchCount, nearMatches);
       this.guesses.set(guess, canSearch);
       this.updateProgress();
       this.input.value = "";
@@ -316,7 +322,7 @@ class ArticleGuessGame {
       if (revision !== this.revision || error.name === "AbortError") return;
       if (revealed > 0) {
         this.showHints([], guess);
-        this.showRecentGuess(guess);
+        this.showRecentGuess(guess, matchCount);
         this.guesses.set(guess, false);
         this.updateProgress();
         this.input.value = "";
