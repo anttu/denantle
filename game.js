@@ -1,9 +1,39 @@
 // Cosine similarity between the model's normalized word vectors.
 const SIMILARITY_THRESHOLD = 0.6;
 const DETAIL_SIMILARITY_THRESHOLD = 0.5;
+const GUESS_PATTERN = /^\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*$/u;
 
 function normalizeGuess(text) {
   return text.normalize("NFKC").replaceAll("’", "'").toLowerCase();
+}
+
+function guessForms(guess) {
+  const forms = new Set([guess]);
+  const add = (form) => {
+    const word = normalizeGuess(form);
+    if (GUESS_PATTERN.test(word)) forms.add(word);
+  };
+  const word = nlp(guess);
+  if (word.has("#Verb") || (word.has("#Noun") && !word.has("#Pronoun"))) {
+    // A word can be both a noun and a verb, even if the tagger picks only one.
+    const plurals = word.clone().tag("Noun").nouns().toPlural().out("array");
+    for (const noun of [guess, ...plurals]) {
+      add(noun);
+      add(`${noun}'s`);
+    }
+  }
+  for (const conjugation of word.verbs().conjugate()) {
+    if (normalizeGuess(conjugation.Infinitive) !== guess) continue;
+    for (const form of Object.values(conjugation)) add(form);
+  }
+  if (guess === "be") {
+    for (const form of ["am", "are", "were"]) add(form);
+  }
+  for (const adjective of word.adjectives().conjugate()) {
+    add(adjective.Comparative);
+    add(adjective.Superlative);
+  }
+  return forms;
 }
 
 function proximityColor(score) {
@@ -249,7 +279,7 @@ class ArticleGuessGame {
   async submitGuess() {
     if (!this.active || this.busy) return;
     const guess = normalizeGuess(this.input.value.trim());
-    if (!/^\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*$/u.test(guess)) {
+    if (!GUESS_PATTERN.test(guess)) {
       this.feedback.textContent = "Syötä yksi sana englanniksi.";
       return;
     }
@@ -259,14 +289,14 @@ class ArticleGuessGame {
       this.feedback.textContent = `Olet jo arvannut sanan ”${guess}”.`;
       return;
     }
-    const exact = this.words.get(guess);
-    if (!exact && !this.vectors.info) {
+    const matches = [...guessForms(guess)].map((form) => this.words.get(form)).filter(Boolean);
+    if (matches.length === 0 && !this.vectors.info) {
       this.feedback.textContent = "Lähisanojen haku ei ole vielä käytettävissä. Voit arvata tarkkoja sanoja jo nyt.";
       return;
     }
 
     const revision = this.revision;
-    const revealed = exact && !exact.revealed ? this.reveal(exact) : 0;
+    const revealed = matches.reduce((count, entry) => count + (entry.revealed ? 0 : this.reveal(entry)), 0);
     const canSearch = Boolean(this.vectors.info);
     this.setBusy(true);
     this.updateProgress();
