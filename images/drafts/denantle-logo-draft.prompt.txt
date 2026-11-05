@@ -1,0 +1,11 @@
+Generated with the built-in ImageGen tool.
+Reference: images/blanks/20261105_102132.jpg
+
+Use case: logo-brand
+Asset type: standalone draft logo PNG, not yet used in the project.
+Input image 1: reference photograph of the user's own black marker symbol on pink paper.
+Primary request: recreate only the black marker symbol as a clean, faithful logo, rotated exactly 270 degrees clockwise from the reference photograph (equivalently 90 degrees counterclockwise). This makes the originally vertical arrangement horizontal.
+Subject and geometry: exactly seven separate solid black bars in two horizontal rows. The TOP row has three bars, left to right: long dash, short dash, long dash. The BOTTOM row has four bars, left to right: short dash, long dash, medium-short dash, medium-short dash. Preserve the relative lengths, offsets, and staggered arrangement of the photographed sketch after that rotation; do not align the bars into equal columns. Both rows start near the same left edge; the last bottom bar extends a little farther right than the last top bar. All bars have the same stroke thickness. Keep the row spacing close to the sketch.
+Style: flat, minimal, crisp black filled shapes with slightly softened corners, clean edges; subtly retain the character of the sketch without paper grain.
+Composition: single wide horizontal symbol centered on a transparent canvas with balanced modest margins. No pink paper, tabletop, background texture, shadows, frame, gradients, text, wordmark, extra bars, or new symbols.
+Background: actual alpha transparency.
