@@ -119,3 +119,15 @@ Pelin toiminta ja tekninen toteutus on kuvattu tarkemmin dokumentissa
 Sovelluksen lisenssi on [GNU GPL 3.0 tai uudempi](LICENSE). Kuvituksen lisenssit
 on kuvattu tiedostossa [ARTWORK.md](ARTWORK.md) ja kolmansien osapuolten lisenssit
 tiedostossa [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Denantle on teknologiademo, jolla tutkitaan selainten välistä reaaliaikaista
+tiedonsiirtoa ilman erillistä signalointipalvelinta. Sovellus on toteutettu
+HTML:llä, CSS:llä ja JavaScriptillä ilman käyttöliittymäkehystä tai
+koontivaihetta, joten sen voi julkaista staattisena sivustona ilman omaa
+sovelluspalvelinta. Moninpeli välittää pelitilan WebRTC-datakanavien kautta;
+yhteyden muodostamiseen tarvittavat SDP-yhteyskuvaukset vaihdetaan käsin
+kutsulinkillä ja vastauksella. STUN- tai TURN-palvelimia ei käytetä, joten
+kokeilu painottuu suoriin yhteyksiin samassa lähiverkossa. Sanojen merkitysten
+vertailussa käytettävät kielimallit ajetaan paikallisesti selaimessa
+Transformers.js:n ja WebAssemblyn avulla, joten myöskään tämä laskenta ei
+tarvitse erillistä taustapalvelua.
