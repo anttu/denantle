@@ -13,10 +13,9 @@ article's title and body behind black bars. Word embeddings are computed locally
 in the browser. No application server, API key, package installation, or build
 step is required.
 
-Keep `index.html`, `wikipedia.js`, `game.js`, `categories.js`, `embeddings.js`,
-`embedding-worker.js`, `finnish-inflections.js`, `finnish-inflections-worker.js`,
-and `favicon.ico` in the same directory, with the PNG assets
-in `images/` and the bundled language libraries in `vendor/`. For development,
+Keep `index.html` and `favicon.ico` in the repository root, with the application's
+JavaScript source files in `src/`, the PNG assets in `images/` and the bundled
+language libraries in `vendor/`. For development,
 run `./start-local.sh` and open `http://localhost:8000` in a current browser.
 For publication, follow the [publishing instructions](#publishing) below.
 `images/denantle-mark.png` is the transparent seven-bar logo displayed beside
@@ -96,7 +95,7 @@ Once word vectors are ready, guesses also provide semantic hints: a cosine
 similarity of at least `0.6` displays the guessed word on the matching black bars.
 Hint text changes continuously from blue (farther) to red (closer). Each word keeps
 its closest guess so far; hints never replace revealed
-words. The threshold is defined by `SIMILARITY_THRESHOLD` in `game.js`. Similarity
+words. The threshold is defined by `SIMILARITY_THRESHOLD` in `src/game.js`. Similarity
 is a model score, not a probability that the guess is correct. Exact guesses work
 while vectors are loading or if the model fails; retry an early exact guess after
 indexing to use it for semantic hints too, without increasing the guess count.
@@ -120,7 +119,7 @@ Repeating a guess moves it to the front and refreshes its counts and hints witho
 increasing the guess count. Choosing another article clears the history.
 
 Articles are chosen from the groups listed in
-`categories.js`, including their subcategories. Both English editions start from
+`src/categories.js`, including their subcategories. Both English editions start from
 Everyday life, Geography, History, Knowledge, Language, Literature, Religion, and Science;
 the People category is skipped. The Finnish search starts from Maantiede, Historia,
 Tieto, Kieli, Kirjallisuus, Uskonto, and Tiede; Henkilöt is skipped.
@@ -157,7 +156,7 @@ and an 8-bit quantized model: [Xenova/all-MiniLM-L6-v2](https://huggingface.co/X
 for English (approximately 23 MB of weights), or
 [onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX](https://huggingface.co/onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX)
 for Finnish. Both model publications explicitly state Apache-2.0, and their
-download revisions are pinned in `embedding-worker.js` and
+download revisions are pinned in `src/embedding-worker.js` and
 `third-party-manifest.json`. Their model cards and license are in `licenses/`.
 The multilingual model is larger and takes longer to download on first
 use. Switching languages releases the previous model and cancels its pending work.

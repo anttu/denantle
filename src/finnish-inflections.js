@@ -23,7 +23,7 @@ class FinnishInflections {
     const forms = await new Promise((resolve, reject) => {
       this.pending = { resolve, reject };
       if (!this.worker) {
-        const worker = this.worker = new Worker("finnish-inflections-worker.js");
+        const worker = this.worker = new Worker("src/finnish-inflections-worker.js");
         worker.onmessage = ({ data }) => {
           if (data.revision !== this.revision || !this.pending) return;
           const pending = this.pending;

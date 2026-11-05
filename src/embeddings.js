@@ -52,7 +52,7 @@ class ArticleVectorDatabase {
         return;
       }
       if (!this.worker) {
-        this.worker = new Worker("embedding-worker.js", { type: "module" });
+        this.worker = new Worker("src/embedding-worker.js", { type: "module" });
         this.worker.onmessage = ({ data: message }) => {
           const request = this.requests.get(message.id);
           if (!request) return;

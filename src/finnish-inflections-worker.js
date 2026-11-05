@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Unmodified Voikko 1.0.1: libvoikko 4.3.2 and the Finnish morpho dictionary.
-// License and complete corresponding source: licenses.html#voikko
+// License and complete corresponding source: ../licenses.html#voikko
 let analyzer;
 let revision = 0;
 
@@ -12,7 +12,7 @@ self.onmessage = async ({ data: message }) => {
 
   try {
     if (!analyzer) {
-      importScripts("vendor/voikko-1.0.1.min.js");
+      importScripts("../vendor/voikko-1.0.1.min.js");
       analyzer = Libvoikko().init("fi");
     }
 
