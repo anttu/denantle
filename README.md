@@ -33,6 +33,25 @@ Sovellus tarvitsee internetyhteyden Wikipedia-artikkelien hakemiseen sekä
 kielimallien ja niiden ajoympäristön ensimmäiseen lataamiseen. Käytä paikallista
 palvelinta, jotta myös sanojen merkityksiä vertaileva toiminto toimii.
 
+## Selaintesti containerissa
+
+Testit ja niiden paikalliset ajoasetukset ovat `tests/`-hakemistossa.
+Tarvitset Dockerin ja Docker Composen. Suorita projektin juurihakemistossa:
+
+```sh
+docker compose -f tests/compose.yaml run --build --rm playwright
+```
+
+Container käynnistää paikallisen palvelimen ja ajaa yhden Playwright-testin
+headless-Firefoxilla. Testi tarkistaa sivun avautumisen sekä vaihdon yksinpelistä
+kaksinpeliin ja takaisin. Virheellinen pelitunniste ohittaa Wikipedia-haun,
+joten testi ei tarvitse Wikipediaa tai kielimalleja. Containerin verkkoyhteys on
+testin aikana pois käytöstä. Ensimmäinen koonti tarvitsee internetyhteyden imagen
+ja npm-pakettien lataamiseen. Komennon paluuarvo kertoo testin tuloksen.
+
+GitHub Actions ajaa saman komennon jokaisella pushilla ja pull requestissa.
+Työnkulku on tiedostossa [.github/workflows/playwright.yaml](.github/workflows/playwright.yaml).
+
 ## Moninpeli
 
 Kaksi pelaajaa voi ratkaista samaa artikkelia yhdessä ilman peli- tai
