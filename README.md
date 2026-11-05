@@ -35,9 +35,7 @@ Sovellus on julkaistu GitHub Pagesissa: [https://anttu.github.io/denantle/](http
 
 Pages-julkaisu tapahtuu GitHub Actionsissa vain `main`-haaran pushista, kun saman
 commitin Playwright-testit ovat menneet läpi. Epäonnistunut testiajo jättää
-nykyisen julkaistun version ennalleen. Julkaisulähteeksi valitaan repositorion
-**Settings → Pages → Build and deployment → Source → GitHub Actions** vasta,
-kun tämä työnkulku on `main`-haarassa GitHubissa.
+nykyisen julkaistun version ennalleen.
 
 ## Paikallinen käynnistys
 
