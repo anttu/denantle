@@ -41,6 +41,7 @@ const multiplayer = new MultiplayerGame(articleGame, {
 });
 
 function refreshArticleControls() {
+  randomButton.hidden = multiplayer.isGuest;
   randomButton.disabled = articleLoading || multiplayer.isGuest;
   sourceSelect.disabled = articleLoading || multiplayer.isGuest;
   gameVersionLink.setAttribute("aria-disabled", String(multiplayer.isGuest));
