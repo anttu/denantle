@@ -187,7 +187,6 @@ async function loadArticle(gameId = null) {
     articleGame.start(page.title, body, source.language);
     article.lang = source.language;
     articleSource.textContent = source.name;
-    articleSource.href = `${source.baseUrl}/w/index.php?oldid=${page.revid}`;
     const version = `${sourceKey}-${page.revid}`;
     const replayUrl = new URL(window.location.href);
     replayUrl.hash = "";

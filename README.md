@@ -140,7 +140,7 @@ Images, tables, navigation boxes, reference markers and other non-article
 elements are removed before conversion.
 Text is rendered as text, preserving line breaks without inserting remote HTML.
 
-Each article includes a link to the exact revision on the selected Wikipedia and its
+Each article names the selected Wikipedia without linking to the answer and includes its
 [CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/).
 It also identifies the shortening, hidden words and guess substitutions as
 modifications. The adapted article text remains CC BY-SA 4.0.
