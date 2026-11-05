@@ -5,7 +5,10 @@ const { defineConfig } = require("@playwright/test");
 
 module.exports = defineConfig({
   testDir: ".",
-  reporter: "list",
+  reporter: [
+    ["list"],
+    ["junit", { outputFile: "reports/junit.xml" }],
+  ],
   use: {
     browserName: "firefox",
     baseURL: "http://127.0.0.1:8000",
