@@ -35,7 +35,17 @@ button:disabled { opacity: .5; cursor: wait; }
 #game-version { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
 #game-version-link { font-variant-numeric: tabular-nums; }
 .multiplayer { margin-top: 14px; font-size: 12px; }
+.game-mode-options { display: inline-flex; max-width: 100%; min-width: 0; margin: 0; padding: 0; border: 1px solid var(--ink); border-radius: 5px; vertical-align: middle; }
 .multiplayer-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.game-mode-options .multiplayer-toggle { min-width: 0; align-items: stretch; }
+.game-mode-options label:first-of-type { flex-shrink: 0; }
+.game-mode-options label + label { border-left: 1px solid var(--ink); }
+.game-mode-options span { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 9px 12px; text-align: center; }
+.game-mode-options label:first-of-type span { border-radius: 4px 0 0 4px; }
+.game-mode-options label:last-of-type span { border-radius: 0 4px 4px 0; }
+.game-mode-options input:not(:checked) + span:hover { background: #efefe6; }
+.game-mode-options input:checked + span { background: var(--ink); color: white; }
+.game-mode-options input:focus-visible + span { position: relative; z-index: 1; outline: 2px solid #66754e; outline-offset: 3px; }
 .multiplayer input[type="checkbox"] { width: 16px; height: 16px; margin: 0; accent-color: #62694e; }
 #multiplayer-panel { margin-top: 10px; padding: 16px; border: 1px solid var(--rule); border-radius: 7px; }
 #multiplayer-panel > p:first-child { margin-top: 0; }

@@ -32,7 +32,7 @@
             <p class="hint">Tekstin palkkien vihjeissä sininen on kaukana ja punainen lähellä. Vie osoitin palkin päälle tai klikkaa sitä nähdäksesi sanan pituuden ja läheisyyden.</p>
             <p class="hint">Arvaushistoriassa musta on tarkka, oranssi lähellä ja sininen kaukana. Numero kertoo löytyneiden sanojen määrän.</p>
             <p class="hint">Pelin tunnisteesta voit aloittaa saman pelin uudelleen. Tallenna tai jaa sen linkki pelataksesi saman artikkeliversion myöhemmin.</p>
-            <p class="hint">Moninpelissä kaksi pelaajaa paljastaa samaa artikkelia yhdessä. Kytke moninpeli päälle ja jaa kutsulinkki pelikaverille. Hän lähettää vastauksen takaisin kutsujalle.</p>
+            <p class="hint">Moninpelissä kaksi pelaajaa paljastaa samaa artikkelia yhdessä. Valitse kaksinpeli samassa lähiverkossa ja jaa kutsulinkki pelikaverille. Hän lähettää vastauksen takaisin kutsujalle.</p>
           </div>
         </details>
       </div>
@@ -50,8 +50,12 @@
         </select>
         <button id="random-article" type="button" aria-label="Valitse uusi satunnainen artikkeli"><span aria-hidden="true">↻</span> Uusi peli</button>
       </div>
-      <section class="multiplayer" aria-label="Moninpeli">
-        <label class="multiplayer-toggle"><input id="multiplayer-enabled" type="checkbox" aria-controls="multiplayer-panel"> Moninpeli</label>
+      <section class="multiplayer" aria-label="Peliasetukset">
+        <fieldset id="game-mode" class="game-mode-options">
+          <legend class="visually-hidden">Pelimuoto</legend>
+          <label class="multiplayer-toggle"><input id="singleplayer-enabled" class="visually-hidden" type="radio" name="game-mode" value="singleplayer" aria-controls="multiplayer-panel" checked><span>Yksinpeli</span></label>
+          <label class="multiplayer-toggle"><input id="multiplayer-enabled" class="visually-hidden" type="radio" name="game-mode" value="multiplayer" aria-controls="multiplayer-panel"><span>Kaksinpeli samassa lähiverkossa</span></label>
+        </fieldset>
         <div id="multiplayer-panel" hidden>
           <p>Ratkaiskaa artikkeli yhdessä kahdestaan. Kutsujan peli ja arvaukset jaetaan molemmille.</p>
           <ol>

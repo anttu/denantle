@@ -52,7 +52,8 @@ The warm paper layout pairs a compact logo and controls with a serif heading and
 article text. Guess and revealed-word counts sit above the input, with a progress
 bar tracking revealed occurrences. The **?** button opens the playing instructions.
 
-The optional **Moninpeli** checkbox opens a two-player cooperative mode. The
+The game-mode radio buttons default to **Yksinpeli**. Selecting
+**Kaksinpeli samassa lähiverkossa** opens a two-player cooperative mode. The
 inviter creates an offer and shares an invitation URL. Opening the link enables
 multiplayer and accepts the offer; the guest returns an answer for the inviter
 to paste. Starting a new game with multiplayer enabled also creates an invitation.

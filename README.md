@@ -36,7 +36,8 @@ palvelinta, jotta myös sanojen merkityksiä vertaileva toiminto toimii.
 ## Moninpeli
 
 Kaksi pelaajaa voi ratkaista samaa artikkelia yhdessä ilman peli- tai
-signalointipalvelinta. Kutsuja kytkee **Moninpeli** päälle.
+signalointipalvelinta. Oletuksena valittuna on **Yksinpeli**. Kutsuja valitsee
+**Kaksinpeli samassa lähiverkossa**.
 
 1. Kutsuja painaa **Luo kutsu** tai aloittaa uuden pelin moninpelin ollessa
    päällä ja kopioi syntyvän **kutsulinkin** pelikaverille.
@@ -47,7 +48,7 @@ signalointipalvelinta. Kutsuja kytkee **Moninpeli** päälle.
 
 Yhteyden avauduttua molemmat näkevät kutsujan artikkelin, aiemmat arvaukset,
 paljastukset ja lähisanavihjeet. Kumpikin voi arvata; kutsuja valitsee uuden pelin
-ja kielen. Poistamalla moninpelin valinnan voit jatkaa yksin. Sivun lataaminen
+ja kielen. Valitsemalla **Yksinpeli** voit jatkaa yksin. Sivun lataaminen
 uudelleen katkaisee yhteyden, ja uudelleen yhdistäminen vaatii uuden kättelyn.
 Kutsulinkki toimii vain niin kauan kuin kutsujan sivu ja kutsu ovat avoinna.
 Linkin osoitteen pitää olla myös pelikaverin saavutettavissa.

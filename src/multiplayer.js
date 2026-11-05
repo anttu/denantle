@@ -186,7 +186,7 @@ class MultiplayerGame {
     this.remotePayload = "";
     this.queue = Promise.resolve();
     this.requestCounter = 0;
-    this.enabled.addEventListener("change", () => {
+    document.getElementById("game-mode").addEventListener("change", () => {
       this.panel.hidden = !this.enabled.checked;
       if (!this.enabled.checked) this.disconnect();
       else if (!window.RTCPeerConnection) this.error.textContent = "Selain ei tue WebRTC-yhteyksiä. Käytä ajantasaista Firefoxia.";
