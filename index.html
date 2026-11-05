@@ -32,7 +32,7 @@
             <p class="hint">Tekstin palkkien vihjeissä sininen on kaukana ja punainen lähellä. Vie osoitin palkin päälle tai klikkaa sitä nähdäksesi sanan pituuden ja läheisyyden.</p>
             <p class="hint">Arvaushistoriassa musta on tarkka, oranssi lähellä ja sininen kaukana. Numero kertoo löytyneiden sanojen määrän.</p>
             <p class="hint">Pelin tunnisteesta voit aloittaa saman pelin uudelleen. Tallenna tai jaa sen linkki pelataksesi saman artikkeliversion myöhemmin.</p>
-            <p class="hint">Moninpelissä kaksi pelaajaa paljastaa samaa artikkelia yhdessä. Kytke moninpeli päälle ja vaihda kutsu ja vastaus kopioimalla ne toisillenne.</p>
+            <p class="hint">Moninpelissä kaksi pelaajaa paljastaa samaa artikkelia yhdessä. Kytke moninpeli päälle ja jaa kutsulinkki pelikaverille. Hän lähettää vastauksen takaisin kutsujalle.</p>
           </div>
         </details>
       </div>
@@ -55,8 +55,8 @@
         <div id="multiplayer-panel" hidden>
           <p>Ratkaiskaa artikkeli yhdessä kahdestaan. Kutsujan peli ja arvaukset jaetaan molemmille.</p>
           <ol>
-            <li>Kutsuja painaa <strong>Luo kutsu</strong> ja lähettää oman yhteystietonsa toiselle pelaajalle.</li>
-            <li>Toinen pelaaja liittää kutsun alempaan kenttään ja painaa <strong>Hyväksy kutsu</strong>. Hän lähettää syntyvän vastauksen takaisin kutsujalle.</li>
+            <li>Kutsuja painaa <strong>Luo kutsu</strong> tai aloittaa uuden pelin moninpelin ollessa päällä ja lähettää kutsulinkin toiselle pelaajalle.</li>
+            <li>Toinen pelaaja avaa kutsulinkin. Hän lähettää syntyvän vastauksen takaisin kutsujalle. Kutsun voi myös liittää alempaan kenttään ja hyväksyä käsin.</li>
             <li>Kutsuja liittää vastauksen alempaan kenttään ja painaa <strong>Hyväksy vastaus</strong>.</li>
           </ol>
           <label class="multiplayer-toggle"><input id="multiplayer-stun" type="checkbox" aria-describedby="multiplayer-network-hint"> Käytä julkista STUN-apua eri verkkojen välillä</label>
@@ -65,7 +65,7 @@
             <button id="multiplayer-create" type="button">Luo kutsu</button>
             <button id="multiplayer-restart" class="secondary" type="button">Katkaise / aloita alusta</button>
           </div>
-          <label for="multiplayer-local">Oma yhteystieto – kopioi ja lähetä pelikaverille</label>
+          <label id="multiplayer-local-label" for="multiplayer-local">Oma yhteystieto – kopioi ja lähetä pelikaverille</label>
           <textarea id="multiplayer-local" readonly spellcheck="false" aria-describedby="multiplayer-status"></textarea>
           <div class="multiplayer-actions"><button id="multiplayer-copy" class="secondary" type="button" disabled>Kopioi yhteystieto</button></div>
           <label for="multiplayer-remote">Pelikaverin yhteystieto – liitä koko kutsu tai vastaus</label>
@@ -117,6 +117,7 @@
   <script src="src/finnish-inflections.js"></script>
   <script src="vendor/compromise-14.19.0.js"></script>
   <script src="src/game.js"></script>
+  <script src="src/signaling-payload.js"></script>
   <script src="src/multiplayer.js"></script>
   <script src="src/wikipedia.js"></script>
 </body>

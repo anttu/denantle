@@ -36,11 +36,12 @@ palvelinta, jotta myös sanojen merkityksiä vertaileva toiminto toimii.
 ## Moninpeli
 
 Kaksi pelaajaa voi ratkaista samaa artikkelia yhdessä ilman peli- tai
-signalointipalvelinta. Kytke **Moninpeli** päälle molemmissa selaimissa.
+signalointipalvelinta. Kutsuja kytkee **Moninpeli** päälle.
 
-1. Kutsuja painaa **Luo kutsu** ja kopioi oman yhteystietonsa pelikaverille.
-2. Pelikaveri liittää kutsun kenttään **Pelikaverin yhteystieto**, painaa
-   **Hyväksy kutsu** ja kopioi syntyvän oman vastauksensa takaisin kutsujalle.
+1. Kutsuja painaa **Luo kutsu** tai aloittaa uuden pelin moninpelin ollessa
+   päällä ja kopioi syntyvän **kutsulinkin** pelikaverille.
+2. Pelikaveri avaa linkin. Moninpeli käynnistyy ja hyväksyy kutsun
+   automaattisesti. Pelikaveri kopioi syntyvän vastauksensa takaisin kutsujalle.
 3. Kutsuja liittää vastauksen kenttään **Pelikaverin yhteystieto** ja painaa
    **Hyväksy vastaus**.
 
@@ -48,6 +49,12 @@ Yhteyden avauduttua molemmat näkevät kutsujan artikkelin, aiemmat arvaukset,
 paljastukset ja lähisanavihjeet. Kumpikin voi arvata; kutsuja valitsee uuden pelin
 ja kielen. Poistamalla moninpelin valinnan voit jatkaa yksin. Sivun lataaminen
 uudelleen katkaisee yhteyden, ja uudelleen yhdistäminen vaatii uuden kättelyn.
+Kutsulinkki toimii vain niin kauan kuin kutsujan sivu ja kutsu ovat avoinna.
+Linkin osoitteen pitää olla myös pelikaverin saavutettavissa.
+
+Kutsun voi edelleen liittää ja hyväksyä käsin. Kutsulinkin yhteystiedot
+kulkevat osoitteen #join=-osassa. Selain purkaa ne häviöttömästi ennen
+yhteyden muodostamista. Pelin tunniste ja sivun nykyinen polku säilyvät linkissä.
 
 Yhteys kulkee suoraan selainten välillä WebRTC:llä. Ilman yhteyspalveluja se toimii
 yleensä samassa lähiverkossa. Eri verkoissa voi kokeilla valinnaista **julkista

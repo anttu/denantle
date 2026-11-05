@@ -71,6 +71,7 @@ function displayArticle(data) {
   replayUrl.hash = "";
   replayUrl.searchParams.set("game", data.version);
   window.history.replaceState(null, "", replayUrl);
+  multiplayer.refreshInviteLink();
   gameVersionLink.textContent = data.version;
   gameVersionLink.href = replayUrl.href;
   gameVersion.hidden = false;
@@ -200,7 +201,7 @@ async function getRandomArticleTitle(source, signal) {
   throw new Error("Valituista kategorioista ei löytynyt artikkeleita. Yritä uudelleen.");
 }
 
-async function loadArticle(gameId = null) {
+async function loadArticle(gameId = null, { invite = false } = {}) {
   if (articleLoading || multiplayer.isGuest) return;
 
   const revision = ++loadRevision;
@@ -257,6 +258,9 @@ async function loadArticle(gameId = null) {
     displayArticle({ title: page.title, body, sourceKey,
       version: `${sourceKey}-${page.revid}`, session: crypto.getRandomValues(new Uint32Array(4)).join("-") });
     multiplayer.shareGame();
+    if (invite && multiplayer.enabled.checked && !multiplayer.peer && !multiplayer.negotiating) {
+      void multiplayer.negotiate(true);
+    }
     void buildArticleVectors(page.title, body, source.language);
   } catch (error) {
     if (revision !== loadRevision || error.name === "AbortError") return;
@@ -276,15 +280,17 @@ async function loadArticle(gameId = null) {
 }
 
 randomButton.addEventListener("click", () => {
-  void loadArticle();
+  void loadArticle(null, { invite: true });
 });
 
 sourceSelect.addEventListener("change", () => {
-  void loadArticle();
+  void loadArticle(null, { invite: true });
 });
 
 gameVersionLink.addEventListener("click", (event) => {
   if (multiplayer.isGuest) event.preventDefault();
 });
 
-void loadArticle(new URLSearchParams(window.location.search).get("game"));
+if (!multiplayer.acceptInviteFromLocation()) {
+  void loadArticle(new URLSearchParams(window.location.search).get("game"));
+}

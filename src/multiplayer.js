@@ -34,8 +34,7 @@ class ManualPeerConnection {
 
   static readDescription(text, type) {
     try {
-      if (typeof text !== "string" || text.length > 100000) throw new Error();
-      const data = JSON.parse(text);
+      const data = JSON.parse(SignalingPayload.decode(text));
       if (data.denantle !== 1 || data.description?.type !== type
         || typeof data.description.sdp !== "string" || !data.description.sdp.startsWith("v=0")) throw new Error();
       return { type, sdp: data.description.sdp };
@@ -174,10 +173,12 @@ class MultiplayerGame {
     this.restart = document.getElementById("multiplayer-restart");
     this.stun = document.getElementById("multiplayer-stun");
     this.local = document.getElementById("multiplayer-local");
+    this.localLabel = document.getElementById("multiplayer-local-label");
     this.remote = document.getElementById("multiplayer-remote");
     this.status = document.getElementById("multiplayer-status");
     this.error = document.getElementById("multiplayer-error");
     this.role = null;
+    this.localPayload = "";
     this.queue = Promise.resolve();
     this.requestCounter = 0;
     this.enabled.addEventListener("change", () => {
@@ -189,10 +190,43 @@ class MultiplayerGame {
     this.accept.addEventListener("click", () => void this.negotiate(false));
     this.restart.addEventListener("click", () => this.disconnect());
     this.copy.addEventListener("click", () => void this.copyDescription());
+    window.addEventListener("hashchange", () => this.acceptInviteFromLocation());
     this.game.onGuessRequest = (guess) => this.requestGuess(guess);
   }
 
   get isGuest() { return this.role === "guest"; }
+
+  refreshInviteLink() {
+    if (this.role === "host" && this.localPayload) {
+      this.local.value = SignalingPayload.inviteUrl(this.localPayload, window.location.href);
+    }
+  }
+
+  acceptInviteFromLocation() {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.hash.slice(1));
+    const token = params.get("join");
+    if (token === null) return false;
+    this.enabled.checked = true;
+    this.panel.hidden = false;
+    if (this.peer || this.negotiating) {
+      this.error.textContent = "Katkaise nykyinen yhteys ennen uuden kutsun avaamista.";
+      return true;
+    }
+    // Remove the invitation from the address bar without reloading the page.
+    params.delete("join");
+    url.hash = params.toString();
+    window.history.replaceState(null, "", url);
+    try {
+      ManualPeerConnection.readDescription(token, "offer");
+    } catch (error) {
+      this.error.textContent = error.message;
+      return false;
+    }
+    this.remote.value = token;
+    void this.negotiate(false);
+    return true;
+  }
 
   setNegotiating(busy) {
     this.negotiating = busy;
@@ -245,14 +279,25 @@ class MultiplayerGame {
       this.refreshControls();
       this.status.textContent = "Kerätään yhteystietoja…";
       if (create) {
-        this.local.value = await peer.createOffer();
-        this.status.textContent = "Kopioi kutsu toiselle pelaajalle. Liitä häneltä saamasi vastaus alle ja hyväksy se.";
+        const payload = await peer.createOffer();
+        if (peer !== this.peer) return;
+        this.localPayload = payload;
+        this.refreshInviteLink();
+        this.localLabel.textContent = "Kutsulinkki – kopioi ja lähetä pelikaverille";
+        this.copy.textContent = "Kopioi kutsulinkki";
+        this.status.textContent = "Jaa kutsulinkki toiselle pelaajalle. Liitä häneltä saamasi vastaus alle ja hyväksy se.";
       } else if (this.isGuest) {
-        this.local.value = await peer.acceptOffer(this.remote.value.trim());
+        const payload = await peer.acceptOffer(this.remote.value.trim());
+        if (peer !== this.peer) return;
+        this.localPayload = payload;
+        this.local.value = payload;
+        this.localLabel.textContent = "Vastaus – kopioi ja lähetä kutsujalle";
+        this.copy.textContent = "Kopioi vastaus";
         this.remote.value = "";
         this.status.textContent = "Kopioi vastaus kutsujalle. Yhteys avautuu, kun kutsuja hyväksyy sen.";
       } else {
         await peer.acceptAnswer(this.remote.value.trim());
+        if (peer !== this.peer) return;
         this.status.textContent = "Yhdistetään pelaajaan…";
       }
       this.accept.textContent = this.role === "host" ? "Hyväksy vastaus" : "Hyväksy kutsu";
@@ -271,7 +316,7 @@ class MultiplayerGame {
       await navigator.clipboard.writeText(value);
       if (value === this.local.value) this.status.textContent = this.isGuest
         ? "Vastaus kopioitu. Lähetä se kutsujalle."
-        : "Kutsu kopioitu. Lähetä se toiselle pelaajalle.";
+        : "Kutsulinkki kopioitu. Lähetä se toiselle pelaajalle.";
     } catch {
       this.local.focus();
       this.local.select();
@@ -375,7 +420,10 @@ class MultiplayerGame {
     clearTimeout(this.guessTimeout);
     this.pendingRequest = null;
     this.local.value = "";
+    this.localPayload = "";
     this.remote.value = "";
+    this.localLabel.textContent = "Oma yhteystieto – kopioi ja lähetä pelikaverille";
+    this.copy.textContent = "Kopioi yhteystieto";
     this.accept.textContent = "Hyväksy kutsu";
     this.error.textContent = "";
     this.status.textContent = message;

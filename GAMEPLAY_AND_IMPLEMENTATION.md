@@ -53,8 +53,18 @@ article text. Guess and revealed-word counts sit above the input, with a progres
 bar tracking revealed occurrences. The **?** button opens the playing instructions.
 
 The optional **Moninpeli** checkbox opens a two-player cooperative mode. The
-inviter creates an offer, the guest pastes it and returns an answer, and the
-inviter pastes that answer. `src/multiplayer.js` uses the browser's native
+inviter creates an offer and shares an invitation URL. Opening the link enables
+multiplayer and accepts the offer; the guest returns an answer for the inviter
+to paste. Starting a new game with multiplayer enabled also creates an invitation.
+Manual pasting of invitations and answers remains available.
+`src/signaling-payload.js` stores invitations in the URL fragment, preserving the
+current path and query. Its D2 binary profile reconstructs matching single-host
+offers exactly; the D1 dictionary format preserves all other descriptions,
+including browser-specific fields and multiple candidates. The codec has no
+dependencies and does not require compression APIs. The receiving browser
+removes the invitation fragment before starting the handshake. Invitations
+remain tied to the inviter's open peer connection.
+`src/multiplayer.js` uses the browser's native
 `RTCPeerConnection` and an ordered, reliable data channel. Both descriptions wait
 for ICE gathering to complete, so candidates travel in the copied text and no
 signaling service is needed. There are no additional packages or application
