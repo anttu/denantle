@@ -316,7 +316,7 @@ class MultiplayerGame {
         const payload = await peer.acceptOffer(this.remote.value.trim());
         if (peer !== this.peer) return;
         this.localPayload = payload;
-        this.local.value = payload;
+        this.local.value = SignalingPayload.encode(payload);
         this.localLabel.textContent = "Vastaus – kopioi ja lähetä kutsujalle";
         this.copy.textContent = "Kopioi vastaus";
         this.remote.value = "";
