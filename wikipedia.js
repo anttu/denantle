@@ -150,7 +150,7 @@ async function loadArticle(gameId = null) {
   status.textContent = gameId === null ? "Haetaan satunnaista artikkelia…" : "Haetaan tallennettua peliä…";
 
   try {
-    const savedGame = gameId === null ? null : gameId.match(/^(simple|fi)-([1-9]\d*)$/);
+    const savedGame = gameId === null ? null : gameId.match(/^(simple|fi|en)-([1-9]\d*)$/);
     if (gameId !== null && (!savedGame || !Number.isSafeInteger(Number(savedGame[2])))) {
       throw new Error("Pelin tunniste ei kelpaa. Tarkista pelin linkki tai valitse uusi peli.");
     }

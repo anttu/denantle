@@ -29,4 +29,19 @@ const wikipediaSources = {
       "aiheesta muualla", "katso myös", "kirjallisuutta",
     ],
   },
+  en: {
+    name: "English Wikipedia",
+    language: "en",
+    baseUrl: "https://en.wikipedia.org",
+    categories: [
+      "Category:Everyday life", "Category:Geography", "Category:History",
+      "Category:Knowledge", "Category:Language", "Category:Literature",
+      "Category:Religion", "Category:Science",
+    ],
+    excludedCategory: "Category:People",
+    excludedSections: [
+      "gallery", "references", "notes", "footnotes", "external links",
+      "see also", "further reading", "bibliography",
+    ],
+  },
 };

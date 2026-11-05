@@ -8,9 +8,10 @@ CC BY-SA 4.0; see [ARTWORK.md](ARTWORK.md). Third-party software, model weights
 and Wikipedia text retain the licenses listed in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-A word guessing game that hides a Simple English or Finnish Wikipedia article's title and
-body behind black bars. Word embeddings are computed locally in the browser. No
-application server, API key, package installation, or build step is required.
+A word guessing game that hides a Simple English, Finnish or English Wikipedia
+article's title and body behind black bars. Word embeddings are computed locally
+in the browser. No application server, API key, package installation, or build
+step is required.
 
 Keep `index.html`, `wikipedia.js`, `game.js`, `categories.js`, `embeddings.js`,
 `embedding-worker.js`, `finnish-inflections.js`, `finnish-inflections-worker.js`,
@@ -26,15 +27,16 @@ still displays articles but cannot create word vectors. An internet connection
 is required to fetch articles and initially download the embedding runtime and model.
 
 The page automatically loads a random Simple English Wikipedia article. Use
-**Datalähde** to choose **Simple English Wikipedia** or **Suomenkielinen Wikipedia**;
-changing the source starts a new game with an article in that language. Click
+**Datalähde** to choose **Simple English Wikipedia**, **Suomenkielinen Wikipedia**
+or **English Wikipedia**; changing the source starts a new game with an article
+in that language. Click
 **Uusi peli** to choose another article from the selected source.
 Redirects are followed, and
 missing articles and connection failures are shown on the page.
 
-Each loaded game displays a **Pelin tunniste** link such as `fi-123456789`
-or `simple-123456789`. The prefix identifies the Wikipedia edition; the
-number identifies the article revision within that edition. The same ID is
+Each loaded game displays a **Pelin tunniste** link such as `fi-123456789`,
+`simple-123456789` or `en-123456789`. The prefix identifies the Wikipedia edition;
+the number identifies the article revision within that edition. The same ID is
 stored in the page address as `?game=fi-123456789`. Bookmark or share the
 address to reopen that revision with no guesses, or click the displayed ID
 to play it again from the beginning. Reloading the page also restarts that
@@ -118,23 +120,26 @@ Repeating a guess moves it to the front and refreshes its counts and hints witho
 increasing the guess count. Choosing another article clears the history.
 
 Articles are chosen from the groups listed in
-`categories.js`, including their subcategories. The English search starts from Everyday
-life, Geography, History, Knowledge, Language, Literature, Religion, and Science;
+`categories.js`, including their subcategories. Both English editions start from
+Everyday life, Geography, History, Knowledge, Language, Literature, Religion, and Science;
 the People category is skipped. The Finnish search starts from Maantiede, Historia,
 Tieto, Kieli, Kirjallisuus, Uskonto, and Tiede; Henkilöt is skipped.
 Category branches and articles are chosen at
 random, so articles do not all have the same probability of being selected.
 
 Content comes from the [MediaWiki Action API](https://www.mediawiki.org/wiki/API:Main_page)
-at `https://simple.wikipedia.org/w/api.php` or `https://fi.wikipedia.org/w/api.php`,
+at `https://simple.wikipedia.org/w/api.php`, `https://fi.wikipedia.org/w/api.php`
+or `https://en.wikipedia.org/w/api.php`,
 depending on the selected source, using `action=parse` and `prop=text|revid`.
 Random games resolve an article title and obtain its revision ID with its
 content in the same response; replay links request that revision with `oldid`.
 The returned HTML is processed in an inert template and converted to plain
 text, including sections after the introduction. Gallery, References, Other
 websites, Related pages, and
-Bibliography sections and their subsections are removed from English text. For
-Finnish text, the removed sections are Kuvia, Kuvagalleria, Galleria, Lähteet,
+Bibliography sections and their subsections are removed from Simple English text.
+For English Wikipedia, the removed sections are Gallery, References, Notes,
+Footnotes, External links, See also, Further reading, and Bibliography, including
+subsections. For Finnish text, the removed sections are Kuvia, Kuvagalleria, Galleria, Lähteet,
 Viitteet, Aiheesta muualla, Katso myös, and Kirjallisuutta, including subsections.
 Images, tables, navigation boxes, reference markers and other non-article
 elements are removed before conversion.

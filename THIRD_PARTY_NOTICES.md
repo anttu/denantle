@@ -90,8 +90,8 @@ distribution subject to its notice and other terms; it grants no trademark right
 
 ## Wikipedia text
 
-Article text is by the contributors to Simple English Wikipedia or Finnish
-Wikipedia, and is reused under
+Article text is by the contributors to Simple English Wikipedia, Finnish
+Wikipedia or English Wikipedia, and is reused under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 The full [license text](licenses/CC-BY-SA-4.0.txt) is included locally.
 Each article links to the original page, whose history identifies its authors.
