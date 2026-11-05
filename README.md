@@ -58,12 +58,10 @@ yhteyden muodostamista. Pelin tunniste ja sivun nykyinen polku säilyvät linkis
 Moninpelin **payload debug** -valinta näyttää oman ja pelikaverin yhteystiedot
 kokonaisina, purettuina JSON-kuvauksina. Valinta on oletuksena pois päältä.
 
-Yhteys kulkee suoraan selainten välillä WebRTC:llä. Ilman yhteyspalveluja se toimii
-yleensä samassa lähiverkossa. Eri verkoissa voi kokeilla valinnaista **julkista
-STUN-apua**, joka kysyy julkisen verkko-osoitteen Googlen STUN-palvelulta.
-STUN ei välitä pelitietoja. Osa palomuureista ja NAT-verkoista estää suoran yhteyden
-myös STUN-avulla; peli ei käytä TURN-välityspalvelinta. Vaihda yhteystiedot vain
-pelikaverisi kanssa, sillä ne sisältävät yhteyden muodostamiseen tarvittavat tiedot.
+Yhteys kulkee suoraan selainten välillä WebRTC:llä ilman yhteys- tai
+välityspalveluja ja toimii yleensä samassa lähiverkossa. Osa palomuureista ja
+NAT-verkoista estää suoran yhteyden. Vaihda yhteystiedot vain pelikaverisi kanssa,
+sillä ne sisältävät yhteyden muodostamiseen tarvittavat tiedot.
 
 ## Lisätiedot ja lisenssit
 

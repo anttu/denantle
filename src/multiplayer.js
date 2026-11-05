@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Signaling is manual: each description includes all gathered ICE candidates.
-// No STUN or TURN service is contacted unless the player opts in to STUN.
+// No external ICE services are used.
 class ManualPeerConnection {
-  constructor({ useStun = false, onOpen, onClose, onMessage } = {}) {
+  constructor({ onOpen, onClose, onMessage } = {}) {
     this.onOpen = onOpen;
     this.onClose = onClose;
     this.onMessage = onMessage;
     this.peer = new RTCPeerConnection({
-      iceServers: useStun ? [{ urls: "stun:stun.l.google.com:19302" }] : [],
+      iceServers: [],
     });
     this.sendQueue = Promise.resolve();
     this.received = "";
@@ -85,7 +85,7 @@ class ManualPeerConnection {
         const changed = () => {
           if (this.peer.iceGatheringState === "complete") done();
         };
-        const timer = setTimeout(() => done(new Error("Yhteystietojen keruu kesti liian kauan. Kokeile uudelleen ilman STUN-apua.")), 20000);
+        const timer = setTimeout(() => done(new Error("Yhteystietojen keruu kesti liian kauan. Kokeile uudelleen.")), 20000);
         this.cancelGathering = () => done(new DOMException("Yhteys suljettiin.", "AbortError"));
         this.peer.addEventListener("icegatheringstatechange", changed);
         changed();
@@ -108,7 +108,7 @@ class ManualPeerConnection {
   async acceptAnswer(text) {
     await this.peer.setRemoteDescription(ManualPeerConnection.readDescription(text, "answer"));
     this.connectionTimeout = setTimeout(() => {
-      if (!this.connected) this.close("Yhteyttä ei saatu. Kokeile samaa lähiverkkoa tai luo uusi kutsu STUN-avun kanssa.");
+      if (!this.connected) this.close("Yhteyttä ei saatu. Kokeile samaa lähiverkkoa tai luo uusi kutsu.");
     }, 30000);
   }
 
@@ -171,7 +171,6 @@ class MultiplayerGame {
     this.accept = document.getElementById("multiplayer-accept");
     this.copy = document.getElementById("multiplayer-copy");
     this.restart = document.getElementById("multiplayer-restart");
-    this.stun = document.getElementById("multiplayer-stun");
     this.local = document.getElementById("multiplayer-local");
     this.localLabel = document.getElementById("multiplayer-local-label");
     this.remote = document.getElementById("multiplayer-remote");
@@ -258,7 +257,6 @@ class MultiplayerGame {
     this.create.disabled = busy || Boolean(this.peer);
     this.accept.disabled = busy || Boolean(this.peer
       && (this.isGuest || this.peer.peer.signalingState !== "have-local-offer"));
-    this.stun.disabled = busy || Boolean(this.peer);
     this.copy.disabled = !this.local.value;
   }
 
@@ -280,7 +278,7 @@ class MultiplayerGame {
     let peer = this.peer;
     try {
       if (!peer) {
-        peer = new ManualPeerConnection({ useStun: this.stun.checked });
+        peer = new ManualPeerConnection();
         this.peer = peer;
         if (this.isGuest) {
           this.cancelLoading();
