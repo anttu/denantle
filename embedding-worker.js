@@ -12,6 +12,7 @@ const MODEL_REVISIONS = {
 };
 const BATCH_SIZE = 32;
 let extractorPromise;
+let finnishBackground = null;
 let revision = 0;
 let database = null;
 let queue = Promise.resolve();
@@ -38,6 +39,25 @@ function normalizeText(text) {
   return text.normalize("NFKC").replaceAll("’", "'").toLowerCase();
 }
 
+function wordVector(data, background) {
+  const vector = new Float32Array(data);
+  if (!background) return vector;
+
+  // The multilingual sentence model has a strong common component even for
+  // unrelated single words. Center on empty input so that it cannot dominate
+  // word similarity, then restore unit length for cosine comparisons.
+  let squaredLength = 0;
+  for (let i = 0; i < vector.length; i += 1) {
+    vector[i] -= background[i];
+    squaredLength += vector[i] * vector[i];
+  }
+  const length = Math.sqrt(squaredLength);
+  if (length > 0) {
+    for (let i = 0; i < vector.length; i += 1) vector[i] /= length;
+  }
+  return vector;
+}
+
 async function indexArticle(message) {
   const counts = new Map();
   const words = normalizeText(`${message.title}\n${message.text}`).match(/\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*/gu) || [];
@@ -48,6 +68,12 @@ async function indexArticle(message) {
   const model = MODELS[message.language] || MODELS.en;
   const extractor = await getExtractor(model);
   if (message.revision !== revision) return;
+  if (model === MODELS.fi && !finnishBackground) {
+    const output = await extractor([""], { pooling: "mean", normalize: true });
+    finnishBackground = new Float32Array(output.data);
+  }
+  if (message.revision !== revision) return;
+  const background = model === MODELS.fi ? finnishBackground : null;
 
   const entries = [];
   const vocabulary = [...counts.keys()];
@@ -60,14 +86,14 @@ async function indexArticle(message) {
     dimensions = output.dims[1];
     for (let i = 0; i < batch.length; i += 1) {
       const word = batch[i];
-      entries.push({ word, count: counts.get(word), vector: new Float32Array(output.data.subarray(i * dimensions, (i + 1) * dimensions)) });
+      entries.push({ word, count: counts.get(word), vector: wordVector(output.data.subarray(i * dimensions, (i + 1) * dimensions), background) });
     }
     self.postMessage({ id: message.id, type: "progress", stage: "index", completed: entries.length, total: vocabulary.length });
     // Let new article/clear messages cancel this job between batches.
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
   if (message.revision !== revision) return;
-  database = { entries, dimensions, model };
+  database = { entries, dimensions, model, background };
   return { title: message.title, wordCount: entries.length, dimensions, model };
 }
 
@@ -76,11 +102,12 @@ async function search(message) {
   const extractor = await getExtractor(database.model);
   const output = await extractor([normalizeText(message.text.trim())], { pooling: "mean", normalize: true });
   if (message.revision !== revision) return;
+  const query = wordVector(output.data, database.background);
 
   // Both vectors are unit length, so their dot product is cosine similarity.
   return database.entries.map(({ word, count, vector }) => {
     let score = 0;
-    for (let i = 0; i < vector.length; i += 1) score += vector[i] * output.data[i];
+    for (let i = 0; i < vector.length; i += 1) score += vector[i] * query[i];
     return { word, count, score: Math.max(-1, Math.min(1, score)) };
   }).sort((a, b) => b.score - a.score).slice(0, message.limit);
 }

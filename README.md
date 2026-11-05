@@ -162,7 +162,12 @@ Hugging Face and the runtime from jsDelivr, with the browser cache reused when
 available. Article text and search terms are processed locally.
 
 Each distinct word has one normalized, 384-dimensional vector and an occurrence
-count. Case, Unicode compatibility forms, and curly apostrophes are normalized;
+count. For Finnish, both article and query vectors are centered on the model's
+empty-input vector and normalized again before comparison. This removes the
+shared background that otherwise makes unrelated single words look similar,
+especially with broad guesses such as `olla`. The background is computed once
+per Finnish worker and reused across articles. English uses the original model
+vectors. Case, Unicode compatibility forms, and curly apostrophes are normalized;
 punctuation and numbers are excluded, and internal apostrophes and hyphens are
 preserved. Words are processed in batches of 32. The page shows progress, accepts
 exact guesses while indexing, and lets you choose another article. Choosing another
