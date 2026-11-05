@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!-- SPDX-FileCopyrightText: 2026 Antero Fagerstedt -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lisenssit ja lähdekoodi – Denantle</title>
+  <style>
+    :root { color-scheme: light; }
+    body { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; background: #fcfbf7; color: #282920; font: 16px/1.65 system-ui, sans-serif; overflow-wrap: anywhere; }
+    h1, h2 { font-family: Georgia, serif; line-height: 1.2; }
+    h2 { margin-top: 32px; }
+    a { color: #365634; text-underline-offset: 3px; }
+    li + li { margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <nav><a href="index.html">← Takaisin peliin</a></nav>
+  <main>
+    <h1>Lisenssit ja lähdekoodi</h1>
+    <p>© 2026 Antero Fagerstedt. Denantlen oma ohjelmakoodi on vapaata ohjelmistoa,
+      joka on julkaistu <a href="LICENSE">GNU GPL:n version 3 tai uudemman</a>
+      ehdoilla (GPL-3.0-or-later). Saat käyttää, tutkia, muokata ja jakaa sitä,
+      myös kaupallisesti, lisenssin ehtojen mukaisesti.</p>
+    <p>Ohjelma tarjotaan ilman takuuta, mukaan lukien takuut myyntikelpoisuudesta
+      tai soveltuvuudesta tiettyyn tarkoitukseen. Tarkat oikeudet, ehdot ja
+      vastuunrajoitukset ovat lisenssitekstissä.</p>
+    <h2>Lähdekoodi</h2>
+    <p><a href="source/denantle-source.tar.gz" download>Lataa tämän julkaisun koko lähdepaketti</a>
+      (<a href="source/denantle-source.tar.gz.sha256">SHA-256</a>).
+      Paketti sisältää pelin lähdekoodin, julkaisutyökalun, lisenssit ja Voikon
+      vastaavat lähteet. Sen voi avata tavallisella arkistointiohjelmalla.</p>
+    <p>Pelin selaimelle toimitettavat lähdetiedostot ovat myös suoraan luettavissa:
+      <a href="index.html">HTML</a>, <a href="game.js">pelilogiikka</a>,
+      <a href="wikipedia.js">Wikipedia-haku</a>, <a href="categories.js">kategoriat</a>,
+      <a href="embeddings.js">sanavektorit</a>, <a href="embedding-worker.js">mallin käyttö</a>,
+      <a href="finnish-inflections.js">suomen taivutusmuodot</a> ja
+      <a href="finnish-inflections-worker.js">Voikon käyttö</a>.</p>
+    <h2 id="voikko">Voikko ja suomen sanasto</h2>
+    <p>Suomen taivutusmuotoihin käytetään Voikko 1.0.1 -pakettia, joka sisältää
+      libvoikko 4.3.2:n ja suomen morpho-sanaston. Kokonaisuus toimitetaan
+      GPL-3.0-or-later-ehdoin. Alkuperäiset tekijänoikeus- ja vaihtoehtoiset
+      lisenssimerkinnät säilyvät lähdepaketissa.</p>
+    <p><a href="source/voikko-corresponding-source.tar.gz" download>Lataa Voikon ja sanaston vastaava lähdekoodi ja käännösohjeet</a>.
+      Sanaston tekijöitä ovat Hannu Väisänen, Harri Pitkänen, Teemu Likonen
+      ja muut lähdepaketissa nimetyt tekijät.</p>
+    <h2>Muut kirjastot ja mallit</h2>
+    <ul>
+      <li>Compromise 14.19.0: © 2026 Spencer Kelly,
+        <a href="vendor/compromise-LICENSE.txt">MIT-lisenssi</a>.</li>
+      <li>Hugging Facen Transformers.js 3.8.1 ja molemmat sanavektorimallit:
+        <a href="licenses/Apache-2.0.txt">Apache-2.0</a>.
+        Mallit ovat Xenova/all-MiniLM-L6-v2 ja
+        onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX.</li>
+      <li>ONNX Runtime: © Microsoft Corporation,
+        <a href="licenses/ONNX-Runtime-LICENSE.txt">MIT-lisenssi</a> ja
+        <a href="licenses/ONNX-Runtime-ThirdPartyNotices.txt">kolmansien osapuolten ilmoitukset</a>.</li>
+      <li>Hugging Face Jinja: <a href="licenses/Hugging-Face-Jinja-LICENSE.txt">MIT-lisenssi</a>.
+        Emscripten: <a href="licenses/Emscripten-LICENSE.txt">lisenssit ja ilmoitukset</a>.</li>
+    </ul>
+    <p><a href="THIRD_PARTY_NOTICES.md">Tarkat alkuperät, versiot ja lisenssitiedot</a> ·
+      <a href="third-party-manifest.json">Lukitut versiot ja tiedostojen tarkistussummat</a>.</p>
+    <h2>Wikipedia-artikkelit ja kuvitus</h2>
+    <p>Artikkelit ovat Wikipedian kirjoittajien tekstiä. Artikkelin yhteydessä
+      oleva lähdelinkki johtaa alkuperäiseen sivuun, jonka historiasta tekijät
+      löytyvät. Tekstiä on lyhennetty ja muokattu peliä varten: osioita poistetaan,
+      sanoja peitetään ja niiden tilalla voidaan näyttää arvauksia. Muokattu
+      artikkeliteksti on saatavilla <a href="licenses/CC-BY-SA-4.0.txt">CC BY-SA 4.0</a>
+      -lisenssillä. Artikkeleiden lisenssi on erillinen ohjelmakoodin lisenssistä.</p>
+    <p>Pelin omien kuvakkeiden ja nimilogon tekijä on Antero Fagerstedt.
+      Niiden lisenssi on CC BY-SA 4.0. <a href="ARTWORK.md">Kuvituksen tiedot</a>.</p>
+  </main>
+</body>
+</html>

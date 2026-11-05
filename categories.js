@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antero Fagerstedt
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 const wikipediaSources = {
   simple: {
     name: "Simple English Wikipedia",

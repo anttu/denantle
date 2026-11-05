@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antero Fagerstedt
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 const randomButton = document.getElementById("random-article");
 const sourceSelect = document.getElementById("wikipedia-source");
 const guessHint = document.getElementById("guess-hint");

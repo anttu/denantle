@@ -1,5 +1,13 @@
 # Denantle
 
+Copyright © 2026 Antero Fagerstedt. The original program is licensed under
+**GNU GPL version 3 or later (GPL-3.0-or-later)**; see [LICENSE](LICENSE).
+Commercial use, modification and redistribution are allowed under those terms.
+The program is supplied without warranty. Original distributed artwork is
+CC BY-SA 4.0; see [ARTWORK.md](ARTWORK.md). Third-party software, model weights
+and Wikipedia text retain the licenses listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 A word guessing game that hides a Simple English or Finnish Wikipedia article's title and
 body behind black bars. Word embeddings are computed locally in the browser. No
 application server, API key, package installation, or build step is required.
@@ -7,9 +15,10 @@ application server, API key, package installation, or build step is required.
 Keep `index.html`, `wikipedia.js`, `game.js`, `categories.js`, `embeddings.js`,
 `embedding-worker.js`, `finnish-inflections.js`, `finnish-inflections-worker.js`,
 and `favicon.ico` in the same directory, with the PNG assets
-in `images/` and the bundled language library in `vendor/`. Run `./start-local.sh`
-and open `http://localhost:8000` in a current browser, or upload these files and
-asset directories to a static web host.
+in `images/` and the bundled language libraries in `vendor/`. For development,
+run `./start-local.sh` and open `http://localhost:8000` in a current browser.
+For publication, use the release command below so licenses and complete
+corresponding source are included.
 `images/denantle-mark.png` is the transparent seven-bar logo displayed beside
 the Denantle name, set as text in the page heading. The smaller icon PNGs and
 `favicon.ico` provide browser and touch icons.
@@ -43,10 +52,15 @@ words. `vesi` reveals `veden`, `vettä`, and `vedessä`; `juosta` reveals `juoks
 Participles are also linked to their underlying verb. Whole compound words and
 derived words keep their own base forms: `kansa` does not reveal `kansallinen` or
 `kansanmusiikki`. Ambiguous words may have several valid analyses.
-The GPL-3.0-licensed Voikko browser build (approximately 6.8 MB, including the
-dictionary) is downloaded from jsDelivr only when Finnish is selected. Its
-[upstream source and license](https://github.com/voikko/corevoikko) are available
-on GitHub. Analysis runs locally, separately from semantic hints, and does not
+The unchanged Voikko 1.0.1 browser build (approximately 6.8 MB, including the
+dictionary) is bundled in `vendor/voikko-1.0.1.min.js` and loaded only when
+Finnish is selected. It is conveyed under GPL-3.0-or-later. The complete
+[corresponding source](source/voikko-corresponding-source.tar.gz), including
+the matching Finnish dictionary source and npm build scripts, is bundled too.
+All three dictionary files match the data embedded in the WebAssembly byte
+for byte. See [the notices](THIRD_PARTY_NOTICES.md) for original licenses,
+copyright holders, checksums and build instructions.
+Analysis runs locally, separately from semantic hints, and does not
 send article text or guesses to a service. Exact guesses work while the dictionary
 loads or if it is unavailable. Once indexing finishes, repeating an early base-form
 guess reveals its inflections without increasing the guess count. Changing the
@@ -109,14 +123,19 @@ Text is rendered as text, preserving line breaks without inserting remote HTML.
 
 Each article includes a link to the original page on the selected Wikipedia and its
 [CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/).
+It also identifies the shortening, hidden words and guess substitutions as
+modifications. The adapted article text remains CC BY-SA 4.0.
 
 After an article is displayed, a Web Worker builds an in-memory vector database
 from the words in its title and displayed body. It uses
 [Transformers.js 3.8.1](https://huggingface.co/docs/transformers.js/v3.8.1/index)
 and an 8-bit quantized model: [Xenova/all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
 for English (approximately 23 MB of weights), or
-[Xenova/paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co/Xenova/paraphrase-multilingual-MiniLM-L12-v2)
-for Finnish. The multilingual model is larger and takes longer to download on first
+[onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX](https://huggingface.co/onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX)
+for Finnish. Both model publications explicitly state Apache-2.0, and their
+download revisions are pinned in `embedding-worker.js` and
+`third-party-manifest.json`. Their model cards and license are in `licenses/`.
+The multilingual model is larger and takes longer to download on first
 use. Switching languages releases the previous model and cancels its pending work.
 Inference runs on the CPU through
 WebAssembly and does not require WebGPU. The model files are downloaded from
@@ -142,3 +161,38 @@ await articleVectors.search("water", 5); // [{ word, count, score }, ...]
 Search embeds the query with the same model and returns article words ranked by
 cosine similarity (highest first). This provides semantic similarity for words;
 it does not use their surrounding sentence as context.
+
+## Preparing a publication
+
+Run this command with Python 3 (standard library only):
+
+```sh
+python3 tools/prepare_release.py
+```
+
+It creates a new `dist/` directory containing the static website, a public
+Finnish [license and source page](licenses.html), full third-party notices,
+the Voikko corresponding-source archive and a complete source download for
+this exact application release. Only explicit release inputs are included;
+Git data, editor files, private reference photographs, unused drafts and
+planning files are excluded. Third-party checksums are verified before packaging.
+
+Preview the actual publication directory:
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+```
+
+Upload **the entire contents of `dist/`**, including `licenses/` and `source/`,
+to an HTTP(S) static host. Retain the visible license link and source downloads.
+No public Git repository is required: the release itself serves the complete
+source. Browser-delivered application files are also readable source files.
+The application still needs network access to Wikipedia, Hugging Face and
+jsDelivr for articles and the embedding runtime/models.
+
+The packager refuses to overwrite an existing directory. For another release,
+choose a fresh location, for example `python3 tools/prepare_release.py --output dist-next`.
+Regenerate after every source change so the source download matches the site.
+When updating Voikko, preserve the exact new library and dictionary sources,
+build scripts, licensing notices and checksums. Model or runtime changes also
+require checking and updating their license records.

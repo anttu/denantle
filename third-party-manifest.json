@@ -1,0 +1,51 @@
+{
+  "description": "Pinned third-party components; original upstream licensing is retained.",
+  "models": [
+    {
+      "id": "Xenova/all-MiniLM-L6-v2",
+      "revision": "751bff37182d3f1213fa05d7196b954e230abad9",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX",
+      "revision": "d4c06bf0d7680171ac30042a1387e1fdb7a90021",
+      "license": "Apache-2.0"
+    }
+  ],
+  "runtime": {
+    "id": "@huggingface/transformers",
+    "version": "3.8.1",
+    "license": "Apache-2.0",
+    "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1"
+  },
+  "files": [
+    {
+      "path": "vendor/voikko-1.0.1.min.js",
+      "sha256": "a0c383b882b1e639fb5ce5eea5d3d2b7f7b7d354a40d40b26c0b8930a226d984",
+      "bytes": 6829934,
+      "origin": "https://registry.npmjs.org/voikko/-/voikko-1.0.1.tgz",
+      "license": "GPL-3.0-or-later"
+    },
+    {
+      "path": "source/voikko-corresponding-source.tar.gz",
+      "sha256": "9d902dd524fccac1962c5ed46e1f222aaa655c0a60757a2504f0725a3a33965c",
+      "bytes": 3830839,
+      "origin": "Locally assembled from the original sources identified inside the archive",
+      "license": "GPL-3.0-or-later"
+    },
+    {
+      "path": "vendor/compromise-14.19.0.js",
+      "sha256": "33d1d343d13b82b27c29ef0d2208876ae94bcd888667fdfa51433847b0161b41",
+      "bytes": 357312,
+      "origin": "https://cdn.jsdelivr.net/npm/compromise@14.19.0/builds/compromise.js",
+      "license": "MIT"
+    },
+    {
+      "path": "vendor/compromise-LICENSE.txt",
+      "sha256": "489a3d55a72fe45d34b63344366b228b3c60ed21a1ce537264370368bb55a4c6",
+      "bytes": 1079,
+      "origin": "https://cdn.jsdelivr.net/npm/compromise@14.19.0/LICENSE",
+      "license": "MIT"
+    }
+  ]
+}

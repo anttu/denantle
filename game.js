@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antero Fagerstedt
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Cosine similarity between the model's normalized word vectors.
 const SIMILARITY_THRESHOLD = 0.6;
 const DETAIL_SIMILARITY_THRESHOLD = 0.5;

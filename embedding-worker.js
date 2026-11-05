@@ -1,6 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Antero Fagerstedt
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 const MODELS = {
   en: "Xenova/all-MiniLM-L6-v2",
-  fi: "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
+  fi: "onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX",
+};
+// Keep the downloaded model and its audited license at the same revision.
+const MODEL_REVISIONS = {
+  [MODELS.en]: "751bff37182d3f1213fa05d7196b954e230abad9",
+  [MODELS.fi]: "d4c06bf0d7680171ac30042a1387e1fdb7a90021",
 };
 const BATCH_SIZE = 32;
 let extractorPromise;
@@ -15,7 +23,9 @@ async function getExtractor(model) {
       env.allowLocalModels = false;
       // A single WASM thread also works without cross-origin isolation or WebGPU.
       env.backends.onnx.wasm.numThreads = 1;
-      return pipeline("feature-extraction", model, { dtype: "q8", device: "wasm" });
+      return pipeline("feature-extraction", model, {
+        revision: MODEL_REVISIONS[model], dtype: "q8", device: "wasm",
+      });
     })().catch((error) => {
       extractorPromise = null;
       throw error;
