@@ -17,8 +17,7 @@ Keep `index.html`, `wikipedia.js`, `game.js`, `categories.js`, `embeddings.js`,
 and `favicon.ico` in the same directory, with the PNG assets
 in `images/` and the bundled language libraries in `vendor/`. For development,
 run `./start-local.sh` and open `http://localhost:8000` in a current browser.
-For publication, use the release command below so licenses and complete
-corresponding source are included.
+For publication, follow the [publishing instructions](#publishing) below.
 `images/denantle-mark.png` is the transparent seven-bar logo displayed beside
 the Denantle name, set as text in the page heading. The smaller icon PNGs and
 `favicon.ico` provide browser and touch icons.
@@ -182,37 +181,27 @@ Search embeds the query with the same model and returns article words ranked by
 cosine similarity (highest first). This provides semantic similarity for words;
 it does not use their surrounding sentence as context.
 
-## Preparing a publication
+## Publishing
 
-Run this command with Python 3 (standard library only):
+Publish directly from the repository root with GitHub Pages:
 
-```sh
-python3 tools/prepare_release.py
-```
+1. Open the repository's **Settings → Pages**.
+2. Under **Build and deployment**, select **Deploy from a branch**.
+3. Select **main** and **/ (root)**, then **Save**.
 
-It creates a new `dist/` directory containing the static website, a public
-Finnish [license and source page](licenses.html), full third-party notices,
-the Voikko corresponding-source archive and a complete source download for
-this exact application release. Only explicit release inputs are included;
-Git data, editor files, private reference photographs, unused drafts and
-planning files are excluded. Third-party checksums are verified before packaging.
+GitHub Pages publishes updates pushed to `main`. No packaging or build command
+is required. The site is available at https://anttu.github.io/denantle/.
 
-Preview the actual publication directory:
-
-```sh
-python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
-```
-
-Upload **the entire contents of `dist/`**, including `licenses/` and `source/`,
-to an HTTP(S) static host. Retain the visible license link and source downloads.
-No public Git repository is required: the release itself serves the complete
-source. Browser-delivered application files are also readable source files.
+Keep `LICENSE`, `licenses.html`, `THIRD_PARTY_NOTICES.md`, `ARTWORK.md`,
+`third-party-manifest.json`, `licenses/` and
+`source/voikko-corresponding-source.tar.gz` available alongside the game.
+Retain the visible license link and Voikko source download. The
+[license and source page](licenses.html) links to the
+[public GitHub repository](https://github.com/anttu/denantle) and the application
+source files served directly with the site.
 The application still needs network access to Wikipedia, Hugging Face and
 jsDelivr for articles and the embedding runtime/models.
 
-The packager refuses to overwrite an existing directory. For another release,
-choose a fresh location, for example `python3 tools/prepare_release.py --output dist-next`.
-Regenerate after every source change so the source download matches the site.
 When updating Voikko, preserve the exact new library and dictionary sources,
 build scripts, licensing notices and checksums. Model or runtime changes also
 require checking and updating their license records.

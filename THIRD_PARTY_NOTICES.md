@@ -111,10 +111,10 @@ favicon assets are licensed separately under CC BY-SA 4.0.
 
 ## When publishing or redistributing
 
-Run `python3 tools/prepare_release.py` and publish the complete generated
-directory, including `licenses/` and `source/`. The generated source archive
-contains the exact application source files shipped by that invocation, all
-notices, the release tool and the complete Voikko corresponding-source archive.
-Do not remove source downloads or legal notices from an existing publication.
-Regenerate the release after changing source files. If replacing any dependency,
-update its license, corresponding source where required, version and checksums.
+Publish the static site directly from the repository root, including `LICENSE`,
+`licenses.html`, `ARTWORK.md`, this notice, `third-party-manifest.json`,
+`licenses/` and `source/voikko-corresponding-source.tar.gz`.
+The license page links to the public GitHub repository and the application source
+files served directly with the site. Retain the visible license link, licensing
+notices and Voikko source download. If replacing any dependency, update its
+license, corresponding source where required, version and checksums.

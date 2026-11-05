@@ -15,8 +15,8 @@ artwork recorded in this repository's history; the smaller icons are derivatives
 The seven-bar mark was recreated with ImageGen from the author's marker drawing,
 as documented in the draft prompt saved in the development repository.
 The author's rights in that drawing and the distributed mark are included in
-the grant above. Unused reference photographs and draft files are excluded from
-the publication package. These unused materials are not needed to run,
-modify or rebuild the distributed program and are not part of the artwork grant above.
+the grant above. Unused reference photographs and draft files are not needed to
+run, modify or rebuild the distributed program and are not part of the artwork
+grant above.
 
 This license does not imply endorsement of derivative products by the author.
