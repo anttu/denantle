@@ -39,11 +39,26 @@ class SignalingPayload {
   static encode(text) {
     if (typeof text !== "string" || !text || text.length > this.maxLength) throw new Error();
     const data = JSON.parse(text);
-    // D2 covers the short, single mDNS host candidate offer. Exact reconstruction
-    // is required; other browsers, extra candidates and future fields use D1.
-    if (data.denantle === 1 && data.description?.type === "offer" && typeof data.description.sdp === "string") {
+    // D2 covers single mDNS host offers; D3 adds an answer's DTLS role byte.
+    // Exact reconstruction is required; other SDP layouts keep using D1.
+    if (data.denantle === 1 && ["offer", "answer"].includes(data.description?.type)
+      && typeof data.description.sdp === "string") {
       try {
-        const token = "D2:" + this.base64(this.packOffer(data.description.sdp));
+        const { type, sdp } = data.description;
+        let bytes, prefix;
+        if (type === "offer") {
+          bytes = this.packOffer(sdp);
+          prefix = "D2:";
+        } else {
+          const setup = sdp.match(/\r\na=setup:(active|passive)\r\n/);
+          if (!setup) throw new Error();
+          const body = this.packOffer(sdp.replace(setup[0], "\r\na=setup:actpass\r\n"));
+          bytes = new Uint8Array(body.length + 1);
+          bytes[0] = setup[1] === "active" ? 0 : 1;
+          bytes.set(body, 1);
+          prefix = "D3:";
+        }
+        const token = prefix + this.base64(bytes);
         if (this.decode(token) === text) return token;
       } catch {
         // The general dictionary format preserves every original character.
@@ -80,10 +95,13 @@ class SignalingPayload {
       return text;
     }
     const reader = this.reader(this.unbase64(text.slice(3)));
-    if (text.startsWith("D2:")) {
-      const sdp = this.unpackOffer(reader);
+    const isAnswer = text.startsWith("D3:");
+    if (text.startsWith("D2:") || isAnswer) {
+      const setup = isAnswer ? ["active", "passive"][reader.take(1)[0]] : "actpass";
+      if (setup === undefined) throw new Error();
+      const sdp = this.unpackOffer(reader).replace("\r\na=setup:actpass\r\n", "\r\na=setup:" + setup + "\r\n");
       if (reader.remaining()) throw new Error();
-      return JSON.stringify({ denantle: 1, description: { type: "offer", sdp } });
+      return JSON.stringify({ denantle: 1, description: { type: isAnswer ? "answer" : "offer", sdp } });
     }
     if (!text.startsWith("D1:")) throw new Error();
     let result = "";
