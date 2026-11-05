@@ -8,6 +8,8 @@ const status = document.getElementById("status");
 const errorMessage = document.getElementById("error");
 const article = document.getElementById("article");
 const articleSource = document.getElementById("article-source");
+const gameVersion = document.getElementById("game-version");
+const gameVersionLink = document.getElementById("game-version-link");
 const vectorStatus = document.getElementById("vector-status");
 const articleGame = new ArticleGuessGame(articleVectors, finnishInflections);
 
@@ -44,6 +46,34 @@ function removeUnwantedSections(text, source) {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
+function articleTextFromHtml(html, source) {
+  // A template keeps remote markup inert; only its plain text enters the game.
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  template.content.querySelectorAll([
+    "script", "style", "link", "meta", "table", "figure", "img", "audio", "video",
+    "iframe", "object", "embed", "form", ".thumb", ".gallery", ".mw-editsection",
+    ".reference", ".reflist", ".navbox", ".infobox", ".metadata", ".noprint",
+    ".shortdescription", ".ambox", ".hatnote", ".sistersitebox", ".toc", ".mw-empty-elt",
+  ].join(",")).forEach((node) => node.remove());
+
+  function textFromNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent.replace(/\s+/g, " ");
+    if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return "";
+    if (/^H[1-6]$/.test(node.nodeName)) {
+      const marker = "=".repeat(Number(node.nodeName[1]));
+      return `\n\n${marker} ${node.textContent.trim()} ${marker}\n\n`;
+    }
+    if (node.nodeName === "BR") return "\n";
+    const text = [...node.childNodes].map(textFromNode).join("");
+    return /^(P|DIV|SECTION|BLOCKQUOTE|UL|OL|LI|DL|DT|DD|PRE)$/.test(node.nodeName)
+      ? `\n\n${text}\n\n` : text;
+  }
+
+  return removeUnwantedSections(textFromNode(template.content)
+    .replace(/[ \t]+\n/g, "\n").replace(/\n[ \t]+/g, "\n"), source);
+}
+
 async function queryWikipedia(source, parameters, signal) {
   const params = new URLSearchParams({
     action: "query",
@@ -59,6 +89,9 @@ async function queryWikipedia(source, parameters, signal) {
 
   const data = await response.json();
   if (data.error) {
+    if (["missingrev", "nosuchrevid", "missingtitle"].includes(data.error.code)) {
+      throw new Error("Artikkeliversiota ei löytynyt. Tarkista pelin linkki tai valitse uusi peli.");
+    }
     throw new Error("Wikipedia ei voinut käsitellä hakua. Yritä uudelleen.");
   }
   return data;
@@ -100,41 +133,53 @@ async function getRandomArticleTitle(source, signal) {
   throw new Error("Valituista kategorioista ei löytynyt artikkeleita. Yritä uudelleen.");
 }
 
-async function loadRandomArticle() {
+async function loadArticle(gameId = null) {
   if (randomButton.disabled) return;
 
-  const source = wikipediaSources[sourceSelect.value];
   randomButton.disabled = true;
   sourceSelect.disabled = true;
-  guessHint.textContent = source.language === "fi"
-    ? "Arvaa peitetyn artikkelin sanoja suomeksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä."
-    : "Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.";
-  document.getElementById("guess-input").lang = source.language;
   articleGame.reset();
   articleVectors.clear();
   vectorStatus.textContent = "";
+  gameVersion.hidden = true;
+  gameVersionLink.removeAttribute("href");
+  gameVersionLink.textContent = "";
   article.hidden = true;
   article.setAttribute("aria-busy", "true");
   errorMessage.textContent = "";
-  status.textContent = "Haetaan satunnaista artikkelia…";
+  status.textContent = gameId === null ? "Haetaan satunnaista artikkelia…" : "Haetaan tallennettua peliä…";
 
   try {
+    const savedGame = gameId === null ? null : gameId.match(/^(simple|fi)-([1-9]\d*)$/);
+    if (gameId !== null && (!savedGame || !Number.isSafeInteger(Number(savedGame[2])))) {
+      throw new Error("Pelin tunniste ei kelpaa. Tarkista pelin linkki tai valitse uusi peli.");
+    }
+    const sourceKey = savedGame ? savedGame[1] : sourceSelect.value;
+    const source = wikipediaSources[sourceKey];
+    sourceSelect.value = sourceKey;
+    guessHint.textContent = source.language === "fi"
+      ? "Arvaa peitetyn artikkelin sanoja suomeksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä."
+      : "Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.";
+    document.getElementById("guess-input").lang = source.language;
     const signal = AbortSignal.timeout(15000);
-    const title = await getRandomArticleTitle(source, signal);
-
+    const selection = savedGame
+      ? { oldid: savedGame[2] }
+      : { page: await getRandomArticleTitle(source, signal), redirects: "1" };
     const data = await queryWikipedia(source, {
-      prop: "extracts",
-      titles: title,
-      explaintext: "1",
-      exsectionformat: "wiki",
-      redirects: "1",
+      action: "parse",
+      prop: "text|revid",
+      disabletoc: "1",
+      disableeditsection: "1",
+      disablelimitreport: "1",
+      ...selection,
     }, signal);
 
-    const page = data.query?.pages?.[0];
-    if (!page || page.missing) {
-      throw new Error("Artikkelia ei löytynyt. Kokeile uutta satunnaista artikkelia.");
+    const page = data.parse;
+    if (!page || !page.title || !Number.isSafeInteger(page.revid) || page.revid <= 0
+      || (savedGame && page.revid !== Number(savedGame[2]))) {
+      throw new Error("Artikkeliversiota ei löytynyt. Tarkista pelin linkki tai valitse uusi peli.");
     }
-    const body = typeof page.extract === "string" ? removeUnwantedSections(page.extract, source) : "";
+    const body = typeof page.text === "string" ? articleTextFromHtml(page.text, source) : "";
     if (!body) {
       throw new Error("Artikkelissa ei ole näytettävää leipätekstiä.");
     }
@@ -142,7 +187,15 @@ async function loadRandomArticle() {
     articleGame.start(page.title, body, source.language);
     article.lang = source.language;
     articleSource.textContent = source.name;
-    articleSource.href = `${source.baseUrl}/wiki/${encodeURIComponent(page.title.replaceAll(" ", "_"))}`;
+    articleSource.href = `${source.baseUrl}/w/index.php?oldid=${page.revid}`;
+    const version = `${sourceKey}-${page.revid}`;
+    const replayUrl = new URL(window.location.href);
+    replayUrl.hash = "";
+    replayUrl.searchParams.set("game", version);
+    window.history.replaceState(null, "", replayUrl);
+    gameVersionLink.textContent = version;
+    gameVersionLink.href = replayUrl.href;
+    gameVersion.hidden = false;
     article.hidden = false;
     void buildArticleVectors(page.title, body, source.language);
   } catch (error) {
@@ -160,11 +213,11 @@ async function loadRandomArticle() {
 }
 
 randomButton.addEventListener("click", () => {
-  void loadRandomArticle();
+  void loadArticle();
 });
 
 sourceSelect.addEventListener("change", () => {
-  void loadRandomArticle();
+  void loadArticle();
 });
 
-void loadRandomArticle();
+void loadArticle(new URLSearchParams(window.location.search).get("game"));

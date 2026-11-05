@@ -58,6 +58,7 @@ class ArticleGuessGame {
     this.button = document.getElementById("guess-submit");
     this.feedback = document.getElementById("guess-feedback");
     this.progress = document.getElementById("game-progress");
+    this.completion = document.getElementById("game-completion");
     this.celebration = document.getElementById("title-celebration");
     this.recent = document.getElementById("recent-guesses");
     this.tooltip = document.getElementById("word-tooltip");
@@ -98,6 +99,8 @@ class ArticleGuessGame {
     this.input.value = "";
     this.feedback.textContent = "";
     this.progress.textContent = "";
+    this.completion.hidden = true;
+    this.completion.value = 0;
     this.recent.replaceChildren();
     this.recent.hidden = true;
     this.title.replaceChildren();
@@ -271,7 +274,18 @@ class ArticleGuessGame {
   }
 
   updateProgress() {
-    this.progress.textContent = `Arvauksia: ${this.guesses.size} · Paljastettuja sanoja: ${this.revealed} / ${this.total}`;
+    const guesses = document.createElement("span");
+    const guessCount = document.createElement("strong");
+    guessCount.textContent = String(this.guesses.size);
+    guesses.append(guessCount, document.createTextNode(this.guesses.size === 1 ? " arvaus" : " arvausta"));
+    const words = document.createElement("span");
+    const revealedCount = document.createElement("strong");
+    revealedCount.textContent = String(this.revealed);
+    words.append(revealedCount, document.createTextNode(` / ${this.total} sanaa`));
+    this.progress.replaceChildren(guesses, words);
+    this.completion.max = this.total || 1;
+    this.completion.value = this.revealed;
+    this.completion.hidden = false;
   }
 
   checkTitleCompletion() {

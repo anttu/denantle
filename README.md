@@ -29,9 +29,26 @@ is required to fetch articles and initially download the embedding runtime and m
 The page automatically loads a random Simple English Wikipedia article. Use
 **Datalähde** to choose **Simple English Wikipedia** or **Suomenkielinen Wikipedia**;
 changing the source starts a new game with an article in that language. Click
-**Satunnainen artikkeli** to choose another article from the selected source.
+**Uusi peli** to choose another article from the selected source.
 Redirects are followed, and
 missing articles and connection failures are shown on the page.
+
+Each loaded game displays a **Pelin tunniste** link such as `fi-123456789`
+or `simple-123456789`. The prefix identifies the Wikipedia edition; the
+number identifies the article revision within that edition. The same ID is
+stored in the page address as `?game=fi-123456789`. Bookmark or share the
+address to reopen that revision with no guesses, or click the displayed ID
+to play it again from the beginning. Reloading the page also restarts that
+game. **Uusi peli** and changing the source choose a new random article and
+update the link. Invalid IDs and unavailable revisions show an error instead
+of silently choosing a different article.
+The ID pins the stored article revision, not a complete game snapshot:
+Wikipedia template updates, page renames and later changes to game rules or
+models can still affect a replay.
+
+The warm paper layout pairs a compact logo and controls with a serif heading and
+article text. Guess and revealed-word counts sit above the input, with a progress
+bar tracking revealed occurrences. The **?** button opens the playing instructions.
 
 Enter one word in the article's language in **Arvaa sana** and press Enter or
 **Arvaa**. A base-form guess reveals that word and its inflected forms, preserving the original spelling
@@ -111,17 +128,20 @@ random, so articles do not all have the same probability of being selected.
 
 Content comes from the [MediaWiki Action API](https://www.mediawiki.org/wiki/API:Main_page)
 at `https://simple.wikipedia.org/w/api.php` or `https://fi.wikipedia.org/w/api.php`,
-depending on the selected source, using `prop=extracts` and
-`explaintext=1`. The page requests the full text extract, including sections
-after the introduction. Gallery, References, Other websites, Related pages, and
+depending on the selected source, using `action=parse` and `prop=text|revid`.
+Random games resolve an article title and obtain its revision ID with its
+content in the same response; replay links request that revision with `oldid`.
+The returned HTML is processed in an inert template and converted to plain
+text, including sections after the introduction. Gallery, References, Other
+websites, Related pages, and
 Bibliography sections and their subsections are removed from English text. For
 Finnish text, the removed sections are Kuvia, Kuvagalleria, Galleria, Lähteet,
 Viitteet, Aiheesta muualla, Katso myös, and Kirjallisuutta, including subsections.
-Images, tables, and other content excluded by
-[TextExtracts](https://www.mediawiki.org/wiki/Extension:TextExtracts) are not displayed.
+Images, tables, navigation boxes, reference markers and other non-article
+elements are removed before conversion.
 Text is rendered as text, preserving line breaks without inserting remote HTML.
 
-Each article includes a link to the original page on the selected Wikipedia and its
+Each article includes a link to the exact revision on the selected Wikipedia and its
 [CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/).
 It also identifies the shortening, hidden words and guess substitutions as
 modifications. The adapted article text remains CC BY-SA 4.0.
