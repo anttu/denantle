@@ -39,77 +39,22 @@ Sovellus tarvitsee internetyhteyden Wikipedia-artikkelien hakemiseen sekä
 kielimallien ja niiden ajoympäristön ensimmäiseen lataamiseen. Käytä paikallista
 palvelinta, jotta myös sanojen merkityksiä vertaileva toiminto toimii.
 
-## Selaintesti containerissa
 
-Testit ja niiden paikalliset ajoasetukset ovat `tests/`-hakemistossa.
-Tarvitset Dockerin ja Docker Composen. Suorita projektin juurihakemistossa:
+## Teknologiat
 
-```sh
-docker compose -f tests/compose.yaml run --build --rm playwright
-```
+Denantle on käytännössä teknologiademo, jossa kokeillaan selaimessa ajettavia
+embedding-malleja, sekä selainten välistä reaaliaikaista tiedonsiirtoa ilman
+signalointipalvelinta.
 
-Container käynnistää paikallisen palvelimen ja ajaa Playwright-testit
-headless-Firefoxilla. Testit tarkistavat sivun avautumisen, pelimuodon vaihtamisen,
-kutsujan yhteyspaneelin mobiiliasettelun sekä käsin liittymisen virhetilan.
-Yhteystesti muodostaa oikean WebRTC-yhteyden kahden erillisen Firefox-istunnon
-välille kutsulinkillä ja vastauksella. Se tarkistaa pelaajamäärän, käytettyjen
-yhteystietojen tyhjentämisen ja viestin saapumisen datakanavan kautta.
-Virheellinen pelitunniste ohittaa Wikipedia-haun,
-joten testit eivät tarvitse Wikipediaa tai kielimalleja. Container käyttää
-Dockerin bridge-verkkoa, jotta Firefoxilla on WebRTC:n vaatima verkkoliitäntä ja
-oletusreitti. Ensimmäinen koonti tarvitsee internetyhteyden imagen ja npm-pakettien
-lataamiseen. Komennon paluuarvo kertoo testin tuloksen.
-JUnit-raportti tallentuu tiedostoon `tests/reports/junit.xml`.
+Sanojen merkityksiä verrataan MiniLM-pohjaisilla embedding-malleilla, jotka
+muuttavat tekstin numeerisiksi vektoreiksi. Vektorien läheisyyden perusteella
+peli tunnistaa merkitykseltään samankaltaisia sanoja. Mallit ajetaan paikallisesti
+selaimessa Transformers.js:n ja WebAssemblyn avulla.
 
-GitHub Actions ajaa saman komennon jokaisella pushilla ja pull requestissa.
-Testitulokset julkaistaan ajon Summary-osiossa myös testin epäonnistuessa.
-Työnkulku on tiedostossa [.github/workflows/playwright.yaml](.github/workflows/playwright.yaml).
-
-## Moninpeli
-
-Useampi pelaaja voi ratkaista samaa artikkelia yhdessä ilman peli- tai
-signalointipalvelinta. Oletuksena valittuna on **Yksinpeli**. Kutsuja valitsee
-**Moninpeli samassa lähiverkossa**.
-
-1. Kutsuja painaa **Luo kutsu** tai aloittaa uuden pelin moninpelin ollessa
-   päällä ja kopioi syntyvän **kutsulinkin** pelikaverille.
-2. Pelikaveri avaa linkin. Moninpeli käynnistyy ja hyväksyy kutsun
-   automaattisesti. Pelikaveri kopioi syntyvän vastauksensa takaisin kutsujalle.
-3. Kutsuja liittää vastauksen kenttään **Liitä kaverin vastaus** ja painaa
-   **Hyväksy vastaus**.
-
-Kutsujan paneelissa kutsulinkki ja vastaus ovat rinnakkain, mobiilissa allekkain.
-**Aloita alusta** peruu keskeneräisen kutsun. Kutsun voi liittää myös käsin
-valitsemalla **Saitko kutsun? Liity kaverin peliin**.
-
-Yhteyden avauduttua **Yhteys muodostettu** -palkki näyttää pelaajamäärän.
-Kaikki näkevät kutsujan artikkelin, aiemmat arvaukset, paljastukset ja
-lähisanavihjeet. Kaikki voivat arvata; kutsuja valitsee uuden pelin ja kielen.
-Kutsutun yhteystietokentät piilotetaan, ja käytetyt yhteystiedot tyhjennetään.
-
-Kutsuja voi avata **Kutsu lisää pelaajia** -osion ja painaa **Luo uusi kutsu**.
-Jokaiselle uudelle pelaajalle luodaan oma kutsu, jonka vastaus hyväksytään kuten
-ensimmäisen pelaajan. **Peru kutsu** peruu vain keskeneräisen kutsun.
-Uuden pelaajan kutsuminen tai yhden pelaajan poistuminen ei katkaise muiden
-yhteyksiä. Kutsujan **Katkaise yhteydet** sulkee kaikki hänen yhteytensä;
-kutsutun **Poistu moninpelistä** sulkee vain hänen oman yhteytensä.
-
-Valitsemalla **Yksinpeli** voit jatkaa yksin. Sivun lataaminen uudelleen
-katkaisee kyseisen selaimen yhteydet, ja uudelleen yhdistäminen vaatii uuden kättelyn.
-Kutsulinkki toimii vain niin kauan kuin kutsujan sivu ja kutsu ovat avoinna.
-Linkin osoitteen pitää olla myös pelikaverin saavutettavissa.
-
-Kutsun voi edelleen liittää ja hyväksyä käsin. Kutsulinkin yhteystiedot
-kulkevat osoitteen #join=-osassa. Selain purkaa ne häviöttömästi ennen
-yhteyden muodostamista. Pelin tunniste ja sivun nykyinen polku säilyvät linkissä.
-**Yhteyden tekniset tiedot** -osion **payload debug** -valinta näyttää oman ja pelikaverin yhteystiedot
-kokonaisina, purettuina JSON-kuvauksina yhteyden muodostamisen aikana.
-Valinta on oletuksena pois päältä, ja se nollataan yhteyden avauduttua.
-
-Yhteys kulkee suoraan selainten välillä WebRTC:llä ilman yhteys- tai
-välityspalveluja ja toimii yleensä samassa lähiverkossa. Osa palomuureista ja
-NAT-verkoista estää suoran yhteyden. Vaihda yhteystiedot vain pelikaverisi kanssa,
-sillä ne sisältävät yhteyden muodostamiseen tarvittavat tiedot.
+Moninpeli välittää pelitilan suoraan selainten välillä WebRTC-datakanavilla.
+Signalointi eli yhteyden muodostamiseen tarvittavien tietojen vaihto tehdään
+käsin kutsulinkillä ja vastauksella, joten erillistä signalointipalvelinta ei
+tarvita.
 
 ## Lisätiedot ja lisenssit
 
