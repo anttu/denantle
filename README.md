@@ -13,6 +13,12 @@ paikallisesti selaimessa.
 
 Sovellus on julkaistu GitHub Pagesissa: [https://anttu.github.io/denantle/](https://anttu.github.io/denantle/).
 
+Pages-julkaisu tapahtuu GitHub Actionsissa vain `main`-haaran pushista, kun saman
+commitin Playwright-testit ovat menneet läpi. Epäonnistunut testiajo jättää
+nykyisen julkaistun version ennalleen. Julkaisulähteeksi valitaan repositorion
+**Settings → Pages → Build and deployment → Source → GitHub Actions** vasta,
+kun tämä työnkulku on `main`-haarassa GitHubissa.
+
 ## Paikallinen käynnistys
 
 Tarvitset Python 3:n ja ajantasaisen selaimen. Sovellus ei tarvitse pakettien
