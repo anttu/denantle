@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Signaling is manual: each description includes all gathered ICE candidates.
-// No external ICE services are used.
+// Google's STUN server discovers public addresses; game data stays peer-to-peer.
 function readSignalingDescription(text, type) {
   try {
     const data = JSON.parse(decodeSignalingPayload(text));
@@ -17,7 +17,9 @@ function readSignalingDescription(text, type) {
 }
 
 function createManualPeerConnection({ onOpen, onClose, onMessage } = {}) {
-  const peer = new RTCPeerConnection({ iceServers: [] });
+  const peer = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  });
   let sendQueue = Promise.resolve();
   let received = "";
   let closed = false;

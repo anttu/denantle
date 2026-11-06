@@ -72,7 +72,10 @@ selaimessa Transformers.js:n ja WebAssemblyn avulla.
 Moninpeli välittää pelitilan suoraan selainten välillä WebRTC-datakanavilla.
 Signalointi eli yhteyden muodostamiseen tarvittavien tietojen vaihto tehdään
 käsin kutsulinkillä ja vastauksella, joten erillistä signalointipalvelinta ei
-tarvita.
+tarvita. Kaikki moninpeliyhteydet käyttävät Googlen julkista STUN-palvelinta
+(`stun:stun.l.google.com:19302`) julkisten yhteysosoitteiden selvittämiseen.
+Tämä mahdollistaa suoran yhteyden myös eri verkoissa olevien pelaajien välillä,
+jos verkkojen NAT- ja palomuuriasetukset sallivat sen. TURN-välitystä ei käytetä.
 
 ## Lisätiedot ja lisenssit
 
@@ -89,8 +92,9 @@ HTML:llä, CSS:llä ja JavaScriptillä ilman käyttöliittymäkehystä tai
 koontivaihetta, joten sen voi julkaista staattisena sivustona ilman omaa
 sovelluspalvelinta. Moninpeli välittää pelitilan WebRTC-datakanavien kautta;
 yhteyden muodostamiseen tarvittavat SDP-yhteyskuvaukset vaihdetaan käsin
-kutsulinkillä ja vastauksella. STUN- tai TURN-palvelimia ei käytetä, joten
-kokeilu painottuu suoriin yhteyksiin samassa lähiverkossa. Sanojen merkitysten
+kutsulinkillä ja vastauksella. Googlen STUN-palvelin auttaa muodostamaan suoran
+yhteyden myös eri verkkojen välille; pelidata kulkee selainten välillä ilman
+TURN-välitystä. Sanojen merkitysten
 vertailussa käytettävät kielimallit ajetaan paikallisesti selaimessa
 Transformers.js:n ja WebAssemblyn avulla, joten myöskään tämä laskenta ei
 tarvitse erillistä taustapalvelua.

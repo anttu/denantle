@@ -81,9 +81,13 @@ default; hiding it, connecting or disconnecting clears the displayed payloads.
 `RTCPeerConnection` and an ordered, reliable data channel. Both descriptions wait
 for ICE gathering to complete, so candidates travel in the copied text and no
 signaling service is needed. There are no additional packages or application
-servers. No external ICE services or relays are used; game data travels directly
-between peers. Expect local-network or directly reachable peers; restrictive
-networks may prevent a connection.
+servers. Every peer connection uses Google's public STUN server at
+`stun:stun.l.google.com:19302` to gather server-reflexive candidates alongside
+local candidates. This enables direct connections between players on different
+networks when their NATs and firewalls permit it. Both candidate types are
+preserved in the invitation and answer. No TURN relay is configured; game data
+travels directly between peers, and restrictive networks may prevent a
+connection.
 This follows the native [WebRTC offer/answer and ICE flow](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Connectivity).
 
 The inviter's browser owns the shared article and one peer connection per guest.
