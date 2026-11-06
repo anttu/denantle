@@ -39,8 +39,10 @@ nykyisen julkaistun version ennalleen.
 
 ## Paikallinen käynnistys
 
-Tarvitset Node.js:n ja ajantasaisen selaimen. Sovellus ei tarvitse pakettien
-asennusta tai erillistä koontivaihetta.
+Tarvitset [NVM:n](https://github.com/nvm-sh/nvm#installing-and-updating) ja
+ajantasaisen selaimen. Käynnistysskripti ottaa NVM:llä käyttöön `.nvmrc`:hen
+lukitun Node.js-version (26.13.0 LTS) ja asentaa sen tarvittaessa.
+Sovellus ei tarvitse npm-pakettien asennusta tai erillistä koontivaihetta.
 
 1. Avaa terminaali projektin juurihakemistossa.
 2. Käynnistä paikallinen palvelin:

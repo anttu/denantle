@@ -2,6 +2,7 @@
 !tests/
 !tests/**
 !index.html
+!.nvmrc
 !start-local.sh
 !tools/
 !tools/serve.mjs
