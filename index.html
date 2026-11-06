@@ -217,13 +217,40 @@
                     Share one link. Your friends join automatically.
                   </p>
                 </div>
-                <span
-                  class="multiplayer-network"
-                  data-i18n="multiplayer.network"
-                  >Direct connection</span
+                <span id="multiplayer-auto-network" class="multiplayer-network"
+                  >Internet</span
                 >
               </div>
               <div class="multiplayer-invitation-body">
+                <div
+                  id="multiplayer-network-choice"
+                  class="multiplayer-network-choice"
+                >
+                  <label
+                    for="multiplayer-network"
+                    data-i18n="multiplayer.networkChoice"
+                    >Connection network</label
+                  >
+                  <select
+                    id="multiplayer-network"
+                    aria-describedby="multiplayer-network-help"
+                  >
+                    <option
+                      value="internet"
+                      data-i18n="multiplayer.networkInternet"
+                    >
+                      Internet
+                    </option>
+                    <option value="lan" data-i18n="multiplayer.networkLan">
+                      Local network
+                    </option>
+                  </select>
+                </div>
+                <p
+                  id="multiplayer-network-help"
+                  class="multiplayer-network-help"
+                  aria-live="polite"
+                ></p>
                 <button
                   id="multiplayer-auto-create"
                   type="button"

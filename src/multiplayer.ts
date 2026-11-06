@@ -6,7 +6,11 @@ import type {
   MultiplayerMessage,
   ReceivedMessage,
 } from './contracts.js'
-import type { GamePeer } from './data-peer.js'
+import {
+  type GamePeer,
+  isMultiplayerNetwork,
+  type MultiplayerNetwork,
+} from './data-peer.js'
 import { featureFlags } from './feature-flags.js'
 import type { createArticleGame } from './game.js'
 import {
@@ -160,6 +164,10 @@ export function createMultiplayerGame(
     autoPanel: elementById('multiplayer-auto', HTMLElement),
     autoTitle: elementById('multiplayer-auto-title', HTMLElement),
     autoDescription: elementById('multiplayer-auto-description', HTMLElement),
+    autoNetworkChoice: elementById('multiplayer-network-choice', HTMLElement),
+    autoNetwork: elementById('multiplayer-network', HTMLSelectElement),
+    autoNetworkLabel: elementById('multiplayer-auto-network', HTMLElement),
+    autoNetworkHelp: elementById('multiplayer-network-help', HTMLElement),
     autoCreate: elementById('multiplayer-auto-create', HTMLButtonElement),
     autoLocalPanel: elementById('multiplayer-auto-local-panel', HTMLElement),
     autoLocal: elementById('multiplayer-auto-local', HTMLInputElement),
@@ -223,6 +231,7 @@ export function createMultiplayerGame(
   let autoToken = ''
   let autoConnecting = false
   let autoAvailable = true
+  let automaticNetwork: MultiplayerNetwork = 'internet'
   let role: 'host' | 'guest' | null = null
   let joining = false
   let peers = new Set<GamePeer>()
@@ -411,6 +420,25 @@ export function createMultiplayerGame(
 
   function renderAutoConnection() {
     const guest = isGuest()
+    elements.autoNetworkChoice.hidden = guest
+    elements.autoNetwork.value = automaticNetwork
+    elements.autoNetwork.disabled = Boolean(autoSession)
+    i18n.text(
+      elements.autoNetworkLabel,
+      i18n.message(
+        automaticNetwork === 'lan'
+          ? 'multiplayer.networkLan'
+          : 'multiplayer.networkInternet',
+      ),
+    )
+    i18n.text(
+      elements.autoNetworkHelp,
+      i18n.message(
+        automaticNetwork === 'lan'
+          ? 'multiplayer.networkLanHelp'
+          : 'multiplayer.networkInternetHelp',
+      ),
+    )
     elements.autoPanel.hidden = guest && connected()
     elements.manual.hidden =
       !featureFlags.manualMultiplayer || (guest && connected())
@@ -499,37 +527,40 @@ export function createMultiplayerGame(
   }
 
   function newAutomaticSession(hostToken?: string) {
-    const session = createPeerJsSession({
-      hostToken,
-      onConnection: (newPeer) => {
-        if (!isCurrentSession(session) || role !== 'host') {
-          newPeer.close()
-          return
-        }
-        registerPeer(newPeer)
+    const session = createPeerJsSession(
+      {
+        hostToken,
+        onConnection: (newPeer) => {
+          if (!isCurrentSession(session) || role !== 'host') {
+            newPeer.close()
+            return
+          }
+          registerPeer(newPeer)
+        },
+        onOpen: () => {
+          if (!isCurrentSession(session)) return
+          autoAvailable = true
+          autoConnecting = false
+          i18n.text(elements.error, '')
+          renderConnection()
+        },
+        onUnavailable: () => {
+          if (!isCurrentSession(session)) return
+          if (isGuest() && !connected()) {
+            disconnect(i18n.message('multiplayer.signalingUnavailable'))
+          }
+          autoAvailable = false
+          autoConnecting = false
+          elements.manual.open = featureFlags.manualMultiplayer
+          i18n.text(
+            elements.error,
+            i18n.message('multiplayer.signalingUnavailable'),
+          )
+          renderConnection()
+        },
       },
-      onOpen: () => {
-        if (!isCurrentSession(session)) return
-        autoAvailable = true
-        autoConnecting = false
-        i18n.text(elements.error, '')
-        renderConnection()
-      },
-      onUnavailable: () => {
-        if (!isCurrentSession(session)) return
-        if (isGuest() && !connected()) {
-          disconnect(i18n.message('multiplayer.signalingUnavailable'))
-        }
-        autoAvailable = false
-        autoConnecting = false
-        elements.manual.open = featureFlags.manualMultiplayer
-        i18n.text(
-          elements.error,
-          i18n.message('multiplayer.signalingUnavailable'),
-        )
-        renderConnection()
-      },
-    })
+      automaticNetwork,
+    )
     autoSession = session
     return session
   }
@@ -575,9 +606,14 @@ export function createMultiplayerGame(
     }
   }
 
-  async function joinAutomatic(id: string, token: string) {
+  async function joinAutomatic(
+    id: string,
+    token: string,
+    network: MultiplayerNetwork,
+  ) {
     i18n.text(elements.status, '')
     role = 'guest'
+    automaticNetwork = network
     autoConnecting = true
     autoAvailable = true
     cancelLoading()
@@ -626,10 +662,12 @@ export function createMultiplayerGame(
   function refreshInviteLink() {
     if (role === 'host' && autoHostId && autoToken) {
       const url = new URL(window.location.href)
-      url.hash = new URLSearchParams({
+      const params = new URLSearchParams({
         peer: autoHostId,
         token: autoToken,
-      }).toString()
+      })
+      if (automaticNetwork === 'lan') params.set('network', automaticNetwork)
+      url.hash = params.toString()
       elements.autoLocal.value = url.href
     }
     if (role === 'host' && localPayload) {
@@ -643,6 +681,7 @@ export function createMultiplayerGame(
     const hostId = params.get('peer')
     if (hostId !== null) {
       const token = params.get('token')
+      const network = params.get('network') ?? 'internet'
       elements.enabled.checked = true
       elements.panel.hidden = false
       if (peers.size || negotiating || autoSession) {
@@ -651,13 +690,18 @@ export function createMultiplayerGame(
       }
       params.delete('peer')
       params.delete('token')
+      params.delete('network')
       url.hash = params.toString()
       window.history.replaceState(null, '', url)
-      if (!validPeerInvite(hostId, token) || params.has('join')) {
+      if (
+        !validPeerInvite(hostId, token) ||
+        !isMultiplayerNetwork(network) ||
+        params.has('join')
+      ) {
         i18n.text(elements.error, i18n.message('multiplayer.invalidInvite'))
         return false
       }
-      void joinAutomatic(hostId, token!)
+      void joinAutomatic(hostId, token!, network)
       return true
     }
     const token = params.get('join')
@@ -1042,6 +1086,15 @@ export function createMultiplayerGame(
       i18n.text(elements.error, i18n.message('multiplayer.unsupported'))
   })
   elements.autoCreate.addEventListener('click', () => void startAutomaticHost())
+  elements.autoNetwork.addEventListener('change', () => {
+    if (
+      !autoSession &&
+      !isGuest() &&
+      isMultiplayerNetwork(elements.autoNetwork.value)
+    )
+      automaticNetwork = elements.autoNetwork.value
+    renderConnection()
+  })
   elements.autoCopy.addEventListener('click', () => void copyAutomaticInvite())
   elements.create.addEventListener('click', () => void negotiateManual(true))
   elements.accept.addEventListener('click', () => void negotiateManual(false))

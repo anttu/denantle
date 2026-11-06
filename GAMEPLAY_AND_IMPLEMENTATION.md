@@ -65,6 +65,20 @@ and changing the article updates the URL without changing the host identity.
 The host must keep the game page open. Ending multiplayer, switching to solo,
 or reloading the host page ends that identity and invalidates its link.
 
+Before creating an automatic invite, the host chooses **Yhteysverkko**:
+**Lähiverkko** (`lan`) gathers interface candidates without STUN, while
+**Internet** (`internet`, the default) also discovers public NAT mappings through
+STUN. Local-network invitations include `network=lan` in the fragment; internet
+invitations keep the existing URL format. Both peers use the chosen setting.
+Incoming connection metadata must match the host's
+network choice; omitted network values in old invites and metadata default to
+`internet`. Unknown values are rejected before signaling. The choice is locked
+while the automatic session exists; end multiplayer before changing it.
+The network selection controls ICE discovery, not access control: an interface
+may itself have a globally routable IPv6 address. Local-network mode still needs
+internet access for PeerJS Cloud signaling. The page URL must also be reachable
+by guests; a `localhost` invitation only loads on the same machine.
+
 `src/peerjs-session.ts` uses the pinned PeerJS npm package, bundled locally by
 esbuild. It validates the invite capability on incoming connections and rejects
 media calls and unsolicited connections on guests. The application does not
@@ -95,8 +109,9 @@ The optional **payload debug** checkbox reveals decoded manual descriptions.
 
 `src/data-peer.ts` implements the same bounded JSON framing, small chunks and
 send-buffer backpressure for both connection methods. `src/manual-peer.ts`
-owns native manual WebRTC connections. Both methods configure only Google's
-public STUN server at `stun:stun.l.google.com:19302`; no TURN relay is configured.
+owns native manual WebRTC connections. Internet mode and manual connections use
+Google's public STUN server at `stun:stun.l.google.com:19302`; local-network mode
+sets an empty ICE server list. No TURN relay is configured.
 Game data travels directly between browsers. STUN enables different-network
 connections when NATs and firewalls permit them; restrictive networks may still
 prevent a direct connection.

@@ -127,6 +127,26 @@ const translations = {
     fi: 'Luo kutsulinkki',
     en: 'Create invite link',
   },
+  'multiplayer.networkChoice': {
+    fi: 'Yhteysverkko',
+    en: 'Connection network',
+  },
+  'multiplayer.networkInternet': {
+    fi: 'Internet',
+    en: 'Internet',
+  },
+  'multiplayer.networkLan': {
+    fi: 'Lähiverkko',
+    en: 'Local network',
+  },
+  'multiplayer.networkLanHelp': {
+    fi: 'Samassa lähiverkossa oleville pelaajille. Internet tarvitaan yhteyden aloittamiseen.',
+    en: 'For players on the same local network. Internet access is needed to start the connection.',
+  },
+  'multiplayer.networkInternetHelp': {
+    fi: 'Myös eri verkoissa oleville pelaajille. Jotkin mobiiliverkot ja palomuurit voivat estää suoran yhteyden.',
+    en: 'Also for players on different networks. Some mobile networks and firewalls may block a direct connection.',
+  },
   'multiplayer.autoRetry': {
     fi: 'Yritä uudelleen',
     en: 'Try again',

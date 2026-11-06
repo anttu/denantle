@@ -374,6 +374,23 @@ button:disabled {
 .multiplayer-auto {
   margin-bottom: 14px;
 }
+.multiplayer-network-choice {
+  max-width: 280px;
+}
+.multiplayer-network-choice select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #ced1be;
+  border-radius: 5px;
+  background: var(--paper);
+  color: inherit;
+  font: inherit;
+}
+.multiplayer-network-help {
+  margin: 10px 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
 #multiplayer-auto-status {
   color: var(--muted);
   font-size: 12px;

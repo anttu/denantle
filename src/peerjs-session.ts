@@ -7,6 +7,7 @@ import {
   createDataPeer,
   directIceConfiguration,
   type GamePeer,
+  type MultiplayerNetwork,
   type PeerCallbacks,
 } from './data-peer.js'
 import { i18n } from './i18n.js'
@@ -91,9 +92,12 @@ interface SessionCallbacks {
   onUnavailable(): void
 }
 
-export function createPeerJsSession(callbacks: SessionCallbacks) {
+export function createPeerJsSession(
+  callbacks: SessionCallbacks,
+  network: MultiplayerNetwork = 'internet',
+) {
   const client = new Peer(`denantle-${randomInvitationToken()}`, {
-    config: directIceConfiguration(),
+    config: directIceConfiguration(network),
     secure: true,
     debug: 0,
   })
@@ -122,7 +126,8 @@ export function createPeerJsSession(callbacks: SessionCallbacks) {
       connection.serialization !== 'raw' ||
       !isRecord(metadata) ||
       metadata.denantle !== 1 ||
-      metadata.token !== callbacks.hostToken
+      metadata.token !== callbacks.hostToken ||
+      (metadata.network ?? 'internet') !== network
     ) {
       connection.close()
       return
@@ -158,7 +163,7 @@ export function createPeerJsSession(callbacks: SessionCallbacks) {
         label: 'denantle',
         serialization: 'raw',
         reliable: true,
-        metadata: { denantle: 1, token },
+        metadata: { denantle: 1, token, network },
       })
       const peer = wrapConnection(connection)
       connections.add(peer)

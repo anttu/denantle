@@ -17,8 +17,21 @@ export interface GamePeer extends PeerCallbacks {
   close(message?: unknown): void
 }
 
-export function directIceConfiguration(): RTCConfiguration {
-  return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
+export type MultiplayerNetwork = 'lan' | 'internet'
+
+export function isMultiplayerNetwork(
+  value: string,
+): value is MultiplayerNetwork {
+  return value === 'lan' || value === 'internet'
+}
+
+export function directIceConfiguration(
+  network: MultiplayerNetwork = 'internet',
+): RTCConfiguration {
+  return {
+    iceServers:
+      network === 'lan' ? [] : [{ urls: 'stun:stun.l.google.com:19302' }],
+  }
 }
 
 // Both connection methods use the same bounded, ordered JSON framing.

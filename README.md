@@ -110,11 +110,22 @@ peli tunnistaa merkitykseltään samankaltaisia sanoja. Mallit ajetaan paikallis
 selaimessa Transformers.js:n ja WebAssemblyn avulla.
 
 Moninpeli välittää pelitilan suoraan selainten välillä WebRTC-datakanavilla.
-Valitse moninpeli, luo kutsulinkki ja jaa sama linkki kaikille pelikavereille.
+Valitse moninpeli ja kutsulinkin **Yhteysverkko**:
+
+- **Lähiverkko** on samassa lähiverkossa oleville pelaajille. Se käyttää laitteiden
+  omia yhteysosoitteita ilman STUN-palvelinta.
+- **Internet** selvittää myös julkiset yhteysosoitteet STUN-palvelimella.
+  Eri verkkojen välinen yhteys onnistuu, kun NAT- ja palomuuriasetukset sallivat sen.
+
+Luo kutsulinkki ja jaa sama linkki kaikille pelikavereille. Valittu verkko kulkee
+linkissä myös liittyjille. Verkkoa voi vaihtaa moninpeli-istunnon lopettamisen
+jälkeen. Vanhat automaattikutsut käyttävät internet-tilaa.
 Liittyminen tapahtuu automaattisesti PeerJS Cloudin maksuttoman julkisen
 signalointipalvelun kautta ilman tiliä tai omaa API-avainta. Linkki pysyy
 voimassa niin kauan kuin kutsujan moninpeli-istunto on auki. Sivun lataaminen
-uudelleen tai moninpelin lopettaminen sulkee istunnon.
+uudelleen tai moninpelin lopettaminen sulkee istunnon. Myös lähiverkkotilan
+yhteyden aloittaminen tarvitsee internetyhteyden. Kutsulinkin sivuosoitteen pitää
+olla liittyjien saavutettavissa: `localhost` toimii vain samalla koneella.
 
 **Yhdistä käsin** -lisävalintaa ohjaa `src/feature-flags.ts`-tiedoston
 `manualMultiplayer`-feature flag. Sen arvo on `false` sekä paikallisessa ajossa
@@ -124,7 +135,7 @@ Toiminnon saa takaisin käyttöön vaihtamalla arvoksi `true` ja kokoamalla
 sivuston uudelleen. Käsin tehtävät kutsut ovat kertakäyttöisiä.
 Julkisen signalointipalvelun häiriö ei katkaise jo avattuja suoria datayhteyksiä.
 
-Molemmat yhteystavat käyttävät Googlen julkista STUN-palvelinta
+Internet-tila ja käsin yhdistäminen käyttävät Googlen julkista STUN-palvelinta
 (`stun:stun.l.google.com:19302`) julkisten yhteysosoitteiden selvittämiseen.
 TURN-välitystä ei käytetä, joten verkkojen NAT- ja palomuuriasetusten pitää
 sallia suora yhteys. PeerJS ja sen riippuvuudet toimitetaan paikallisessa
