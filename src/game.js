@@ -68,6 +68,17 @@ class ArticleGuessGame {
       event.preventDefault();
       void this.submitGuess();
     });
+    document.addEventListener("denantle:languagechange", () => {
+      if (!this.active) return;
+      this.updateProgress();
+      for (const node of this.article.querySelectorAll(".redacted")) {
+        node.lang = i18n.language;
+        node.setAttribute("aria-label", this.wordDetails(node));
+      }
+      this.renderRecentGuesses();
+      this.recent.hidden = this.recentGuesses.length === 0;
+      if (this.tooltipTarget) this.showTooltip(this.tooltipTarget);
+    });
     this.bindWordDetails();
     this.reset();
   }
@@ -78,12 +89,12 @@ class ArticleGuessGame {
     this.revision += 1;
     this.inflections?.clear();
     this.inflectionsLoading = false;
-    this.inflectionStatus.textContent = "";
+    i18n.text(this.inflectionStatus, "");
     this.words = new Map();
     this.titleWords = new Set();
     this.titleSolved = false;
     this.celebration.hidden = true;
-    this.celebration.textContent = "";
+    i18n.text(this.celebration, "");
     this.nodeDetails = new WeakMap();
     this.latestGuess = null;
     this.recentGuesses = [];
@@ -97,8 +108,8 @@ class ArticleGuessGame {
     this.input.disabled = true;
     this.button.disabled = true;
     this.input.value = "";
-    this.feedback.textContent = "";
-    this.progress.textContent = "";
+    i18n.text(this.feedback, "");
+    i18n.text(this.progress, "");
     this.completion.hidden = true;
     this.completion.value = 0;
     this.recent.replaceChildren();
@@ -122,14 +133,14 @@ class ArticleGuessGame {
   async buildFinnishInflections() {
     const revision = this.revision;
     this.inflectionsLoading = true;
-    this.inflectionStatus.textContent = "Valmistellaan suomen taivutusmuotoja… Voit jo arvata tarkkoja kirjoitusasuja.";
+    i18n.text(this.inflectionStatus, i18n.message("inflections.loading"));
     try {
       await this.inflections.build([...this.words.keys()]);
       if (revision !== this.revision) return;
-      this.inflectionStatus.textContent = "Suomen taivutusmuodot valmiina. Voit arvata sanan perusmuodon.";
+      i18n.text(this.inflectionStatus, i18n.message("inflections.ready"));
     } catch (error) {
       if (revision !== this.revision || error.name === "AbortError") return;
-      this.inflectionStatus.textContent = "Suomen taivutusmuotoja ei voitu ladata. Voit edelleen arvata sanojen tarkkoja kirjoitusasuja.";
+      i18n.text(this.inflectionStatus, i18n.message("inflections.unavailable"));
     } finally {
       if (revision === this.revision) this.inflectionsLoading = false;
     }
@@ -144,6 +155,7 @@ class ArticleGuessGame {
       const word = normalizeGuess(original);
       const node = document.createElement("span");
       node.className = "redacted";
+      node.lang = i18n.language;
       node.style.setProperty("--word-length", [...original].length);
       node.setAttribute("role", "button");
       node.tabIndex = 0;
@@ -206,14 +218,14 @@ class ArticleGuessGame {
 
   wordDetails(node) {
     const { original, entry } = this.nodeDetails.get(node);
-    const lines = [`Pituus: ${[...original].length} merkkiä`];
+    const lines = [i18n.t("word.length", { length: [...original].length })];
     if (entry.guess && entry.score >= DETAIL_SIMILARITY_THRESHOLD) {
-      lines.push(`Vihje ”${entry.guess}”: läheisyys ${Math.round(entry.score * 100)} %`);
+      lines.push(i18n.t("word.hint", { guess: entry.guess, score: Math.round(entry.score * 100) }));
     }
     if (this.latestGuess && this.latestGuess !== entry.guess && entry.latestScore >= DETAIL_SIMILARITY_THRESHOLD) {
-      lines.push(`Uusin arvaus ”${this.latestGuess}”: läheisyys ${Math.round(entry.latestScore * 100)} %`);
+      lines.push(i18n.t("word.latest", { guess: this.latestGuess, score: Math.round(entry.latestScore * 100) }));
     } else if (!this.latestGuess && !entry.guess) {
-      lines.push("Läheisyys: ei vielä arvausta");
+      lines.push(i18n.t("word.noGuess"));
     }
     return lines.join("\n");
   }
@@ -222,7 +234,7 @@ class ArticleGuessGame {
     this.tooltipTarget?.removeAttribute("aria-describedby");
     this.tooltipTarget = node;
     node.setAttribute("aria-describedby", "word-tooltip");
-    this.tooltip.textContent = this.wordDetails(node);
+    i18n.text(this.tooltip, this.wordDetails(node));
     this.tooltip.hidden = false;
     const word = node.getBoundingClientRect();
     const tooltip = this.tooltip.getBoundingClientRect();
@@ -261,12 +273,12 @@ class ArticleGuessGame {
       chip.className = "proximity-chip";
       const count = matches || nearMatches;
       chip.dataset.proximity = matches > 0 ? "exact" : nearMatches > 0 ? "near" : "cold";
-      const proximity = matches > 0 ? "tarkka" : nearMatches > 0 ? "lähellä" : "kaukana";
+      const proximity = i18n.t(matches > 0 ? "proximity.exact" : nearMatches > 0 ? "proximity.near" : "proximity.cold").toLocaleLowerCase(i18n.language);
       chip.textContent = `${word} · ${count}`;
       chip.setAttribute("aria-label", `${word} · ${count} · ${proximity}`);
       list.append(chip);
     }
-    this.recent.replaceChildren(document.createTextNode("Viimeisimmät arvaukset:"), list);
+    this.recent.replaceChildren(document.createTextNode(i18n.t("guess.recent")), list);
     this.recent.hidden = false;
   }
 
@@ -298,7 +310,7 @@ class ArticleGuessGame {
         && typeof item.revealed === "boolean" && validScore(item.score)
         && (item.latestScore === null || validScore(item.latestScore))
         && (item.guess === null || validWord(item.guess)))) {
-      throw new Error("Toisen pelaajan pelitiedot eivät kelpaa.");
+      throw i18n.error("error.sharedState");
     }
     this.guesses = new Map(state.guesses);
     this.recentGuesses = state.recent;
@@ -334,11 +346,11 @@ class ArticleGuessGame {
     const guesses = document.createElement("span");
     const guessCount = document.createElement("strong");
     guessCount.textContent = String(this.guesses.size);
-    guesses.append(guessCount, document.createTextNode(this.guesses.size === 1 ? " arvaus" : " arvausta"));
+    guesses.append(guessCount, document.createTextNode(this.guesses.size === 1 ? i18n.t("guess.singular") : i18n.t("guess.plural")));
     const words = document.createElement("span");
     const revealedCount = document.createElement("strong");
     revealedCount.textContent = String(this.revealed);
-    words.append(revealedCount, document.createTextNode(` / ${this.total} sanaa`));
+    words.append(revealedCount, document.createTextNode(i18n.t("game.wordCount", { total: this.total })));
     this.progress.replaceChildren(guesses, words);
     this.completion.max = this.total || 1;
     this.completion.value = this.revealed;
@@ -350,7 +362,7 @@ class ArticleGuessGame {
       || ![...this.titleWords].every((entry) => entry.revealed)) return;
     this.titleSolved = true;
     this.celebration.hidden = false;
-    this.celebration.textContent = "Hienoa! Arvasit koko otsikon oikein!";
+    i18n.text(this.celebration, i18n.message("game.solved"));
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const fireworks = document.createElement("div");
@@ -399,6 +411,7 @@ class ArticleGuessGame {
       node.removeAttribute("tabindex");
       node.removeAttribute("aria-label");
       node.removeAttribute("title");
+      node.removeAttribute("lang");
     }
     this.revealed += entry.occurrences.length;
     return entry.occurrences.length;
@@ -434,9 +447,9 @@ class ArticleGuessGame {
     if (!this.active || this.busy) return false;
     const guess = normalizeGuess(value.trim());
     if (guess.length > 200 || !GUESS_PATTERN.test(guess)) {
-      this.feedback.textContent = this.language === "fi"
-        ? "Syötä yksi sana suomeksi."
-        : "Syötä yksi sana englanniksi.";
+      i18n.text(this.feedback, this.language === "fi"
+        ? i18n.message("guess.invalidFinnish")
+        : i18n.message("guess.invalidEnglish"));
       return false;
     }
     if (!shared && this.onGuessRequest) return this.onGuessRequest(guess);
@@ -448,13 +461,13 @@ class ArticleGuessGame {
     if (this.guesses.has(guess) && !this.vectors.info && matches.every((entry) => entry.revealed)) {
       this.showHints([], guess);
       this.showRecentGuess(guess, matchCount);
-      this.feedback.textContent = `Olet jo arvannut sanan ”${guess}”.`;
+      i18n.text(this.feedback, i18n.message("guess.duplicate", { guess }));
       return;
     }
     if (matches.length === 0 && !this.vectors.info) {
-      this.feedback.textContent = this.inflectionsLoading
-        ? "Taivutusmuotoja valmistellaan. Voit arvata tarkkoja sanoja jo nyt ja kokeilla perusmuotoa uudelleen hetken kuluttua."
-        : "Lähisanojen haku ei ole vielä käytettävissä. Voit arvata tarkkoja sanoja jo nyt.";
+      i18n.text(this.feedback, this.inflectionsLoading
+        ? i18n.message("guess.inflectionsPending")
+        : i18n.message("guess.hintsPending"));
       return;
     }
 
@@ -464,7 +477,7 @@ class ArticleGuessGame {
     const canSearch = Boolean(this.vectors.info);
     this.setBusy(true);
     this.updateProgress();
-    this.feedback.textContent = "";
+    i18n.text(this.feedback, "");
     try {
       // Include every article word, since close matches may extend past the top ten.
       const results = this.vectors.info
@@ -486,9 +499,9 @@ class ArticleGuessGame {
         this.updateProgress();
         if (clearInput) this.input.value = "";
       }
-      this.feedback.textContent = revealed > 0
-        ? "Lähisanojen haku epäonnistui."
-        : "Lähisanojen haku epäonnistui. Yritä arvausta uudelleen.";
+      i18n.text(this.feedback, revealed > 0
+        ? i18n.message("guess.hintsFailed")
+        : i18n.message("guess.retry"));
       return revealed > 0;
     } finally {
       if (revision === this.revision) {

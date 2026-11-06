@@ -3,7 +3,6 @@
 
 const wikipediaSources = {
   simple: {
-    name: "Simple English Wikipedia",
     language: "en",
     baseUrl: "https://simple.wikipedia.org",
     // https://simple.wikipedia.org/wiki/Wikipedia:Categories#Category_tree
@@ -16,7 +15,6 @@ const wikipediaSources = {
     excludedSections: ["gallery", "references", "other websites", "related pages", "bibliography"],
   },
   fi: {
-    name: "Suomenkielinen Wikipedia",
     language: "fi",
     baseUrl: "https://fi.wikipedia.org",
     categories: [
@@ -30,7 +28,6 @@ const wikipediaSources = {
     ],
   },
   en: {
-    name: "English Wikipedia",
     language: "en",
     baseUrl: "https://en.wikipedia.org",
     categories: [

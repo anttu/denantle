@@ -11,6 +11,7 @@ module.exports = defineConfig({
   ],
   use: {
     browserName: "firefox",
+    locale: "fi-FI",
     baseURL: "http://127.0.0.1:8000",
   },
   webServer: {

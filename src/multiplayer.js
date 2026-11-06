@@ -23,7 +23,7 @@ class ManualPeerConnection {
     };
     this.peer.onconnectionstatechange = () => {
       const state = this.peer.connectionState;
-      if (state === "failed" || state === "closed") this.close("Yhteys katkesi. Luo uusi kutsu yhdistääksesi uudelleen.");
+      if (state === "failed" || state === "closed") this.close(i18n.message("multiplayer.reconnect"));
       if (state === "connected") clearTimeout(this.connectionTimeout);
     };
   }
@@ -39,9 +39,9 @@ class ManualPeerConnection {
         || typeof data.description.sdp !== "string" || !data.description.sdp.startsWith("v=0")) throw new Error();
       return { type, sdp: data.description.sdp };
     } catch {
-      throw new Error(type === "offer"
-        ? "Kutsu ei kelpaa. Liitä koko Denantle-kutsu."
-        : "Vastaus ei kelpaa. Liitä kutsuun saatu koko Denantle-vastaus.");
+      throw i18n.error(type === "offer"
+        ? i18n.message("multiplayer.invalidInvite")
+        : i18n.message("multiplayer.invalidResponse"));
     }
   }
 
@@ -52,8 +52,8 @@ class ManualPeerConnection {
       clearTimeout(this.connectionTimeout);
       this.onOpen?.();
     };
-    channel.onclose = () => this.close("Toinen pelaaja katkaisi yhteyden. Voit jatkaa yksin tai luoda uuden kutsun.");
-    channel.onerror = () => this.close("Yhteys epäonnistui. Kokeile uutta kutsua tai toista verkkoa.");
+    channel.onclose = () => this.close(i18n.message("multiplayer.peerLeft"));
+    channel.onerror = () => this.close(i18n.message("multiplayer.connectionFailed"));
     channel.onmessage = ({ data }) => {
       try {
         if (typeof data !== "string" || data.length > 20000) throw new Error();
@@ -66,7 +66,7 @@ class ManualPeerConnection {
         this.received = "";
         this.onMessage?.(message);
       } catch {
-        this.close("Toisen pelaajan viesti ei kelpaa. Tarkista, että käytätte samaa peliversiota.");
+        this.close(i18n.message("multiplayer.invalidMessage"));
       }
     };
   }
@@ -85,13 +85,13 @@ class ManualPeerConnection {
         const changed = () => {
           if (this.peer.iceGatheringState === "complete") done();
         };
-        const timer = setTimeout(() => done(new Error("Yhteystietojen keruu kesti liian kauan. Kokeile uudelleen.")), 20000);
-        this.cancelGathering = () => done(new DOMException("Yhteys suljettiin.", "AbortError"));
+        const timer = setTimeout(() => done(i18n.error("multiplayer.gatheringTimeout")), 20000);
+        this.cancelGathering = () => done(new DOMException(i18n.t("multiplayer.closed"), "AbortError"));
         this.peer.addEventListener("icegatheringstatechange", changed);
         changed();
       });
     }
-    if (this.closed) throw new DOMException("Yhteys suljettiin.", "AbortError");
+    if (this.closed) throw new DOMException(i18n.t("multiplayer.closed"), "AbortError");
     return JSON.stringify({ denantle: 1, description: this.peer.localDescription.toJSON() });
   }
 
@@ -108,19 +108,19 @@ class ManualPeerConnection {
   async acceptAnswer(text) {
     await this.peer.setRemoteDescription(ManualPeerConnection.readDescription(text, "answer"));
     this.connectionTimeout = setTimeout(() => {
-      if (!this.connected) this.close("Yhteyttä ei saatu. Kokeile samaa lähiverkkoa tai luo uusi kutsu.");
+      if (!this.connected) this.close(i18n.message("multiplayer.noConnection"));
     }, 30000);
   }
 
   send(message) {
     const task = this.sendQueue.then(async () => {
-      if (!this.connected) throw new Error("Yhteys ei ole auki.");
+      if (!this.connected) throw i18n.error("multiplayer.notOpen");
       const text = JSON.stringify(message);
-      if (text.length > 4 * 1024 * 1024) throw new Error("Pelitiedot ovat liian suuret lähetettäviksi.");
+      if (text.length > 4 * 1024 * 1024) throw i18n.error("multiplayer.tooLarge");
       // Small chunks also work with browsers that limit messages to 16 KiB.
       // Splitting the JSON string preserves Unicode even across surrogate pairs.
       for (let offset = 0; offset < text.length; offset += 2000) {
-        if (!this.connected) throw new Error("Yhteys katkesi.");
+        if (!this.connected) throw i18n.error("multiplayer.interrupted");
         if (this.channel.bufferedAmount > 131072) {
           await new Promise((resolve, reject) => {
             const finish = (error) => {
@@ -131,8 +131,8 @@ class ManualPeerConnection {
               else resolve();
             };
             const ready = () => finish();
-            const closed = () => finish(new Error("Yhteys katkesi."));
-            const timer = setTimeout(() => finish(new Error("Tietojen lähetys aikakatkaistiin.")), 15000);
+            const closed = () => finish(i18n.error("multiplayer.interrupted"));
+            const timer = setTimeout(() => finish(i18n.error("multiplayer.sendTimeout")), 15000);
             this.channel.addEventListener("bufferedamountlow", ready, { once: true });
             this.channel.addEventListener("close", closed, { once: true });
             if (this.channel.bufferedAmount <= 65536) ready();
@@ -145,7 +145,7 @@ class ManualPeerConnection {
     return task;
   }
 
-  close(message = "Yhteys suljettu.") {
+  close(message = i18n.message("multiplayer.connectionClosed")) {
     if (this.closed) return;
     this.closed = true;
     clearTimeout(this.connectionTimeout);
@@ -218,22 +218,22 @@ class MultiplayerGame {
     document.getElementById("game-mode").addEventListener("change", () => {
       this.panel.hidden = !this.enabled.checked;
       if (!this.enabled.checked) this.disconnect();
-      else if (!window.RTCPeerConnection) this.error.textContent = "Selain ei tue WebRTC-yhteyksiä. Käytä ajantasaista Firefoxia.";
+      else if (!window.RTCPeerConnection) i18n.text(this.error, i18n.message("multiplayer.unsupported"));
     });
     this.create.addEventListener("click", () => void this.negotiate(true));
     this.accept.addEventListener("click", () => void this.negotiate(false));
     this.restart.addEventListener("click", () => this.disconnect());
     this.cancelInvite.addEventListener("click", () => {
-      if (this.peer && !this.isGuest) this.removePeer(this.peer, "Kutsu peruttu. Voit luoda uuden kutsun.");
+      if (this.peer && !this.isGuest) this.removePeer(this.peer, i18n.message("multiplayer.cancelled"));
     });
     this.copy.addEventListener("click", () => void this.copyDescription());
     this.joinToggle.addEventListener("click", () => {
       this.joining = !this.joining;
       this.remote.value = "";
-      this.error.textContent = "";
-      this.status.textContent = this.joining
-        ? "Liitä saamasi kutsulinkki tai yhteystieto."
-        : "Luo kutsu aloittaaksesi yhteisen pelin.";
+      i18n.text(this.error, "");
+      i18n.text(this.status, this.joining
+        ? i18n.message("multiplayer.pasteDetails")
+        : i18n.message("multiplayer.initial"));
       this.renderConnection();
       if (this.joining) this.remote.focus();
       else this.create.focus();
@@ -242,6 +242,7 @@ class MultiplayerGame {
     this.remote.addEventListener("input", () => this.renderConnection());
     this.invitations.addEventListener("toggle", () => this.renderConnection());
     window.addEventListener("hashchange", () => this.acceptInviteFromLocation());
+    document.addEventListener("denantle:languagechange", () => this.renderConnection());
     this.game.onGuessRequest = (guess) => this.requestGuess(guess);
     this.renderConnection();
   }
@@ -257,59 +258,59 @@ class MultiplayerGame {
     this.panel.classList.toggle("is-connected", connected);
     this.panel.dataset.role = this.isGuest ? "guest" : joining ? "joining" : "host";
     this.connectedPanel.hidden = !connected;
-    this.playerCount.textContent = `${count} pelaajaa`;
-    this.connectedNote.textContent = this.isGuest
-      ? "Olet mukana kutsujan pelissä."
-      : count === 2 ? "Pelikaveri on mukana pelissäsi." : "Pelikaverit ovat mukana pelissäsi.";
+    i18n.text(this.playerCount, i18n.message("multiplayer.players", { count }));
+    i18n.text(this.connectedNote, this.isGuest
+      ? i18n.message("multiplayer.guestConnected")
+      : count === 2 ? i18n.message("multiplayer.friendConnected") : i18n.message("multiplayer.friendsConnected"));
     this.invitations.hidden = connected && this.isGuest;
     this.invitationsSummary.hidden = !connected || this.isGuest;
     if (!connected) this.invitations.open = true;
-    this.invitationTitle.textContent = this.isGuest ? "Sait kutsun yhteiseen peliin."
-      : joining ? "Liity kaverin peliin."
-      : connected ? "Kutsu pelikaveri mukaan." : "Yksi arvoitus. Kaksi päätä.";
-    this.invitationDescription.textContent = this.isGuest
-      ? "Yhteys avautuu, kun kutsuja hyväksyy vastauksesi."
-      : joining ? "Avaa yhteinen peli liittämällä saamasi kutsu."
-      : connected ? "Jokainen uusi pelaaja tarvitsee oman kutsun. Nykyinen peli jatkuu."
-      : "Pelatkaa samaa artikkelia yhdessä.";
+    i18n.text(this.invitationTitle, this.isGuest ? i18n.message("multiplayer.guestTitle")
+      : joining ? i18n.message("multiplayer.joinTitle")
+      : connected ? i18n.message("multiplayer.hostTitle") : i18n.message("multiplayer.title"));
+    i18n.text(this.invitationDescription, this.isGuest
+      ? i18n.message("multiplayer.guestDescription")
+      : joining ? i18n.message("multiplayer.joinDescription")
+      : connected ? i18n.message("multiplayer.hostDescription")
+      : i18n.message("multiplayer.description"));
     this.sendPanel.hidden = joining;
-    this.sendTitle.textContent = this.isGuest ? "Lähetä vastaus kutsujalle" : "Lähetä kutsu";
-    this.sendDescription.textContent = this.isGuest
-      ? "Kopioi vastaus ja lähetä se takaisin kutsujalle."
-      : "Kopioi kutsulinkki ja lähetä se pelikaverillesi.";
+    i18n.text(this.sendTitle, this.isGuest ? i18n.message("multiplayer.sendResponse") : i18n.message("multiplayer.sendInvite"));
+    i18n.text(this.sendDescription, this.isGuest
+      ? i18n.message("multiplayer.sendResponseHelp")
+      : i18n.message("multiplayer.sendInviteHelp"));
     this.sendDescription.hidden = !this.isGuest;
     this.inviteNote.hidden = this.isGuest || joining;
     const invitationUsed = connected && !this.peer;
-    this.inviteNoteTitle.textContent = invitationUsed
-      ? "Liittynyt pelaaja käytti oman kutsunsa."
-      : "Kertakäyttöinen linkki yhdelle henkilölle.";
-    this.inviteNoteDescription.textContent = invitationUsed
-      ? "Kutsu seuraava henkilö uudella, kertakäyttöisellä linkillä."
-      : "Tällä linkillä voi liittyä vain yksi henkilö. Luo jokaiselle muulle pelaajalle oma kutsulinkki.";
+    i18n.text(this.inviteNoteTitle, invitationUsed
+      ? i18n.message("multiplayer.inviteUsed")
+      : i18n.message("multiplayer.singleUse"));
+    i18n.text(this.inviteNoteDescription, invitationUsed
+      ? i18n.message("multiplayer.inviteUsedHelp")
+      : i18n.message("multiplayer.singleUseHelp"));
     this.local.setAttribute("aria-describedby", this.isGuest
       ? "multiplayer-status" : "multiplayer-invite-note multiplayer-status");
-    this.remoteLabel.textContent = joining ? "Liitä kaverin kutsu" : "Liitä kaverin vastaus";
-    this.remoteDescription.textContent = joining
-      ? "Liitä koko kutsulinkki tai kaverilta saamasi yhteystieto."
-      : "Kaveri avaa linkin ja lähettää sinulle vastauksen.";
-    this.remote.placeholder = joining ? "Liitä kutsu tähän…" : "Liitä vastaus tähän…";
+    i18n.text(this.remoteLabel, joining ? i18n.message("multiplayer.pasteInvite") : i18n.message("multiplayer.pasteResponse"));
+    i18n.text(this.remoteDescription, joining
+      ? i18n.message("multiplayer.inviteHelp")
+      : i18n.message("multiplayer.responseHelp"));
+    i18n.attr(this.remote, "placeholder", joining ? i18n.message("multiplayer.invitePlaceholder") : i18n.message("multiplayer.responsePlaceholder"));
     this.joinToggle.hidden = Boolean(this.role) || connected;
-    this.joinToggle.textContent = joining ? "Haluan kutsua itse" : "Saitko kutsun? Liity kaverin peliin";
+    i18n.text(this.joinToggle, joining ? i18n.message("multiplayer.hostToggle") : i18n.message("multiplayer.joinToggle"));
     this.create.hidden = this.isGuest || joining || Boolean(this.peer);
-    this.create.textContent = connected ? "Luo uusi kutsu" : "Luo kutsu";
+    i18n.text(this.create, connected ? i18n.message("multiplayer.createAnother") : i18n.message("multiplayer.create"));
     this.create.disabled = this.negotiating || Boolean(this.peer);
-    this.acceptLabel.textContent = joining ? "Hyväksy kutsu" : "Hyväksy vastaus";
+    i18n.text(this.acceptLabel, joining ? i18n.message("multiplayer.acceptInvite") : i18n.message("multiplayer.acceptResponse"));
     this.accept.disabled = this.negotiating || !this.remote.value.trim() || this.isGuest
       || (!joining && (!this.peer || this.peer.peer.signalingState !== "have-local-offer"));
     this.localPanel.hidden = !this.local.value;
     this.remotePanel.hidden = this.isGuest;
     this.cancelInvite.hidden = !this.peer || this.isGuest;
-    this.cancelInvite.textContent = connected ? "Peru kutsu" : "Aloita alusta";
+    i18n.text(this.cancelInvite, connected ? i18n.message("multiplayer.cancelInvite") : i18n.message("multiplayer.reset"));
     this.copy.disabled = !this.local.value;
     this.restart.hidden = this.peers.size === 0 || (!connected && !this.isGuest);
-    this.restart.textContent = connected
-      ? this.isGuest ? "Poistu moninpelistä" : "Katkaise yhteydet"
-      : "Katkaise / aloita alusta";
+    i18n.text(this.restart, connected
+      ? this.isGuest ? i18n.message("multiplayer.leave") : i18n.message("multiplayer.disconnect")
+      : i18n.message("multiplayer.disconnectReset"));
     // Keep loading and disconnection feedback visible after signaling is hidden.
     const statusParent = connected && (!this.peer || this.isGuest || !this.invitations.open)
       ? this.sessionStatus : this.invitationFooter;
@@ -322,12 +323,12 @@ class MultiplayerGame {
     const visible = this.payloadDebug.checked && !(this.isGuest && this.connected);
     this.payloadDebugPanel.hidden = !visible;
     const show = (element, value) => {
-      element.textContent = "";
+      i18n.text(element, "");
       if (!visible || !value) return;
       try {
-        element.textContent = JSON.stringify(JSON.parse(SignalingPayload.decode(value)), null, 2);
+        i18n.text(element, JSON.stringify(JSON.parse(SignalingPayload.decode(value)), null, 2));
       } catch {
-        element.textContent = "Yhteystietoa ei voi purkaa JSON-muotoon.";
+        i18n.text(element, i18n.message("multiplayer.invalidDebug"));
       }
     };
     show(this.payloadDebugLocal, this.local.value);
@@ -348,7 +349,7 @@ class MultiplayerGame {
     this.enabled.checked = true;
     this.panel.hidden = false;
     if (this.peers.size || this.negotiating) {
-      this.error.textContent = "Katkaise nykyinen yhteys ennen uuden kutsun avaamista.";
+      i18n.text(this.error, i18n.message("multiplayer.disconnectFirst"));
       return true;
     }
     // Remove the invitation from the address bar without reloading the page.
@@ -358,7 +359,7 @@ class MultiplayerGame {
     try {
       ManualPeerConnection.readDescription(token, "offer");
     } catch (error) {
-      this.error.textContent = error.message;
+      i18n.text(this.error, i18n.errorMessage(error));
       return false;
     }
     this.remote.value = token;
@@ -373,16 +374,16 @@ class MultiplayerGame {
 
   async negotiate(create) {
     if (this.negotiating || (create && (this.peer || this.isGuest))) return;
-    this.error.textContent = "";
+    i18n.text(this.error, "");
     // Validate pasted data before disturbing an existing invitation or solo game.
     try {
       if (!create) {
-        if (this.role === "host" && !this.peer) throw new Error("Luo ensin uusi kutsu pelaajalle.");
+        if (this.role === "host" && !this.peer) throw i18n.error("multiplayer.createFirst");
         ManualPeerConnection.readDescription(this.remote.value.trim(), this.role === "host" ? "answer" : "offer");
         this.remotePayload = SignalingPayload.decode(this.remote.value.trim());
       }
     } catch (error) {
-      this.error.textContent = error.message;
+      i18n.text(this.error, i18n.errorMessage(error));
       return;
     }
     if (!this.role) this.role = create ? "host" : "guest";
@@ -400,7 +401,7 @@ class MultiplayerGame {
         peer.onOpen = () => {
           if (!this.peers.has(peer)) return;
           const moveFocus = this.invitations.contains(document.activeElement);
-          this.status.textContent = "";
+          i18n.text(this.status, "");
           this.clearSignaling();
           if (!this.isGuest) {
             this.peer = null;
@@ -427,40 +428,40 @@ class MultiplayerGame {
       }
       this.renderConnection();
       this.refreshControls();
-      this.status.textContent = "Kerätään yhteystietoja…";
+      i18n.text(this.status, i18n.message("multiplayer.gathering"));
       if (create) {
         const payload = await peer.createOffer();
         if (peer !== this.peer) return;
         this.localPayload = payload;
         this.refreshInviteLink();
-        this.localLabel.textContent = "Kutsulinkki – kopioi ja lähetä pelikaverille";
-        this.copyLabel.textContent = "Kopioi kutsulinkki";
-        this.status.textContent = "Odotetaan pelikaverin vastausta";
+        i18n.text(this.localLabel, i18n.message("multiplayer.linkLabel"));
+        i18n.text(this.copyLabel, i18n.message("multiplayer.copyLink"));
+        i18n.text(this.status, i18n.message("multiplayer.waiting"));
       } else if (this.isGuest) {
         const payload = await peer.acceptOffer(this.remote.value.trim());
         if (peer !== this.peer) return;
         this.localPayload = payload;
         this.local.value = SignalingPayload.encode(payload);
-        this.localLabel.textContent = "Vastaus – kopioi ja lähetä kutsujalle";
-        this.copyLabel.textContent = "Kopioi vastaus";
+        i18n.text(this.localLabel, i18n.message("multiplayer.responseLabel"));
+        i18n.text(this.copyLabel, i18n.message("multiplayer.copyResponse"));
         this.remote.value = "";
-        this.status.textContent = "Kopioi vastaus kutsujalle. Yhteys avautuu, kun kutsuja hyväksyy sen.";
+        i18n.text(this.status, i18n.message("multiplayer.responseReady"));
       } else {
         await peer.acceptAnswer(this.remote.value.trim());
         if (peer !== this.peer) return;
-        this.status.textContent = "Yhdistetään pelaajaan…";
+        i18n.text(this.status, i18n.message("multiplayer.connecting"));
       }
     } catch (error) {
       if (error.name === "AbortError" || (peer && !this.peers.has(peer))) return;
-      const message = "Yhteyden muodostaminen epäonnistui. Voit kokeilla uudelleen.";
+      const message = i18n.message("multiplayer.negotiationFailed");
       if (peer) this.removePeer(peer, message);
       else {
         if (!this.peers.size) this.role = null;
-        this.status.textContent = message;
+        i18n.text(this.status, message);
         this.setNegotiating(false);
         this.refreshControls();
       }
-      this.error.textContent = error.message;
+      i18n.text(this.error, i18n.errorMessage(error));
     } finally {
       if (peer === this.peer) {
         this.setNegotiating(false);
@@ -475,8 +476,8 @@ class MultiplayerGame {
     this.localPayload = "";
     this.remotePayload = "";
     this.payloadDebug.checked = false;
-    this.localLabel.textContent = "Oma yhteystieto – kopioi ja lähetä pelikaverille";
-    this.copyLabel.textContent = "Kopioi kutsulinkki";
+    i18n.text(this.localLabel, i18n.message("multiplayer.localLabel"));
+    i18n.text(this.copyLabel, i18n.message("multiplayer.copyLink"));
     this.renderPayloadDebug();
   }
 
@@ -493,15 +494,15 @@ class MultiplayerGame {
       this.peer = null;
       this.clearSignaling();
       this.negotiating = false;
-      this.error.textContent = "";
+      i18n.text(this.error, "");
     }
     if (!this.peers.size) {
       this.role = null;
       this.joining = false;
     }
-    this.status.textContent = this.connected
-      ? "Peli jatkuu mukana olevien pelaajien kanssa. " + message
-      : message;
+    i18n.text(this.status, this.connected
+      ? i18n.message("multiplayer.continues", { message })
+      : message);
     this.renderConnection();
     if (moveFocus) this.create.focus();
     this.sharePlayers();
@@ -515,20 +516,20 @@ class MultiplayerGame {
     const value = this.local.value;
     try {
       await navigator.clipboard.writeText(value);
-      if (value === this.local.value) this.status.textContent = this.isGuest
-        ? "Vastaus kopioitu. Lähetä se kutsujalle."
-        : "Kutsulinkki kopioitu. Lähetä se toiselle pelaajalle.";
+      if (value === this.local.value) i18n.text(this.status, this.isGuest
+        ? i18n.message("multiplayer.responseCopied")
+        : i18n.message("multiplayer.inviteCopied"));
     } catch {
       this.local.focus();
       this.local.select();
-      this.status.textContent = "Kopioi valittu teksti näppäimistöllä tai selaimen valikosta.";
+      i18n.text(this.status, i18n.message("multiplayer.copyManually"));
     }
   }
 
   send(message, target = null) {
     for (const peer of target ? [target] : this.connectedPeers) {
       if (!this.peers.has(peer) || !peer.connected) continue;
-      void peer.send(message).catch((error) => this.removePeer(peer, error.message));
+      void peer.send(message).catch((error) => this.removePeer(peer, i18n.errorMessage(error)));
     }
   }
 
@@ -549,7 +550,7 @@ class MultiplayerGame {
       this.pendingRequest = ++this.requestCounter;
       this.game.setBusy(true);
       this.send({ type: "guess", session: this.getArticle()?.session, guess, request: this.pendingRequest });
-      this.guessTimeout = setTimeout(() => this.disconnect("Pelaajan vastausta ei saatu. Voit jatkaa yksin tai yhdistää uudelleen."), 30000);
+      this.guessTimeout = setTimeout(() => this.disconnect(i18n.message("multiplayer.guessTimeout")), 30000);
       return true;
     }
     return this.enqueueGuess(guess);
@@ -569,9 +570,9 @@ class MultiplayerGame {
       for (const peer of this.connectedPeers) {
         // Each guest starts its own request counter; acknowledge only its request.
         this.send({ type: "state", session, state, request: peer === requester ? request : null,
-          accepted: Boolean(accepted), feedback: this.game.feedback.textContent }, peer);
+          accepted: Boolean(accepted), feedback: i18n.getMessage(this.game.feedback) }, peer);
       }
-    }).catch(() => this.disconnect("Arvauksen käsittely epäonnistui. Voit jatkaa yksin."));
+    }).catch(() => this.disconnect(i18n.message("multiplayer.guessFailed")));
     return this.queue;
   }
 
@@ -593,14 +594,14 @@ class MultiplayerGame {
         clearTimeout(this.guessTimeout);
         this.pendingRequest = null;
         this.game.reset();
-        this.status.textContent = "Kutsuja valitsee uutta artikkelia…";
+        i18n.text(this.status, i18n.message("multiplayer.hostLoading"));
       } else if (message.type === "game") {
         this.showArticle(message.article);
         this.game.applySharedState(message.state);
         this.game.setBusy(false);
         clearTimeout(this.guessTimeout);
         this.pendingRequest = null;
-        this.status.textContent = "";
+        i18n.text(this.status, "");
         if (this.focusAfterJoin) {
           this.focusAfterJoin = false;
           this.game.input.focus();
@@ -613,19 +614,21 @@ class MultiplayerGame {
           this.pendingRequest = null;
           this.game.setBusy(false);
           if (message.accepted) this.game.input.value = "";
-          this.game.feedback.textContent = typeof message.feedback === "string" ? message.feedback.slice(0, 500) : "";
+          i18n.text(this.game.feedback, i18n.isMessage(message.feedback) && message.feedback.key.startsWith("guess.")
+            && Object.values(message.feedback.params).every((value) => typeof value === "string" && value.length <= 200)
+            ? message.feedback : typeof message.feedback === "string" ? message.feedback.slice(0, 500) : "");
           this.game.input.focus();
         }
       } else if (message.type === "unavailable") {
         this.game.reset();
-        this.status.textContent = "Kutsujan artikkelin lataus epäonnistui. Odotetaan uutta peliä.";
+        i18n.text(this.status, i18n.message("multiplayer.hostLoadFailed"));
       } else throw new Error();
     } catch {
-      this.removePeer(peer, "Pelitiedot eivät kelpaa. Tarkista, että käytätte samaa peliversiota.");
+      this.removePeer(peer, i18n.message("multiplayer.invalidGame"));
     }
   }
 
-  disconnect(message = "Moninpeli suljettu. Voit jatkaa yksin tai muodostaa uuden yhteyden.") {
+  disconnect(message = i18n.message("multiplayer.ended")) {
     const wasGuest = this.isGuest;
     const peers = [...this.peers];
     this.peers.clear();
@@ -639,8 +642,8 @@ class MultiplayerGame {
     this.remotePlayerCount = 2;
     this.focusAfterJoin = false;
     this.clearSignaling();
-    this.error.textContent = "";
-    this.status.textContent = message;
+    i18n.text(this.error, "");
+    i18n.text(this.status, message);
     this.setNegotiating(false);
     this.renderPayloadDebug();
     this.game.setBusy(!this.game.active);

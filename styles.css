@@ -31,7 +31,7 @@ button:disabled { opacity: .5; cursor: wait; }
 #wikipedia-source { appearance: none; max-width: 100%; font: inherit; font-size: 12px; padding: 9px 34px 9px 11px; border: 1px solid var(--rule); border-radius: 5px; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23282920' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 11px center / 12px 8px; color: inherit; }
 #random-article { padding: 9px 0 9px 10px; background: transparent; color: var(--ink); border-color: transparent; font-size: 12px; }
 #random-article:hover { text-decoration: underline; text-underline-offset: 3px; }
-#random-article span { display: inline-block; margin-right: 4px; }
+#random-article > span[aria-hidden] { display: inline-block; margin-right: 4px; }
 #game-version { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
 #game-version-link { font-variant-numeric: tabular-nums; }
 .multiplayer { margin-top: 14px; font-size: 12px; }
@@ -122,7 +122,7 @@ button:disabled { opacity: .5; cursor: wait; }
 #guess-input::placeholder { color: #858778; opacity: 1; }
 #guess-input:focus-visible { outline-offset: -2px; border-radius: 3px; }
 #guess-submit { flex-shrink: 0; font-size: 13px; font-weight: 550; }
-#guess-submit span { margin-left: 8px; }
+#guess-submit > span[aria-hidden] { margin-left: 8px; }
 #guess-feedback { color: #7e5029; font-size: 13px; margin: 10px 0 0; }
 #guess-feedback:empty { display: none; }
 #recent-guesses { margin: 17px 0 0; color: var(--muted); font-size: 11px; }
@@ -183,7 +183,7 @@ a:hover { color: var(--ink); }
   .help-content { width: min(350px, calc(100vw - 40px)); }
   #guess-input { font-size: 16px; padding-left: 6px; }
   #guess-submit { padding: 10px 12px; }
-  #guess-submit span { display: none; }
+  #guess-submit > span[aria-hidden] { display: none; }
   #game-progress { font-size: 11px; }
   #article-title { font-size: 30px; }
   #article-body { font-size: 18px; line-height: 1.9; }

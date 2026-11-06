@@ -3,6 +3,9 @@
 !tests/**
 !index.html
 !styles.css
+!language.css
+!licenses.html
+!licenses.css
 !favicon.ico
 !src/
 !src/**

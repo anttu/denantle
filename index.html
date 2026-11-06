@@ -1,17 +1,18 @@
 <!doctype html>
 <!-- SPDX-FileCopyrightText: 2026 Antero Fagerstedt -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<html lang="fi">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Arvaa peitetyn Wikipedia-artikkelin sanat. Läheiset arvaukset auttavat paljastamaan tekstin.">
+  <meta name="description" content="" data-i18n-content="page.description">
   <title>Denantle</title>
   <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="language.css">
 </head>
 <body>
   <main>
@@ -24,96 +25,105 @@
             <img class="site-wordmark" src="images/denantle-wordmark.png" alt="Denantle" width="1000" height="400">
           </h1>
         </div>
-        <details class="help">
-          <summary aria-label="Näin pelaat" title="Näin pelaat">?</summary>
-          <div class="help-content">
-            <h2>Näin pelaat</h2>
-            <p id="guess-hint" class="hint">Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.</p>
-            <p class="hint">Tekstin palkkien vihjeissä sininen on kaukana ja punainen lähellä. Vie osoitin palkin päälle tai klikkaa sitä nähdäksesi sanan pituuden ja läheisyyden.</p>
-            <p class="hint">Arvaushistoriassa musta on tarkka, oranssi lähellä ja sininen kaukana. Numero kertoo löytyneiden sanojen määrän.</p>
-            <p class="hint">Pelin tunnisteesta voit aloittaa saman pelin uudelleen. Tallenna tai jaa sen linkki pelataksesi saman artikkeliversion myöhemmin.</p>
-            <p class="hint">Moninpelissä pelaajat paljastavat samaa artikkelia yhdessä. Valitse moninpeli samassa lähiverkossa ja jaa kutsulinkki pelikaverille. Hän lähettää vastauksen takaisin kutsujalle. Voit kutsua lisää pelaajia yhteyden avauduttua.</p>
+        <div class="masthead-actions">
+          <div class="language-control">
+            <label for="language-select" class="visually-hidden" data-i18n="language.label"></label>
+            <select id="language-select" name="language">
+              <option value="en" lang="en" data-i18n="language.en"></option>
+              <option value="fi" lang="fi" data-i18n="language.fi"></option>
+            </select>
           </div>
-        </details>
+          <details class="help">
+            <summary aria-label="" data-i18n-aria-label="help.title" title="" data-i18n-title="help.title">?</summary>
+            <div class="help-content">
+              <h2 data-i18n="help.title"></h2>
+              <p id="guess-hint" class="hint" data-i18n="help.guessEnglish"></p>
+              <p class="hint" data-i18n="help.proximity"></p>
+              <p class="hint" data-i18n="help.history"></p>
+              <p class="hint" data-i18n="help.replay"></p>
+              <p class="hint" data-i18n="help.multiplayer"></p>
+            </div>
+          </details>
+        </div>
       </div>
       <div class="welcome">
-        <p class="eyebrow">Pieni arvoitus. Sana kerrallaan.</p>
-        <h2>Mitä rivien<br>väliin kätkeytyy?</h2>
-        <p>Paljasta Wikipedia-artikkeli arvaamalla sanoja.</p>
+        <p class="eyebrow" data-i18n="welcome.tagline"></p>
+        <h2><span data-i18n="welcome.firstLine"></span><br><span data-i18n="welcome.secondLine"></span></h2>
+        <p data-i18n="welcome.description"></p>
       </div>
       <div class="article-controls">
-        <label for="wikipedia-source" class="visually-hidden">Datalähde</label>
+        <label for="wikipedia-source" class="visually-hidden" data-i18n="source.label"></label>
         <select id="wikipedia-source" name="source">
-          <option value="simple" selected>Simple English Wikipedia</option>
-          <option value="fi">Suomenkielinen Wikipedia</option>
-          <option value="en">English Wikipedia</option>
+          <option value="simple" selected data-i18n="source.simple"></option>
+          <option value="fi" data-i18n="source.fi"></option>
+          <option value="en" data-i18n="source.en"></option>
         </select>
-        <button id="random-article" type="button" aria-label="Valitse uusi satunnainen artikkeli"><span aria-hidden="true">↻</span> Uusi peli</button>
+        <button id="random-article" type="button" aria-label="" data-i18n-aria-label="game.newDescription"><span aria-hidden="true">↻</span> <span data-i18n="game.new"></span></button>
       </div>
-      <section class="multiplayer" aria-label="Peliasetukset">
+      <section class="multiplayer" aria-label="" data-i18n-aria-label="game.settings">
         <fieldset id="game-mode" class="game-mode-options">
-          <legend class="visually-hidden">Pelimuoto</legend>
-          <label class="multiplayer-toggle"><input id="singleplayer-enabled" class="visually-hidden" type="radio" name="game-mode" value="singleplayer" aria-controls="multiplayer-panel" checked><span>Yksinpeli</span></label>
-          <label class="multiplayer-toggle"><input id="multiplayer-enabled" class="visually-hidden" type="radio" name="game-mode" value="multiplayer" aria-controls="multiplayer-panel"><span>Moninpeli samassa lähiverkossa</span></label>
+          <legend class="visually-hidden" data-i18n="game.mode"></legend>
+          <label class="multiplayer-toggle"><input id="singleplayer-enabled" class="visually-hidden" type="radio" name="game-mode" value="singleplayer" aria-controls="multiplayer-panel" checked><span data-i18n="game.singleplayer"></span></label>
+          <label class="multiplayer-toggle"><input id="multiplayer-enabled" class="visually-hidden" type="radio" name="game-mode" value="multiplayer" aria-controls="multiplayer-panel"><span data-i18n="game.multiplayer"></span></label>
         </fieldset>
         <div id="multiplayer-panel" hidden>
           <div id="multiplayer-connected" class="multiplayer-connected" role="status" hidden>
             <div class="multiplayer-connected-heading">
-              <strong>Yhteys muodostettu</strong>
+              <strong data-i18n="multiplayer.connected"></strong>
               <span id="multiplayer-player-count"></span>
             </div>
             <p id="multiplayer-connected-note"></p>
           </div>
           <details id="multiplayer-invitations" open>
-            <summary id="multiplayer-invitations-summary" hidden>Kutsu lisää pelaajia</summary>
+            <summary id="multiplayer-invitations-summary" hidden data-i18n="multiplayer.inviteMore"></summary>
             <div class="multiplayer-invitation-content">
               <div class="multiplayer-invitation-card">
                 <div class="multiplayer-invitation-heading">
                   <div>
-                    <h3 id="multiplayer-invitation-title">Yksi arvoitus. Kaksi päätä.</h3>
-                    <p id="multiplayer-invitation-description">Pelatkaa samaa artikkelia yhdessä.</p>
+                    <h3 id="multiplayer-invitation-title" data-i18n="multiplayer.title"></h3>
+                    <p id="multiplayer-invitation-description" data-i18n="multiplayer.description"></p>
                   </div>
-                  <span class="multiplayer-network"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a14 14 0 0 1 18 0M6.5 12a8.5 8.5 0 0 1 11 0M10 16a3 3 0 0 1 4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>Sama lähiverkko</span>
+                  <span class="multiplayer-network"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a14 14 0 0 1 18 0M6.5 12a8.5 8.5 0 0 1 11 0M10 16a3 3 0 0 1 4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg><span data-i18n="multiplayer.network"></span></span>
                 </div>
                 <div class="multiplayer-invitation-body">
                   <div class="multiplayer-columns">
                     <div id="multiplayer-send-panel">
-                      <p class="multiplayer-step"><span class="multiplayer-step-number" aria-hidden="true">1</span><strong id="multiplayer-send-title">Lähetä kutsu</strong></p>
-                      <p id="multiplayer-send-description" class="multiplayer-step-description" hidden>Kopioi kutsulinkki ja lähetä se pelikaverillesi.</p>
+                      <p class="multiplayer-step"><span class="multiplayer-step-number" aria-hidden="true">1</span><strong id="multiplayer-send-title" data-i18n="multiplayer.sendInvite"></strong></p>
+                      <p id="multiplayer-send-description" class="multiplayer-step-description" hidden data-i18n="multiplayer.sendInviteHelp"></p>
                       <div id="multiplayer-invite-note" class="multiplayer-invite-note">
-                        <strong id="multiplayer-invite-note-title">Kertakäyttöinen linkki yhdelle henkilölle.</strong>
-                        <p id="multiplayer-invite-note-description">Tällä linkillä voi liittyä vain yksi henkilö. Luo jokaiselle muulle pelaajalle oma kutsulinkki.</p>
+                        <strong id="multiplayer-invite-note-title" data-i18n="multiplayer.singleUse"></strong>
+                        <p id="multiplayer-invite-note-description" data-i18n="multiplayer.singleUseHelp"></p>
                       </div>
-                      <button id="multiplayer-create" type="button">Luo kutsu</button>
+                      <button id="multiplayer-create" type="button" data-i18n="multiplayer.create"></button>
                       <div id="multiplayer-local-panel" hidden>
-                        <label id="multiplayer-local-label" class="visually-hidden" for="multiplayer-local">Kutsulinkki</label>
+                        <label id="multiplayer-local-label" class="visually-hidden" for="multiplayer-local" data-i18n="multiplayer.link"></label>
                         <input id="multiplayer-local" class="multiplayer-invite-link" type="text" readonly spellcheck="false" aria-describedby="multiplayer-invite-note multiplayer-status">
-                        <button id="multiplayer-copy" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span id="multiplayer-copy-label">Kopioi kutsulinkki</span></button>
+                        <button id="multiplayer-copy" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span id="multiplayer-copy-label" data-i18n="multiplayer.copyLink"></span></button>
                       </div>
                     </div>
                     <div id="multiplayer-remote-panel">
-                      <label class="multiplayer-step" for="multiplayer-remote"><span class="multiplayer-step-number" aria-hidden="true">2</span><strong id="multiplayer-remote-label">Liitä kaverin vastaus</strong></label>
-                      <p id="multiplayer-remote-description" class="multiplayer-step-description">Kaveri avaa linkin ja lähettää sinulle vastauksen.</p>
-                      <textarea id="multiplayer-remote" placeholder="Liitä vastaus tähän…" spellcheck="false" autocapitalize="none"></textarea>
-                      <button id="multiplayer-accept" class="secondary" type="button" disabled><span id="multiplayer-accept-label">Hyväksy vastaus</span><span aria-hidden="true">→</span></button>
+                      <label class="multiplayer-step" for="multiplayer-remote"><span class="multiplayer-step-number" aria-hidden="true">2</span><strong id="multiplayer-remote-label" data-i18n="multiplayer.pasteResponse"></strong></label>
+                      <p id="multiplayer-remote-description" class="multiplayer-step-description" data-i18n="multiplayer.responseHelp"></p>
+                      <textarea id="multiplayer-remote" placeholder="" data-i18n-placeholder="multiplayer.responsePlaceholder" spellcheck="false" autocapitalize="none"></textarea>
+                      <button id="multiplayer-accept" class="secondary" type="button" disabled><span id="multiplayer-accept-label" data-i18n="multiplayer.acceptResponse"></span><span aria-hidden="true">→</span></button>
                     </div>
                   </div>
                   <div id="multiplayer-invitation-footer" class="multiplayer-invitation-footer">
-                    <p id="multiplayer-status" role="status">Luo kutsu aloittaaksesi yhteisen pelin.</p>
-                    <button id="multiplayer-cancel-invite" class="multiplayer-text-button" type="button" hidden>Aloita alusta</button>
+                    <p id="multiplayer-status" role="status" data-i18n="multiplayer.initial"></p>
+                    <button id="multiplayer-cancel-invite" class="multiplayer-text-button" type="button" hidden data-i18n="multiplayer.reset"></button>
                   </div>
                 </div>
               </div>
               <div class="multiplayer-extra-controls">
-                <button id="multiplayer-join-toggle" class="multiplayer-text-button" type="button">Saitko kutsun? Liity kaverin peliin</button>
+                <button id="multiplayer-join-toggle" class="multiplayer-text-button" type="button" data-i18n="multiplayer.joinToggle"></button>
                 <details class="multiplayer-technical">
-                  <summary>Yhteyden tekniset tiedot</summary>
-                  <label class="multiplayer-toggle"><input id="multiplayer-debug" type="checkbox" aria-controls="multiplayer-debug-panel"> payload debug</label>
+                  <summary data-i18n="multiplayer.technical"></summary>
+                  <label class="multiplayer-toggle"><input id="multiplayer-debug" type="checkbox" aria-controls="multiplayer-debug-panel"> <span data-i18n="multiplayer.debug"></span></label>
                   <div id="multiplayer-debug-panel" hidden>
-                    <p>Oma payload (JSON)</p>
-                    <pre id="multiplayer-debug-local" aria-label="Oma payload JSON-muodossa"></pre>
-                    <p>Pelikaverin payload (JSON)</p>
-                    <pre id="multiplayer-debug-remote" aria-label="Pelikaverin payload JSON-muodossa"></pre>
+                    <p data-i18n="multiplayer.localPayload"></p>
+                    <pre id="multiplayer-debug-local" aria-label="" data-i18n-aria-label="multiplayer.localPayloadLabel"></pre>
+                    <p data-i18n="multiplayer.remotePayload"></p>
+                    <pre id="multiplayer-debug-remote" aria-label="" data-i18n-aria-label="multiplayer.remotePayloadLabel"></pre>
                   </div>
                 </details>
               </div>
@@ -121,22 +131,22 @@
           </details>
           <div id="multiplayer-session-status"></div>
           <p id="multiplayer-error" role="alert"></p>
-          <button id="multiplayer-restart" class="multiplayer-disconnect" type="button" hidden>Katkaise / aloita alusta</button>
+          <button id="multiplayer-restart" class="multiplayer-disconnect" type="button" hidden data-i18n="multiplayer.disconnectReset"></button>
         </div>
       </section>
-      <p id="game-version" hidden>Pelin tunniste: <a id="game-version-link" title="Pelaa sama peli uudelleen alusta"></a></p>
+      <p id="game-version" hidden><span data-i18n="game.version"></span> <a id="game-version-link" title="" data-i18n-title="game.replay"></a></p>
       <p id="game-progress"></p>
-      <progress id="game-completion" value="0" max="1" aria-label="Paljastettuja sanoja" hidden></progress>
+      <progress id="game-completion" value="0" max="1" aria-label="" data-i18n-aria-label="game.revealed" hidden></progress>
       <form id="guess-form" hidden>
-        <label for="guess-input" class="visually-hidden">Arvaa sana</label>
+        <label for="guess-input" class="visually-hidden" data-i18n="guess.label"></label>
         <div class="guess-controls">
-          <input id="guess-input" name="guess" type="text" placeholder="Arvaa seuraava sana…" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="guess-feedback" disabled>
-          <button id="guess-submit" type="submit" disabled>Arvaa<span aria-hidden="true">↵</span></button>
+          <input id="guess-input" name="guess" type="text" placeholder="" data-i18n-placeholder="guess.placeholder" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="guess-feedback" disabled>
+          <button id="guess-submit" type="submit" disabled><span data-i18n="guess.submit"></span><span aria-hidden="true">↵</span></button>
         </div>
       </form>
       <p id="guess-feedback" role="status"></p>
       <div id="recent-guesses" role="status" hidden></div>
-      <ul class="proximity-legend" aria-label="Arvausten värit"><li>Tarkka</li><li class="near">Lähellä</li><li class="cold">Kaukana</li></ul>
+      <ul class="proximity-legend" aria-label="" data-i18n-aria-label="proximity.label"><li data-i18n="proximity.exact"></li><li class="near" data-i18n="proximity.near"></li><li class="cold" data-i18n="proximity.cold"></li></ul>
       <p id="title-celebration" role="status" hidden></p>
       <p id="status" role="status"></p>
       <p id="vector-status" role="status"></p>
@@ -144,23 +154,24 @@
       <p id="error" role="alert"></p>
     </header>
     <article id="article" lang="en" aria-labelledby="article-title" hidden>
-      <p class="eyebrow" lang="fi">Artikkeli</p>
+      <p class="eyebrow" data-ui-language data-i18n="article.label"></p>
       <h2 id="article-title"></h2>
       <div id="article-body"></div>
-      <p class="source" lang="fi">
-        Lähde: <span id="article-source">Simple English Wikipedia</span> ·
+      <p class="source" data-ui-language>
+        <span data-i18n="article.source"></span> <span id="article-source" data-i18n="source.simple"></span> ·
         <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
-        <br>Tekstiä on lyhennetty ja muokattu peliä varten. Sanoja peitetään ja niiden tilalla voidaan näyttää arvauksia.
+        <br><span data-i18n="article.adaptation"></span>
       </p>
     </article>
-    <noscript><p>Satunnaisen artikkelin näyttäminen edellyttää JavaScriptin sallimista selaimessa.</p></noscript>
+    <noscript><p lang="en">Please enable JavaScript to play.</p></noscript>
     <footer class="source">
-      © 2026 Antero Fagerstedt · <a href="licenses.html">Lisenssit ja lähdekoodi</a> ·
+      © 2026 Antero Fagerstedt · <a href="licenses.html" data-i18n="licenses.title"></a> ·
       <a href="LICENSE">GPL-3.0-or-later</a><br>
-      Vapaa ohjelmisto: saat käyttää, muokata ja jakaa sitä lisenssin ehdoilla. Ohjelmalla ei ole takuuta.
+      <span data-i18n="licenses.footer"></span>
     </footer>
   </main>
-  <div id="word-tooltip" role="tooltip" lang="fi" hidden></div>
+  <div id="word-tooltip" role="tooltip" data-ui-language hidden></div>
+  <script src="src/i18n.js"></script>
   <script src="src/categories.js"></script>
   <script src="src/embeddings.js"></script>
   <script src="src/finnish-inflections.js"></script>

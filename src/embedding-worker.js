@@ -62,7 +62,7 @@ async function indexArticle(message) {
   const counts = new Map();
   const words = normalizeText(`${message.title}\n${message.text}`).match(/\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*/gu) || [];
   for (const word of words) counts.set(word, (counts.get(word) || 0) + 1);
-  if (counts.size === 0) throw new Error("Artikkelissa ei ole vektoroitavia sanoja.");
+  if (counts.size === 0) throw new Error("vectors.empty");
 
   self.postMessage({ id: message.id, type: "progress", stage: "model" });
   const model = MODELS[message.language] || MODELS.en;
@@ -98,7 +98,7 @@ async function indexArticle(message) {
 }
 
 async function search(message) {
-  if (!database) throw new Error("Artikkelin sanavektorit eivät ole vielä valmiit.");
+  if (!database) throw new Error("vectors.notReady");
   const extractor = await getExtractor(database.model);
   const output = await extractor([normalizeText(message.text.trim())], { pooling: "mean", normalize: true });
   if (message.revision !== revision) return;
@@ -127,7 +127,7 @@ self.onmessage = ({ data: message }) => {
       if (message.revision === revision) self.postMessage({ id: message.id, type: "result", result });
     } catch (error) {
       if (message.revision === revision) {
-        self.postMessage({ id: message.id, type: "error", error: "Sanavektorien käsittely epäonnistui. Tarkista verkkoyhteys ja kokeile uutta artikkelia.", });
+        self.postMessage({ id: message.id, type: "error", error: "vectors.processingFailed", });
         console.error("Embedding error:", error);
       }
     }

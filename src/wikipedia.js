@@ -24,11 +24,11 @@ const multiplayer = new MultiplayerGame(articleGame, {
       || typeof data.session !== "string" || data.session.length > 100
       || typeof data.version !== "string" || !/^(simple|fi|en)-[1-9]\d*$/.test(data.version)
       || data.version.split("-")[0] !== data.sourceKey || !wikipediaSources[data.sourceKey]) {
-      throw new Error("Artikkelin tiedot eivät kelpaa.");
+      throw i18n.error("error.articleData");
     }
     cancelArticleLoading();
     articleVectors.clear();
-    vectorStatus.textContent = "Lähisanavihjeet jaetaan kutsujan selaimesta.";
+    i18n.text(vectorStatus, i18n.message("vectors.shared"));
     displayArticle(data);
   },
   cancelLoading: cancelArticleLoading,
@@ -52,7 +52,7 @@ function cancelArticleLoading() {
   loadController?.abort();
   loadController = null;
   articleLoading = false;
-  status.textContent = "";
+  i18n.text(status, "");
   article.setAttribute("aria-busy", "false");
   refreshArticleControls();
 }
@@ -61,13 +61,11 @@ function displayArticle(data) {
   const source = wikipediaSources[data.sourceKey];
   currentArticle = data;
   sourceSelect.value = data.sourceKey;
-  guessHint.textContent = source.language === "fi"
-    ? "Arvaa peitetyn artikkelin sanoja suomeksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä."
-    : "Arvaa peitetyn artikkelin sanoja englanniksi. Sanan perusmuoto paljastaa myös taivutusmuodot. Merkitykseltään läheinen arvaus näkyy mustan palkin päällä.";
+  updateGuessHint(source.language);
   articleGame.input.lang = source.language;
   articleGame.start(data.title, data.body, source.language);
   article.lang = source.language;
-  articleSource.textContent = source.name;
+  i18n.text(articleSource, i18n.message(`source.${data.sourceKey}`));
   const replayUrl = new URL(window.location.href);
   replayUrl.hash = "";
   replayUrl.searchParams.set("game", data.version);
@@ -77,7 +75,7 @@ function displayArticle(data) {
   gameVersionLink.href = replayUrl.href;
   gameVersion.hidden = false;
   article.hidden = false;
-  errorMessage.textContent = "";
+  i18n.text(errorMessage, "");
 }
 
 async function buildArticleVectors(title, body, language) {
@@ -85,13 +83,13 @@ async function buildArticleVectors(title, body, language) {
   try {
     const info = await articleVectors.build(title, body, (progress) => {
       if (revision !== loadRevision) return;
-      vectorStatus.textContent = progress.stage === "model"
-        ? "Valmistellaan sanavektorimallia… Ensimmäinen lataus voi kestää hetken."
-        : `Luodaan sanavektoreita: ${progress.completed} / ${progress.total} sanaa…`;
+      i18n.text(vectorStatus, progress.stage === "model"
+        ? i18n.message("vectors.loading")
+        : i18n.message("vectors.progress", { completed: progress.completed, total: progress.total }));
     }, language);
-    if (revision === loadRevision) vectorStatus.textContent = `Sanavektorit valmiina: ${info.wordCount} eri sanaa.`;
+    if (revision === loadRevision) i18n.text(vectorStatus, i18n.message("vectors.ready", { count: info.wordCount }));
   } catch (error) {
-    if (revision === loadRevision && error.name !== "AbortError") vectorStatus.textContent = error.message;
+    if (revision === loadRevision && error.name !== "AbortError") i18n.text(vectorStatus, i18n.errorMessage(error));
   }
 }
 
@@ -153,15 +151,15 @@ async function queryWikipedia(source, parameters, signal) {
   });
   const response = await fetch(`${source.baseUrl}/w/api.php?${params}`, { signal });
   if (!response.ok) {
-    throw new Error(`Artikkelin haku epäonnistui (HTTP ${response.status}). Yritä uudelleen.`);
+    throw i18n.error(i18n.message("error.http", { status: response.status }));
   }
 
   const data = await response.json();
   if (data.error) {
     if (["missingrev", "nosuchrevid", "missingtitle"].includes(data.error.code)) {
-      throw new Error("Artikkeliversiota ei löytynyt. Tarkista pelin linkki tai valitse uusi peli.");
+      throw i18n.error("error.revision");
     }
-    throw new Error("Wikipedia ei voinut käsitellä hakua. Yritä uudelleen.");
+    throw i18n.error("error.wikipedia");
   }
   return data;
 }
@@ -199,7 +197,7 @@ async function getRandomArticleTitle(source, signal) {
     } while (continuation);
   }
 
-  throw new Error("Valituista kategorioista ei löytynyt artikkeleita. Yritä uudelleen.");
+  throw i18n.error("error.categories");
 }
 
 async function loadArticle(gameId = null, { invite = false } = {}) {
@@ -214,19 +212,19 @@ async function loadArticle(gameId = null, { invite = false } = {}) {
   articleGame.reset();
   multiplayer.shareGame();
   articleVectors.clear();
-  vectorStatus.textContent = "";
+  i18n.text(vectorStatus, "");
   gameVersion.hidden = true;
   gameVersionLink.removeAttribute("href");
   gameVersionLink.textContent = "";
   article.hidden = true;
   article.setAttribute("aria-busy", "true");
-  errorMessage.textContent = "";
-  status.textContent = gameId === null ? "Haetaan satunnaista artikkelia…" : "Haetaan tallennettua peliä…";
+  i18n.text(errorMessage, "");
+  i18n.text(status, gameId === null ? i18n.message("article.loadingRandom") : i18n.message("article.loadingSaved"));
 
   try {
     const savedGame = gameId === null ? null : gameId.match(/^(simple|fi|en)-([1-9]\d*)$/);
     if (gameId !== null && (!savedGame || !Number.isSafeInteger(Number(savedGame[2])))) {
-      throw new Error("Pelin tunniste ei kelpaa. Tarkista pelin linkki tai valitse uusi peli.");
+      throw i18n.error("error.gameId");
     }
     const sourceKey = savedGame ? savedGame[1] : sourceSelect.value;
     const source = wikipediaSources[sourceKey];
@@ -248,11 +246,11 @@ async function loadArticle(gameId = null, { invite = false } = {}) {
     const page = data.parse;
     if (!page || !page.title || !Number.isSafeInteger(page.revid) || page.revid <= 0
       || (savedGame && page.revid !== Number(savedGame[2]))) {
-      throw new Error("Artikkeliversiota ei löytynyt. Tarkista pelin linkki tai valitse uusi peli.");
+      throw i18n.error("error.revision");
     }
     const body = typeof page.text === "string" ? articleTextFromHtml(page.text, source) : "";
     if (!body) {
-      throw new Error("Artikkelissa ei ole näytettävää leipätekstiä.");
+      throw i18n.error("error.emptyArticle");
     }
 
     // getRandomValues also works on local-network HTTP origins.
@@ -266,14 +264,14 @@ async function loadArticle(gameId = null, { invite = false } = {}) {
   } catch (error) {
     if (revision !== loadRevision || error.name === "AbortError") return;
     multiplayer.send({ type: "unavailable" });
-    errorMessage.textContent = error.name === "TimeoutError"
-      ? "Haku kesti liian kauan. Yritä uudelleen."
+    i18n.text(errorMessage, error.name === "TimeoutError"
+      ? i18n.message("error.timeout")
       : error.name === "TypeError"
-        ? "Wikipediaan ei saada yhteyttä. Tarkista verkkoyhteys ja yritä uudelleen."
-        : error.message || "Artikkelin haku epäonnistui. Yritä uudelleen.";
+        ? i18n.message("error.network")
+        : i18n.errorMessage(error) || i18n.message("error.article"));
   } finally {
     if (revision !== loadRevision) return;
-    status.textContent = "";
+    i18n.text(status, "");
     article.setAttribute("aria-busy", "false");
     articleLoading = false;
     refreshArticleControls();
@@ -295,3 +293,8 @@ gameVersionLink.addEventListener("click", (event) => {
 if (!multiplayer.acceptInviteFromLocation()) {
   void loadArticle(new URLSearchParams(window.location.search).get("game"));
 }
+
+function updateGuessHint(language = wikipediaSources[sourceSelect.value].language) {
+  i18n.text(guessHint, i18n.message(language === "fi" ? "help.guessFinnish" : "help.guessEnglish"));
+}
+document.addEventListener("denantle:languagechange", () => updateGuessHint());

@@ -48,7 +48,7 @@ self.onmessage = async ({ data: message }) => {
     }
   } catch {
     if (message.revision === revision) {
-      self.postMessage({ type: "error", revision, error: "Suomen taivutusmuotojen käsittely epäonnistui." });
+      self.postMessage({ type: "error", revision, error: "inflections.failed" });
     }
   }
 };

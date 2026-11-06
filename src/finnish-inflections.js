@@ -12,7 +12,7 @@ class FinnishInflections {
   clear() {
     this.revision += 1;
     this.forms.clear();
-    this.pending?.reject(new DOMException("Artikkeli vaihtui.", "AbortError"));
+    this.pending?.reject(new DOMException(i18n.t("article.changed"), "AbortError"));
     this.pending = null;
     this.worker?.postMessage({ type: "clear", revision: this.revision });
   }
@@ -28,12 +28,12 @@ class FinnishInflections {
           if (data.revision !== this.revision || !this.pending) return;
           const pending = this.pending;
           this.pending = null;
-          if (data.type === "error") pending.reject(new Error(data.error));
+          if (data.type === "error") pending.reject(i18n.error(data.error));
           else pending.resolve(data.forms);
         };
         worker.onerror = () => {
           if (this.worker !== worker) return;
-          this.pending?.reject(new Error("Suomen taivutusmuotojen käsittely epäonnistui."));
+          this.pending?.reject(i18n.error("inflections.failed"));
           this.pending = null;
           worker.terminate();
           this.worker = null;
@@ -42,7 +42,7 @@ class FinnishInflections {
       this.worker.postMessage({ type: "index", revision, words });
     });
     if (revision !== this.revision) {
-      throw new DOMException("Artikkeli vaihtui.", "AbortError");
+      throw new DOMException(i18n.t("article.changed"), "AbortError");
     }
     this.forms = new Map(forms);
   }
