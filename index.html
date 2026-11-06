@@ -108,7 +108,12 @@
                   Use the game ID to restart the same game. Save or share its
                   link to play the same article revision later.
                 </p>
-                <p class="hint" data-i18n="help.multiplayer">
+                <p
+                  id="multiplayer-help"
+                  class="hint"
+                  data-i18n="help.multiplayer"
+                  hidden
+                >
                   In multiplayer, players reveal the same article together.
                   Choose multiplayer and share an invite link with a friend.
                   Everyone can use the same link while the host keeps the game
@@ -159,7 +164,7 @@
           aria-label="Game settings"
           data-i18n-aria-label="game.settings"
         >
-          <fieldset id="game-mode" class="game-mode-options">
+          <fieldset id="game-mode" class="game-mode-options" hidden disabled>
             <legend class="visually-hidden" data-i18n="game.mode">
               Game mode
             </legend>

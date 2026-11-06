@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { expect, test } from '@playwright/test'
+import { enableMultiplayer } from './feature-flags-fixture.js'
 
 test('käsin yhdistäminen on oletuksena pois käytöstä molemmilla kielillä', async ({
   page,
+  context,
 }) => {
+  await enableMultiplayer(context)
   await page.goto('/?game=invalid')
   await page.getByText('Moninpeli', { exact: true }).click()
   await expect(page.locator('#multiplayer-manual')).toBeHidden()
@@ -24,7 +27,9 @@ test('käsin yhdistäminen on oletuksena pois käytöstä molemmilla kielillä',
 
 test('vanha käsinkutsu ei aloita moninpeliä lipun ollessa pois päältä', async ({
   page,
+  context,
 }) => {
+  await enableMultiplayer(context)
   await page.goto('/?game=invalid#join=invalid')
   await expect(
     page.getByRole('radio', { name: 'Yksinpeli', exact: true }),

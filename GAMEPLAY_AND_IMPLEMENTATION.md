@@ -55,7 +55,20 @@ The warm paper layout pairs a compact logo and controls with a serif heading and
 article text. Guess and revealed-word counts sit above the input, with a progress
 bar tracking revealed occurrences. The **?** button opens the playing instructions.
 
-The game-mode radio buttons default to **Yksinpeli**. Selecting **Moninpeli**
+Feature flags are managed in `src/feature-flags.ts`. `featureFlags` contains the
+production defaults; `developmentFeatureFlags` overrides them for local work.
+`multiplayer` is `false` in production and `true` in development.
+`npm run build` emits the production flags into `dist/src/feature-flags.js`;
+`npm run dev` and `./start-local.sh` pass `--development` to the build instead.
+The deployment pipeline continues to publish the same production artifact that
+the Firefox tests exercised. Production hides and disables the game-mode
+controls and hides multiplayer help. Automatic and manual invitation URLs and
+connection entry points are ignored while `multiplayer` is off, so the game
+continues in solo mode without contacting the signaling service. Flags are
+build-time settings: rebuild and reload after changing them.
+
+With multiplayer enabled, the game-mode radio buttons default to **Yksinpeli**.
+Selecting **Moninpeli**
 shows the automatic invite card. **Luo kutsulinkki** opens a PeerJS identity on
 the shared public PeerJS Cloud signaling service; it needs no account or personal
 API key. The reusable URL contains a random host identity and a 128-bit invite
@@ -91,7 +104,8 @@ same identity when the connection to PeerJS Cloud is temporarily lost.
 `src/feature-flags.ts` sets `manualMultiplayer` to `false` for both local
 development and production builds. This hides **Yhdistä käsin**, disables manual
 negotiation and manual invitation URLs, and omits manual fallback instructions.
-Set the flag to `true` and rebuild to enable the following manual flow.
+Set the flag to `true` and rebuild to enable the following manual flow, provided
+the parent `multiplayer` flag is also enabled.
 
 The collapsed **Yhdistä käsin** disclosure preserves manual offer/answer
 exchange. Its invitation and reply are shown side by side, stacking on mobile.

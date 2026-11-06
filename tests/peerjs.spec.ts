@@ -11,8 +11,8 @@ test('sama kutsulinkki yhdistää kaksi vierasta automaattisesti ja säilyy käy
   browser,
   peerServer,
 }) => {
-  await enableManualMultiplayer(context)
   await useLocalPeerServer(context, peerServer)
+  await enableManualMultiplayer(context)
   await host.goto('/?game=invalid')
   await host.getByText('Moninpeli', { exact: true }).click()
   await expect(host.getByLabel('Liitä kaverin vastaus')).toBeHidden()

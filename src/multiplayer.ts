@@ -161,6 +161,8 @@ export function createMultiplayerGame(
   }: MultiplayerHooks,
 ) {
   const elements = {
+    mode: elementById('game-mode', HTMLFieldSetElement),
+    help: elementById('multiplayer-help', HTMLElement),
     autoPanel: elementById('multiplayer-auto', HTMLElement),
     autoTitle: elementById('multiplayer-auto-title', HTMLElement),
     autoDescription: elementById('multiplayer-auto-description', HTMLElement),
@@ -566,7 +568,7 @@ export function createMultiplayerGame(
   }
 
   async function startAutomaticHost() {
-    if (isGuest() || autoConnecting) return
+    if (!featureFlags.multiplayer || isGuest() || autoConnecting) return
     i18n.text(elements.status, '')
     i18n.text(elements.error, '')
     if (autoSession) {
@@ -676,6 +678,7 @@ export function createMultiplayerGame(
   }
 
   function acceptInviteFromLocation() {
+    if (!featureFlags.multiplayer) return false
     const url = new URL(window.location.href)
     const params = new URLSearchParams(url.hash.slice(1))
     const hostId = params.get('peer')
@@ -735,6 +738,7 @@ export function createMultiplayerGame(
 
   async function negotiateManual(create: boolean) {
     if (
+      !featureFlags.multiplayer ||
       !featureFlags.manualMultiplayer ||
       negotiating ||
       (create && (peer || isGuest()))
@@ -1079,7 +1083,16 @@ export function createMultiplayerGame(
     if (wasGuest) resumeSolo()
   }
 
-  elementById('game-mode', HTMLElement).addEventListener('change', () => {
+  elements.mode.hidden = !featureFlags.multiplayer
+  elements.mode.disabled = !featureFlags.multiplayer
+  elements.help.hidden = !featureFlags.multiplayer
+  if (!featureFlags.multiplayer) {
+    elements.enabled.checked = false
+    elementById('singleplayer-enabled', HTMLInputElement).checked = true
+    elements.panel.hidden = true
+  }
+  elements.mode.addEventListener('change', () => {
+    if (!featureFlags.multiplayer) return
     elements.panel.hidden = !elements.enabled.checked
     if (!elements.enabled.checked) disconnect()
     else if (!window.RTCPeerConnection)

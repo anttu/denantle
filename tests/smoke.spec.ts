@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { expect, test } from '@playwright/test'
+import { enableMultiplayer } from './feature-flags-fixture.js'
 
 test('pelimuodon voi vaihtaa yksinpelistä moninpeliin ja takaisin', async ({
   page,
+  context,
 }) => {
+  await enableMultiplayer(context)
   // Virheellinen pelitunniste estää Wikipedia-haun ja kielimallien lataamisen.
   await page.goto('/?game=invalid')
 

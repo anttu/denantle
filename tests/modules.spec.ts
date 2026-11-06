@@ -17,9 +17,7 @@ test('moduulit ja Voikko-worker toimivat Pagesin alihakemistossa', async ({
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto('/denantle/?game=invalid')
-  await expect(
-    page.getByRole('radio', { name: 'Yksinpeli', exact: true }),
-  ).toBeChecked()
+  await expect(page.locator('#singleplayer-enabled')).toBeChecked()
   const response = await page.evaluate(
     () =>
       new Promise<InflectionResponse>((resolve, reject) => {

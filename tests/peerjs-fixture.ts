@@ -4,6 +4,7 @@
 import type { Server } from 'node:http'
 import { type BrowserContext, test as base } from '@playwright/test'
 import { PeerServer } from 'peer'
+import { enableMultiplayer } from './feature-flags-fixture.js'
 
 // Only redirect the external signaling endpoint. PeerJS, PeerServer and WebRTC
 // all run for real, so this suite does not depend on the shared public cloud.
@@ -11,6 +12,7 @@ export async function useLocalPeerServer(
   context: BrowserContext,
   address: string,
 ) {
+  await enableMultiplayer(context)
   await context.addInitScript((host) => {
     const NativeWebSocket = window.WebSocket
     const sockets: WebSocket[] = []
@@ -32,6 +34,10 @@ export async function useLocalPeerServer(
 }
 
 export const test = base.extend<object, { peerServer: string }>({
+  context: async ({ context }, use) => {
+    await enableMultiplayer(context)
+    await use(context)
+  },
   peerServer: [
     // biome-ignore lint/correctness/noEmptyPattern: Playwright requires a destructured fixture dependency list.
     async ({}, use) => {

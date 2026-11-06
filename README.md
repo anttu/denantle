@@ -66,6 +66,23 @@ mukana. Käytä paikallista palvelinta, jotta myös sanojen merkityksiä vertail
 toiminto toimii.
 
 
+## Feature flagit
+
+Feature flagit hallitaan tiedostossa `src/feature-flags.ts`. `featureFlags`
+määrittää tuotannon asetukset ja `developmentFeatureFlags` paikallisen kehityksen
+poikkeukset:
+
+| Lippu | Tuotanto | Paikallinen kehitys |
+| --- | --- | --- |
+| `multiplayer` | `false` | `true` |
+| `manualMultiplayer` | `false` | `false` |
+
+`npm run build` tekee tuotantokoonnin, jossa moninpelin valinta ja ohje ovat
+piilossa eivätkä kutsulinkit käynnistä yhteyttä. GitHub Pagesiin julkaistaan tämä
+sama tuotantokoonti. `./start-local.sh` ja `npm run dev` käyttävät kehitysasetuksia.
+Pelkkä kehityskoonti syntyy komennolla `npm run build -- --development`.
+Flagien muutokset tulevat voimaan uudelleenkokoamisen ja sivun päivityksen jälkeen.
+
 ## Tarkistukset ja julkaisuversio
 
 Kaikki npm-riippuvuudet ja testit käyttävät juurihakemiston lukitustiedostoa.
@@ -109,7 +126,8 @@ muuttavat tekstin numeerisiksi vektoreiksi. Vektorien läheisyyden perusteella
 peli tunnistaa merkitykseltään samankaltaisia sanoja. Mallit ajetaan paikallisesti
 selaimessa Transformers.js:n ja WebAssemblyn avulla.
 
-Moninpeli välittää pelitilan suoraan selainten välillä WebRTC-datakanavilla.
+Moninpeli on tällä hetkellä käytössä vain kehityskoonnissa. Se välittää pelitilan
+suoraan selainten välillä WebRTC-datakanavilla.
 Valitse moninpeli ja kutsulinkin **Yhteysverkko**:
 
 - **Lähiverkko** on samassa lähiverkossa oleville pelaajille. Se käyttää laitteiden
@@ -132,7 +150,8 @@ olla liittyjien saavutettavissa: `localhost` toimii vain samalla koneella.
 että tuotantokoontiin julkaistavassa versiossa. Tällöin lisävalinta on piilossa
 eivätkä aiemmat käsin tehdyt kutsulinkit käynnistä yhteydenmuodostusta.
 Toiminnon saa takaisin käyttöön vaihtamalla arvoksi `true` ja kokoamalla
-sivuston uudelleen. Käsin tehtävät kutsut ovat kertakäyttöisiä.
+sivuston uudelleen. Myös `multiplayer`-lipun pitää olla käytössä.
+Käsin tehtävät kutsut ovat kertakäyttöisiä.
 Julkisen signalointipalvelun häiriö ei katkaise jo avattuja suoria datayhteyksiä.
 
 Internet-tila ja käsin yhdistäminen käyttävät Googlen julkista STUN-palvelinta

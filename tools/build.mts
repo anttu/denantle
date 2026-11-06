@@ -2,12 +2,23 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { spawnSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
+import { developmentFeatureFlags, featureFlags } from '../src/feature-flags.ts'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
+const activeFlags = process.argv.includes('--development')
+  ? developmentFeatureFlags
+  : featureFlags
 const staging = mkdtempSync(join(root, '.denantle-build-'))
 const assets = [
   'index.html',
@@ -48,6 +59,13 @@ try {
   }
   for (const asset of assets)
     cpSync(join(root, asset), join(staging, asset), { recursive: true })
+  writeFileSync(
+    join(staging, 'src/feature-flags.js'),
+    '// SPDX-FileCopyrightText: 2026 Antero Fagerstedt\n' +
+      '// SPDX-License-Identifier: GPL-3.0-or-later\n\n' +
+      `export const featureFlags = ${JSON.stringify(activeFlags, null, 2)}\n`,
+  )
+  rmSync(join(staging, 'src/feature-flags.js.map'))
   await build({
     absWorkingDir: root,
     entryPoints: ['src/peerjs-session.ts'],

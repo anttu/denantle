@@ -1,7 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Shared by local development and the production build.
+// Defaults for production builds. Local development overrides are kept below.
 export const featureFlags = {
+  multiplayer: false,
   manualMultiplayer: false,
+}
+
+export const developmentFeatureFlags = {
+  ...featureFlags,
+  multiplayer: true,
 }
