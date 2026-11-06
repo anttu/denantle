@@ -2,11 +2,12 @@
   "name": "denantle",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.embedding-worker.json && tsc -p tsconfig.finnish-worker.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.embedding-worker.json --noEmit && tsc -p tsconfig.finnish-worker.json --noEmit",
-    "watch": "tsc -p tsconfig.json --watch"
+    "build": "node tools/build.mts",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.embedding-worker.json --noEmit && tsc -p tsconfig.finnish-worker.json --noEmit && tsc -p tsconfig.tools.json",
+    "dev": "node tools/develop.mts"
   },
   "devDependencies": {
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "@types/node": "26.6.6"
   }
 }

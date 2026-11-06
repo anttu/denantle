@@ -15,7 +15,7 @@ module.exports = defineConfig({
     baseURL: "http://127.0.0.1:8000",
   },
   webServer: {
-    command: "../start-local.sh",
+    command: "node ../tools/serve.mts",
     url: "http://127.0.0.1:8000",
   },
 });

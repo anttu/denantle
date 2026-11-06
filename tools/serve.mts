@@ -5,8 +5,8 @@ import { readFile, realpath } from "node:fs/promises";
 import { createServer } from "node:http";
 import { extname, resolve, sep } from "node:path";
 
-const root = await realpath(new URL("../", import.meta.url));
-const contentTypes = {
+const root = await realpath(new URL("../dist/", import.meta.url));
+const contentTypes: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -30,7 +30,7 @@ const server = createServer(async (request, response) => {
   }
 
   try {
-    const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
+    const pathname = decodeURIComponent(new URL(request.url || "/", "http://localhost").pathname);
     let file = resolve(root, `.${pathname}${pathname.endsWith("/") ? "index.html" : ""}`);
     if (!file.startsWith(root + sep)) {
       response.writeHead(403).end();
@@ -50,11 +50,12 @@ const server = createServer(async (request, response) => {
     });
     response.end(request.method === "HEAD" ? undefined : content);
   } catch (error) {
+    const code = error instanceof Error && "code" in error ? error.code : undefined;
     if (error instanceof URIError) {
       response.writeHead(400).end();
-    } else if (["ENOENT", "ENOTDIR", "EISDIR"].includes(error.code)) {
+    } else if (["ENOENT", "ENOTDIR", "EISDIR"].includes(String(code))) {
       response.writeHead(404).end();
-    } else if (error.code === "EACCES") {
+    } else if (code === "EACCES") {
       response.writeHead(403).end();
     } else {
       console.error(error);

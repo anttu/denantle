@@ -5,7 +5,7 @@
 !.nvmrc
 !start-local.sh
 !tools/
-!tools/serve.mjs
+!tools/**
 !styles.css
 !language.css
 !licenses.html

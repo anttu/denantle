@@ -17,4 +17,8 @@ if ! nvm use --silent 2>/dev/null; then
   nvm install || exit 1
 fi
 
-exec node tools/serve.mjs
+if [ ! -f node_modules/typescript/package.json ]; then
+  npm ci --ignore-scripts --no-audit --no-fund || exit 1
+fi
+
+exec npm run dev
