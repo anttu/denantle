@@ -11,12 +11,12 @@ const articleSource = document.getElementById("article-source");
 const gameVersion = document.getElementById("game-version");
 const gameVersionLink = document.getElementById("game-version-link");
 const vectorStatus = document.getElementById("vector-status");
-const articleGame = new ArticleGuessGame(articleVectors, finnishInflections);
+const articleGame = createArticleGame(articleVectors, finnishInflections);
 let currentArticle = null;
 let articleLoading = false;
 let loadRevision = 0;
 let loadController = null;
-const multiplayer = new MultiplayerGame(articleGame, {
+const multiplayer = createMultiplayerGame(articleGame, {
   getArticle: () => currentArticle,
   showArticle: (data) => {
     if (!data || typeof data.title !== "string" || !data.title || data.title.length > 1000

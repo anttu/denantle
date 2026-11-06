@@ -1,55 +1,55 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-class FinnishInflections {
-  constructor() {
-    this.worker = null;
-    this.revision = 0;
-    this.pending = null;
-    this.forms = new Map();
-  }
-
-  clear() {
-    this.revision += 1;
-    this.forms.clear();
-    this.pending?.reject(new DOMException(i18n.t("article.changed"), "AbortError"));
-    this.pending = null;
-    this.worker?.postMessage({ type: "clear", revision: this.revision });
-  }
-
-  async build(words) {
-    this.clear();
-    const revision = this.revision;
-    const forms = await new Promise((resolve, reject) => {
-      this.pending = { resolve, reject };
-      if (!this.worker) {
-        const worker = this.worker = new Worker("src/finnish-inflections-worker.js");
-        worker.onmessage = ({ data }) => {
-          if (data.revision !== this.revision || !this.pending) return;
-          const pending = this.pending;
-          this.pending = null;
-          if (data.type === "error") pending.reject(i18n.error(data.error));
-          else pending.resolve(data.forms);
-        };
-        worker.onerror = () => {
-          if (this.worker !== worker) return;
-          this.pending?.reject(i18n.error("inflections.failed"));
-          this.pending = null;
-          worker.terminate();
-          this.worker = null;
-        };
-      }
-      this.worker.postMessage({ type: "index", revision, words });
-    });
-    if (revision !== this.revision) {
-      throw new DOMException(i18n.t("article.changed"), "AbortError");
-    }
-    this.forms = new Map(forms);
-  }
-
-  matchingForms(guess) {
-    return new Set([guess, ...(this.forms.get(guess) || [])]);
-  }
+function matchingFinnishForms(forms, guess) {
+  return new Set([guess, ...(forms.get(guess) || [])]);
 }
 
-const finnishInflections = new FinnishInflections();
+function createFinnishInflections() {
+  let worker = null;
+  let revision = 0;
+  let pending = null;
+  let forms = new Map();
+
+  function clear() {
+    revision += 1;
+    forms = new Map();
+    pending?.reject(new DOMException(i18n.t("article.changed"), "AbortError"));
+    pending = null;
+    worker?.postMessage({ type: "clear", revision });
+  }
+
+  async function build(words) {
+    clear();
+    const requestedRevision = revision;
+    const result = await new Promise((resolve, reject) => {
+      pending = { resolve, reject };
+      if (!worker) {
+        const activeWorker = worker = new Worker("src/finnish-inflections-worker.js");
+        activeWorker.onmessage = ({ data }) => {
+          if (data.revision !== revision || !pending) return;
+          const request = pending;
+          pending = null;
+          if (data.type === "error") request.reject(i18n.error(data.error));
+          else request.resolve(data.forms);
+        };
+        activeWorker.onerror = () => {
+          if (worker !== activeWorker) return;
+          pending?.reject(i18n.error("inflections.failed"));
+          pending = null;
+          activeWorker.terminate();
+          worker = null;
+        };
+      }
+      worker.postMessage({ type: "index", revision: requestedRevision, words });
+    });
+    if (requestedRevision !== revision) {
+      throw new DOMException(i18n.t("article.changed"), "AbortError");
+    }
+    forms = new Map(result);
+  }
+
+  return { clear, build, matchingForms: (guess) => matchingFinnishForms(forms, guess) };
+}
+
+const finnishInflections = createFinnishInflections();
