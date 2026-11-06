@@ -1,3 +1,4 @@
 .idea/
 /Denantle.iml
 dist/
+/node_modules/
