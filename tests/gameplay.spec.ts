@@ -8,7 +8,7 @@ test('artikkeli latautuu peitettynä ja arvaus paljastaa sanan kaikki esiintymä
   context,
 }) => {
   // Exact guesses work without the remotely downloaded semantic hint model.
-  await context.route('https://cdn.jsdelivr.net/**', (route) => route.abort())
+  await context.route('https://huggingface.co/**', (route) => route.abort())
   await page.route(
     'https://simple.wikipedia.org/w/api.php?**',
     async (route) => {

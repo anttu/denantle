@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { expect, test } from '@playwright/test'
+import { enableManualMultiplayer } from './feature-flags-fixture.js'
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page, context }) => {
+  await enableManualMultiplayer(context)
   await page.goto('/?game=invalid')
   await page.getByText('Moninpeli', { exact: true }).click()
+  await page.getByText('Yhdistä käsin', { exact: true }).click()
 })
 
 test('kutsuja näkee molemmat yhteyden muodostamisen vaiheet myös mobiilissa', async ({
@@ -14,7 +17,11 @@ test('kutsuja näkee molemmat yhteyden muodostamisen vaiheet myös mobiilissa', 
   await expect(
     page.getByRole('heading', { name: 'Yksi arvoitus. Kaksi päätä.' }),
   ).toBeVisible()
-  await expect(page.getByText('Suora yhteys', { exact: true })).toBeVisible()
+  await expect(
+    page
+      .locator('#multiplayer-manual')
+      .getByText('Suora yhteys', { exact: true }),
+  ).toBeVisible()
   const sendStep = page.getByText('Lähetä kutsu', { exact: true })
   const answerStep = page.getByText('Liitä kaverin vastaus', { exact: true })
   await expect(sendStep).toBeVisible()
@@ -85,6 +92,7 @@ test('kutsulinkki ja vastaus muodostavat moninpeliyhteyden kahden pelaajan väli
   browser,
 }) => {
   const guestContext = await browser.newContext()
+  await enableManualMultiplayer(guestContext)
   try {
     const guest = await guestContext.newPage()
     await host.getByRole('button', { name: 'Luo kutsu', exact: true }).click()
@@ -134,7 +142,7 @@ test('vieraan arvaus paljastaa artikkelin sanat molemmille pelaajille', async ({
   context,
   browser,
 }) => {
-  await context.route('https://cdn.jsdelivr.net/**', (route) => route.abort())
+  await context.route('https://huggingface.co/**', (route) => route.abort())
   await context.route(
     'https://simple.wikipedia.org/w/api.php?**',
     async (route) => {
@@ -158,7 +166,9 @@ test('vieraan arvaus paljastaa artikkelin sanat molemmille pelaajille', async ({
   await host.goto('/?game=simple-12345')
   await expect(host.getByRole('article')).toBeVisible()
   await host.getByText('Moninpeli', { exact: true }).click()
+  await host.getByText('Yhdistä käsin', { exact: true }).click()
   const guestContext = await browser.newContext()
+  await enableManualMultiplayer(guestContext)
   try {
     const guest = await guestContext.newPage()
     await host.getByRole('button', { name: 'Luo kutsu', exact: true }).click()

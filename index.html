@@ -111,8 +111,8 @@
                 <p class="hint" data-i18n="help.multiplayer">
                   In multiplayer, players reveal the same article together.
                   Choose multiplayer and share an invite link with a friend.
-                  They send a response back to the host. You can invite more
-                  players once connected.
+                  Everyone can use the same link while the host keeps the game
+                  open.
                 </p>
               </div>
             </details>
@@ -198,243 +198,316 @@
               </div>
               <p id="multiplayer-connected-note"></p>
             </div>
-            <details id="multiplayer-invitations" open>
-              <summary
-                id="multiplayer-invitations-summary"
-                hidden
-                data-i18n="multiplayer.inviteMore"
-              >
-                Invite more players
-              </summary>
-              <div class="multiplayer-invitation-content">
-                <div class="multiplayer-invitation-card">
-                  <div class="multiplayer-invitation-heading">
-                    <div>
-                      <h3
-                        id="multiplayer-invitation-title"
-                        data-i18n="multiplayer.title"
-                      >
-                        One mystery. Two minds.
-                      </h3>
-                      <p
-                        id="multiplayer-invitation-description"
-                        data-i18n="multiplayer.description"
-                      >
-                        Reveal the same article together.
-                      </p>
-                    </div>
-                    <span class="multiplayer-network"
-                      ><svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path
-                          d="M3 8a14 14 0 0 1 18 0M6.5 12a8.5 8.5 0 0 1 11 0M10 16a3 3 0 0 1 4 0"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.6"
-                          stroke-linecap="round"
-                        />
-                        <circle cx="12" cy="20" r="1" fill="currentColor" />
-                      </svg><span data-i18n="multiplayer.network"
-                        >Direct connection</span
-                      ></span
-                    >
-                  </div>
-                  <div class="multiplayer-invitation-body">
-                    <div class="multiplayer-columns">
-                      <div id="multiplayer-send-panel">
-                        <p class="multiplayer-step">
-                          <span
-                            class="multiplayer-step-number"
-                            aria-hidden="true"
-                            >1</span
-                          ><strong
-                            id="multiplayer-send-title"
-                            data-i18n="multiplayer.sendInvite"
-                            >Send an invite</strong
-                          >
-                        </p>
+            <div
+              id="multiplayer-auto"
+              class="multiplayer-invitation-card multiplayer-auto"
+            >
+              <div class="multiplayer-invitation-heading">
+                <div>
+                  <h3
+                    id="multiplayer-auto-title"
+                    data-i18n="multiplayer.autoTitle"
+                  >
+                    Invite your friends
+                  </h3>
+                  <p
+                    id="multiplayer-auto-description"
+                    data-i18n="multiplayer.autoDescription"
+                  >
+                    Share one link. Your friends join automatically.
+                  </p>
+                </div>
+                <span
+                  class="multiplayer-network"
+                  data-i18n="multiplayer.network"
+                  >Direct connection</span
+                >
+              </div>
+              <div class="multiplayer-invitation-body">
+                <button
+                  id="multiplayer-auto-create"
+                  type="button"
+                  data-i18n="multiplayer.autoCreate"
+                >
+                  Create invite link
+                </button>
+                <div id="multiplayer-auto-local-panel" hidden>
+                  <label
+                    for="multiplayer-auto-local"
+                    data-i18n="multiplayer.link"
+                    >Invite link</label
+                  >
+                  <input
+                    id="multiplayer-auto-local"
+                    class="multiplayer-invite-link"
+                    type="text"
+                    readonly
+                    spellcheck="false"
+                    aria-describedby="multiplayer-auto-description multiplayer-auto-status"
+                  >
+                  <button
+                    id="multiplayer-auto-copy"
+                    type="button"
+                    data-i18n="multiplayer.copyLink"
+                  >
+                    Copy invite link
+                  </button>
+                </div>
+                <p
+                  id="multiplayer-auto-status"
+                  role="status"
+                  data-i18n="multiplayer.autoInitial"
+                >
+                  Create one link for everyone joining this game.
+                </p>
+              </div>
+            </div>
+            <details id="multiplayer-manual" class="multiplayer-manual" hidden>
+              <summary data-i18n="multiplayer.manual">Connect manually</summary>
+              <details id="multiplayer-invitations" open>
+                <summary
+                  id="multiplayer-invitations-summary"
+                  hidden
+                  data-i18n="multiplayer.inviteMore"
+                >
+                  Invite more players
+                </summary>
+                <div class="multiplayer-invitation-content">
+                  <div class="multiplayer-invitation-card">
+                    <div class="multiplayer-invitation-heading">
+                      <div>
+                        <h3
+                          id="multiplayer-invitation-title"
+                          data-i18n="multiplayer.title"
+                        >
+                          One mystery. Two minds.
+                        </h3>
                         <p
-                          id="multiplayer-send-description"
-                          class="multiplayer-step-description"
-                          hidden
-                          data-i18n="multiplayer.sendInviteHelp"
+                          id="multiplayer-invitation-description"
+                          data-i18n="multiplayer.description"
                         >
-                          Copy the invite link and send it to your friend.
+                          Reveal the same article together.
                         </p>
-                        <div
-                          id="multiplayer-invite-note"
-                          class="multiplayer-invite-note"
-                        >
-                          <strong
-                            id="multiplayer-invite-note-title"
-                            data-i18n="multiplayer.singleUse"
-                            >A single-use link for one person.</strong
+                      </div>
+                      <span class="multiplayer-network"
+                        ><svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            d="M3 8a14 14 0 0 1 18 0M6.5 12a8.5 8.5 0 0 1 11 0M10 16a3 3 0 0 1 4 0"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                          />
+                          <circle cx="12" cy="20" r="1" fill="currentColor" />
+                        </svg><span data-i18n="multiplayer.network"
+                          >Direct connection</span
+                        ></span
+                      >
+                    </div>
+                    <div class="multiplayer-invitation-body">
+                      <div class="multiplayer-columns">
+                        <div id="multiplayer-send-panel">
+                          <p class="multiplayer-step">
+                            <span
+                              class="multiplayer-step-number"
+                              aria-hidden="true"
+                              >1</span
+                            ><strong
+                              id="multiplayer-send-title"
+                              data-i18n="multiplayer.sendInvite"
+                              >Send an invite</strong
+                            >
+                          </p>
+                          <p
+                            id="multiplayer-send-description"
+                            class="multiplayer-step-description"
+                            hidden
+                            data-i18n="multiplayer.sendInviteHelp"
+                          >
+                            Copy the invite link and send it to your friend.
+                          </p>
+                          <div
+                            id="multiplayer-invite-note"
+                            class="multiplayer-invite-note"
+                          >
+                            <strong
+                              id="multiplayer-invite-note-title"
+                              data-i18n="multiplayer.singleUse"
+                              >A single-use link for one person.</strong
+                            >
+                            <p
+                              id="multiplayer-invite-note-description"
+                              data-i18n="multiplayer.singleUseHelp"
+                            >
+                              Only one person can join with this link. Create a
+                              separate invite link for each additional player.
+                            </p>
+                          </div>
+                          <button
+                            id="multiplayer-create"
+                            type="button"
+                            data-i18n="multiplayer.create"
+                          >
+                            Create invite
+                          </button>
+                          <div id="multiplayer-local-panel" hidden>
+                            <label
+                              id="multiplayer-local-label"
+                              class="visually-hidden"
+                              for="multiplayer-local"
+                              data-i18n="multiplayer.link"
+                              >Invite link</label
+                            >
+                            <input
+                              id="multiplayer-local"
+                              class="multiplayer-invite-link"
+                              type="text"
+                              readonly
+                              spellcheck="false"
+                              aria-describedby="multiplayer-invite-note multiplayer-status"
+                            >
+                            <button
+                              id="multiplayer-copy"
+                              type="button"
+                              disabled
+                            >
+                              <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect
+                                  x="8"
+                                  y="8"
+                                  width="12"
+                                  height="13"
+                                  rx="2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="1.5"
+                                />
+                                <path
+                                  d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="1.5"
+                                />
+                              </svg><span
+                                id="multiplayer-copy-label"
+                                data-i18n="multiplayer.copyLink"
+                                >Copy invite link</span
+                              >
+                            </button>
+                          </div>
+                        </div>
+                        <div id="multiplayer-remote-panel">
+                          <label
+                            class="multiplayer-step"
+                            for="multiplayer-remote"
+                            ><span
+                              class="multiplayer-step-number"
+                              aria-hidden="true"
+                              >2</span
+                            ><strong
+                              id="multiplayer-remote-label"
+                              data-i18n="multiplayer.pasteResponse"
+                              >Paste your friend’s response</strong
+                            ></label
                           >
                           <p
-                            id="multiplayer-invite-note-description"
-                            data-i18n="multiplayer.singleUseHelp"
+                            id="multiplayer-remote-description"
+                            class="multiplayer-step-description"
+                            data-i18n="multiplayer.responseHelp"
                           >
-                            Only one person can join with this link. Create a
-                            separate invite link for each additional player.
+                            Your friend opens the link and sends you a response.
                           </p>
-                        </div>
-                        <button
-                          id="multiplayer-create"
-                          type="button"
-                          data-i18n="multiplayer.create"
-                        >
-                          Create invite
-                        </button>
-                        <div id="multiplayer-local-panel" hidden>
-                          <label
-                            id="multiplayer-local-label"
-                            class="visually-hidden"
-                            for="multiplayer-local"
-                            data-i18n="multiplayer.link"
-                            >Invite link</label
-                          >
-                          <input
-                            id="multiplayer-local"
-                            class="multiplayer-invite-link"
-                            type="text"
-                            readonly
+                          <textarea
+                            id="multiplayer-remote"
+                            placeholder="Paste the response here…"
+                            data-i18n-placeholder="multiplayer.responsePlaceholder"
                             spellcheck="false"
-                            aria-describedby="multiplayer-invite-note multiplayer-status"
+                            autocapitalize="none"
+                          ></textarea>
+                          <button
+                            id="multiplayer-accept"
+                            class="secondary"
+                            type="button"
+                            disabled
                           >
-                          <button id="multiplayer-copy" type="button" disabled>
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                              <rect
-                                x="8"
-                                y="8"
-                                width="12"
-                                height="13"
-                                rx="2"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                              />
-                              <path
-                                d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                              />
-                            </svg><span
-                              id="multiplayer-copy-label"
-                              data-i18n="multiplayer.copyLink"
-                              >Copy invite link</span
-                            >
+                            <span
+                              id="multiplayer-accept-label"
+                              data-i18n="multiplayer.acceptResponse"
+                              >Accept response</span
+                            ><span aria-hidden="true">→</span>
                           </button>
                         </div>
                       </div>
-                      <div id="multiplayer-remote-panel">
-                        <label class="multiplayer-step" for="multiplayer-remote"
-                          ><span
-                            class="multiplayer-step-number"
-                            aria-hidden="true"
-                            >2</span
-                          ><strong
-                            id="multiplayer-remote-label"
-                            data-i18n="multiplayer.pasteResponse"
-                            >Paste your friend’s response</strong
-                          ></label
-                        >
+                      <div
+                        id="multiplayer-invitation-footer"
+                        class="multiplayer-invitation-footer"
+                      >
                         <p
-                          id="multiplayer-remote-description"
-                          class="multiplayer-step-description"
-                          data-i18n="multiplayer.responseHelp"
+                          id="multiplayer-status"
+                          role="status"
+                          data-i18n="multiplayer.initial"
                         >
-                          Your friend opens the link and sends you a response.
+                          Create an invite to start playing together.
                         </p>
-                        <textarea
-                          id="multiplayer-remote"
-                          placeholder="Paste the response here…"
-                          data-i18n-placeholder="multiplayer.responsePlaceholder"
-                          spellcheck="false"
-                          autocapitalize="none"
-                        ></textarea>
                         <button
-                          id="multiplayer-accept"
-                          class="secondary"
+                          id="multiplayer-cancel-invite"
+                          class="multiplayer-text-button"
                           type="button"
-                          disabled
+                          hidden
+                          data-i18n="multiplayer.reset"
                         >
-                          <span
-                            id="multiplayer-accept-label"
-                            data-i18n="multiplayer.acceptResponse"
-                            >Accept response</span
-                          ><span aria-hidden="true">→</span>
+                          Start over
                         </button>
                       </div>
                     </div>
-                    <div
-                      id="multiplayer-invitation-footer"
-                      class="multiplayer-invitation-footer"
+                  </div>
+                  <div class="multiplayer-extra-controls">
+                    <button
+                      id="multiplayer-join-toggle"
+                      class="multiplayer-text-button"
+                      type="button"
+                      data-i18n="multiplayer.joinToggle"
                     >
-                      <p
-                        id="multiplayer-status"
-                        role="status"
-                        data-i18n="multiplayer.initial"
+                      Got an invite? Join your friend’s game
+                    </button>
+                    <details class="multiplayer-technical">
+                      <summary data-i18n="multiplayer.technical">
+                        Connection details
+                      </summary>
+                      <label class="multiplayer-toggle"
+                        ><input
+                          id="multiplayer-debug"
+                          type="checkbox"
+                          aria-controls="multiplayer-debug-panel"
+                        >
+                        <span data-i18n="multiplayer.debug"
+                          >Payload debug</span
+                        ></label
                       >
-                        Create an invite to start playing together.
-                      </p>
-                      <button
-                        id="multiplayer-cancel-invite"
-                        class="multiplayer-text-button"
-                        type="button"
-                        hidden
-                        data-i18n="multiplayer.reset"
-                      >
-                        Start over
-                      </button>
-                    </div>
+                      <div id="multiplayer-debug-panel" hidden>
+                        <p data-i18n="multiplayer.localPayload">
+                          Your payload (JSON)
+                        </p>
+                        <section
+                          aria-label="Your payload as JSON"
+                          data-i18n-aria-label="multiplayer.localPayloadLabel"
+                        >
+                          <pre id="multiplayer-debug-local"></pre>
+                        </section>
+                        <p data-i18n="multiplayer.remotePayload">
+                          Your friend’s payload (JSON)
+                        </p>
+                        <section
+                          aria-label="Your friend’s payload as JSON"
+                          data-i18n-aria-label="multiplayer.remotePayloadLabel"
+                        >
+                          <pre id="multiplayer-debug-remote"></pre>
+                        </section>
+                      </div>
+                    </details>
                   </div>
                 </div>
-                <div class="multiplayer-extra-controls">
-                  <button
-                    id="multiplayer-join-toggle"
-                    class="multiplayer-text-button"
-                    type="button"
-                    data-i18n="multiplayer.joinToggle"
-                  >
-                    Got an invite? Join your friend’s game
-                  </button>
-                  <details class="multiplayer-technical">
-                    <summary data-i18n="multiplayer.technical">
-                      Connection details
-                    </summary>
-                    <label class="multiplayer-toggle"
-                      ><input
-                        id="multiplayer-debug"
-                        type="checkbox"
-                        aria-controls="multiplayer-debug-panel"
-                      >
-                      <span data-i18n="multiplayer.debug"
-                        >Payload debug</span
-                      ></label
-                    >
-                    <div id="multiplayer-debug-panel" hidden>
-                      <p data-i18n="multiplayer.localPayload">
-                        Your payload (JSON)
-                      </p>
-                      <section
-                        aria-label="Your payload as JSON"
-                        data-i18n-aria-label="multiplayer.localPayloadLabel"
-                      >
-                        <pre id="multiplayer-debug-local"></pre>
-                      </section>
-                      <p data-i18n="multiplayer.remotePayload">
-                        Your friend’s payload (JSON)
-                      </p>
-                      <section
-                        aria-label="Your friend’s payload as JSON"
-                        data-i18n-aria-label="multiplayer.remotePayloadLabel"
-                      >
-                        <pre id="multiplayer-debug-remote"></pre>
-                      </section>
-                    </div>
-                  </details>
-                </div>
-              </div>
+              </details>
             </details>
             <div id="multiplayer-session-status"></div>
             <p id="multiplayer-error" role="alert"></p>

@@ -44,7 +44,7 @@ test('vektoriworker ilmoittaa mallin latausvirheestä samalla pyyntötunnisteell
   page,
   context,
 }) => {
-  await context.route('https://cdn.jsdelivr.net/**', (route) => route.abort())
+  await context.route('https://huggingface.co/**', (route) => route.abort())
   await page.goto('/?game=invalid')
   const messages = await page.evaluate(
     () =>

@@ -335,10 +335,7 @@ async function getRandomArticleTitle(
   throw i18n.error('error.categories')
 }
 
-async function loadArticle(
-  gameId: string | null = null,
-  { invite = false } = {},
-) {
+async function loadArticle(gameId: string | null = null) {
   if (articleLoading || multiplayer.isGuest) return
 
   const revision = ++loadRevision
@@ -427,15 +424,6 @@ async function loadArticle(
       session: crypto.getRandomValues(new Uint32Array(4)).join('-'),
     })
     multiplayer.shareGame()
-    if (
-      invite &&
-      multiplayer.enabled.checked &&
-      !multiplayer.connected &&
-      !multiplayer.peer &&
-      !multiplayer.negotiating
-    ) {
-      void multiplayer.negotiate(true)
-    }
     void buildArticleVectors(page.title, body, source.language)
   } catch (error) {
     if (revision !== loadRevision || errorName(error) === 'AbortError') return
@@ -459,11 +447,11 @@ async function loadArticle(
 }
 
 randomButton.addEventListener('click', () => {
-  void loadArticle(null, { invite: true })
+  void loadArticle()
 })
 
 sourceSelect.addEventListener('change', () => {
-  void loadArticle(null, { invite: true })
+  void loadArticle()
 })
 
 gameVersionLink.addEventListener('click', (event) => {

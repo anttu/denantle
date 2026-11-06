@@ -49,6 +49,25 @@ https://cdn.jsdelivr.net/npm/compromise@14.19.0/builds/compromise.js.
 Source: https://github.com/spencermountain/compromise/tree/14.19.0.
 Keep the accompanying copyright and permission notice when redistributing it.
 
+## PeerJS 1.5.5 and its browser dependencies
+
+PeerJS is copyright © 2015 Michelle Bu and Eric Zhang and distributed under
+[the MIT license](licenses/peerjs-LICENSE.txt). Source:
+https://github.com/peers/peerjs/tree/v1.5.5.
+The locally built `src/peerjs-session.js` bundles PeerJS and its browser
+dependencies. Exact versions and integrity hashes are pinned in
+`package-lock.json`. Full upstream notices accompany the generated site:
+
+* peerjs 1.5.5 (MIT): [peerjs license](licenses/peerjs-LICENSE.txt).
+* @msgpack/msgpack 2.8.0 (ISC): [@msgpack/msgpack license](licenses/msgpack-msgpack-LICENSE.txt).
+* eventemitter3 4.0.7 (MIT): [eventemitter3 license](licenses/eventemitter3-LICENSE.txt).
+* peerjs-js-binarypack 2.1.0 (MIT): [peerjs-js-binarypack license](licenses/peerjs-js-binarypack-LICENSE.txt).
+* webrtc-adapter 9.0.6 (BSD-3-Clause): [webrtc-adapter license](licenses/webrtc-adapter-LICENSE.txt).
+* sdp 3.2.2 (MIT): [sdp license](licenses/sdp-LICENSE.txt).
+
+PeerJS Cloud provides signaling; Google STUN discovers connection addresses.
+Game data travels over direct WebRTC data channels. No TURN relay is configured.
+
 ## Transformers.js 3.8.1 and its browser runtime
 
 Transformers.js is provided by Hugging Face under

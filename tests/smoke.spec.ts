@@ -18,7 +18,7 @@ test('pelimuodon voi vaihtaa yksinpelistä moninpeliin ja takaisin', async ({
   ).toBeChecked()
 
   const createInvite = page.getByRole('button', {
-    name: 'Luo kutsu',
+    name: 'Luo kutsulinkki',
     exact: true,
   })
   await expect(createInvite).toBeHidden()

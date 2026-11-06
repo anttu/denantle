@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import type { Language } from './contracts.js'
+import { featureFlags } from './feature-flags.js'
 import { isRecord } from './validation.js'
 
 // All interface copy lives here. Article content keeps its own language.
@@ -47,8 +48,12 @@ const translations = {
     en: 'Use the game ID to restart the same game. Save or share its link to play the same article revision later.',
   },
   'help.multiplayer': {
-    fi: 'Moninpelissä pelaajat paljastavat samaa artikkelia yhdessä. Valitse moninpeli ja jaa kutsulinkki pelikaverille. Hän lähettää vastauksen takaisin kutsujalle. Voit kutsua lisää pelaajia yhteyden avauduttua.',
-    en: 'In multiplayer, players reveal the same article together. Choose multiplayer and share an invite link with a friend. They send a response back to the host. You can invite more players once connected.',
+    fi:
+      'Moninpelissä pelaajat paljastavat samaa artikkelia yhdessä. Valitse moninpeli ja jaa kutsulinkki pelikaverille. Kaikki voivat liittyä samalla linkillä niin kauan kuin kutsujan peli on auki.' +
+      (featureFlags.manualMultiplayer ? ' Voit myös yhdistää käsin.' : ''),
+    en:
+      'In multiplayer, players reveal the same article together. Choose multiplayer and share an invite link with a friend. Everyone can join with the same link while the host keeps the game open.' +
+      (featureFlags.manualMultiplayer ? ' You can also connect manually.' : ''),
   },
   'welcome.tagline': {
     fi: 'Pieni arvoitus. Sana kerrallaan.',
@@ -105,6 +110,54 @@ const translations = {
   'game.multiplayer': {
     fi: 'Moninpeli',
     en: 'Multiplayer',
+  },
+  'multiplayer.manual': {
+    fi: 'Yhdistä käsin',
+    en: 'Connect manually',
+  },
+  'multiplayer.autoTitle': {
+    fi: 'Kutsu kaverit mukaan',
+    en: 'Invite your friends',
+  },
+  'multiplayer.autoDescription': {
+    fi: 'Jaa sama linkki kaikille pelaajille. He liittyvät automaattisesti, kun pidät tämän pelisivun auki.',
+    en: 'Share the same link with everyone. They join automatically while you keep this game page open.',
+  },
+  'multiplayer.autoCreate': {
+    fi: 'Luo kutsulinkki',
+    en: 'Create invite link',
+  },
+  'multiplayer.autoRetry': {
+    fi: 'Yritä uudelleen',
+    en: 'Try again',
+  },
+  'multiplayer.autoJoining': {
+    fi: 'Liitytään kaverin peliin',
+    en: 'Joining your friend’s game',
+  },
+  'multiplayer.autoJoinDescription': {
+    fi: 'Yhteys muodostetaan automaattisesti. Kutsujan pitää olla pelissä mukana.',
+    en: 'Connecting automatically. The host needs to keep the game open.',
+  },
+  'multiplayer.autoInitial': {
+    fi: 'Luo yksi kutsulinkki kaikille peliin liittyville.',
+    en: 'Create one link for everyone joining this game.',
+  },
+  'multiplayer.autoConnecting': {
+    fi: 'Muodostetaan yhteyttä…',
+    en: 'Connecting…',
+  },
+  'multiplayer.autoReady': {
+    fi: 'Linkki on valmis jaettavaksi. Sillä voi liittyä useampi pelaaja.',
+    en: 'Your link is ready to share. Multiple players can join with it.',
+  },
+  'multiplayer.signalingUnavailable': {
+    fi: featureFlags.manualMultiplayer
+      ? 'Automaattinen liittyminen ei onnistu. Yritä uudelleen tai yhdistä käsin.'
+      : 'Automaattinen liittyminen ei onnistu. Yritä uudelleen.',
+    en: featureFlags.manualMultiplayer
+      ? 'Automatic joining is unavailable. Try again or connect manually.'
+      : 'Automatic joining is unavailable. Try again.',
   },
   'multiplayer.connected': {
     fi: 'Yhteys muodostettu',
@@ -369,6 +422,14 @@ const translations = {
   'licenses.mit': {
     fi: 'MIT-lisenssi',
     en: 'MIT licence',
+  },
+  'licenses.peerjs': {
+    fi: 'PeerJS 1.5.5: © 2015 Michelle Bu ja Eric Zhang,',
+    en: 'PeerJS 1.5.5: © 2015 Michelle Bu and Eric Zhang,',
+  },
+  'licenses.peerjsDependencies': {
+    fi: 'riippuvuuksien lisenssit',
+    en: 'dependency licences',
   },
   'licenses.transformers': {
     fi: 'Hugging Facen Transformers.js 3.8.1 ja molemmat sanavektorimallit:',

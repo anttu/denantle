@@ -50,6 +50,18 @@ try {
     cpSync(join(root, asset), join(staging, asset), { recursive: true })
   await build({
     absWorkingDir: root,
+    entryPoints: ['src/peerjs-session.ts'],
+    outfile: join(staging, 'src/peerjs-session.js'),
+    external: ['./data-peer.js', './i18n.js', './validation.js'],
+    bundle: true,
+    platform: 'browser',
+    format: 'esm',
+    target: 'es2022',
+    sourcemap: true,
+    legalComments: 'linked',
+  })
+  await build({
+    absWorkingDir: root,
     entryPoints: ['src/embedding-worker.ts'],
     outfile: join(staging, 'src/embedding-worker.js'),
     bundle: true,

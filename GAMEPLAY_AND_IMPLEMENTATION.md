@@ -55,42 +55,51 @@ The warm paper layout pairs a compact logo and controls with a serif heading and
 article text. Guess and revealed-word counts sit above the input, with a progress
 bar tracking revealed occurrences. The **?** button opens the playing instructions.
 
-The game-mode radio buttons default to **Yksinpeli**. Selecting
-**Moninpeli** opens cooperative multiplayer. The
-inviter creates an offer and shares an invitation URL. Opening the link enables
-multiplayer and accepts the offer; the guest returns an answer for the inviter
-to paste. Starting a new game with multiplayer enabled creates an invitation
-when there are no established connections.
-Manual pasting of invitations and answers remains available.
-The host's invitation card places the invitation link and answer side by side,
-stacking them on mobile. A manual-join toggle opens an offer input without
-starting a host invitation. The answer action stays disabled until an invitation
-exists and a reply has been entered. Technical payload controls are collapsed.
-Once connected, a compact status strip shows the player count. Guest signaling
-controls disappear, and used payloads are cleared. The host's **Kutsu lisää
-pelaajia** disclosure creates a separate invitation for each additional guest.
-The host can cancel a pending invitation without closing established channels.
-`src/signaling-payload.ts` stores invitations in the URL fragment, preserving the
-current path and query. Its D2 binary profile reconstructs matching single-host
-offers exactly; the D1 dictionary format preserves all other descriptions,
-including browser-specific fields and multiple candidates. The codec has no
-dependencies and does not require compression APIs. The receiving browser
-removes the invitation fragment before starting the handshake. Invitations
-remain tied to the inviter's open peer connection.
-The optional **payload debug** checkbox reveals the decoded local and remote
-JSON descriptions, including every SDP field restored by the codec. It is off by
-default; hiding it, connecting or disconnecting clears the displayed payloads.
-`src/multiplayer.ts` uses the browser's native
-`RTCPeerConnection` and an ordered, reliable data channel. Both descriptions wait
-for ICE gathering to complete, so candidates travel in the copied text and no
-signaling service is needed. There are no additional packages or application
-servers. Every peer connection uses Google's public STUN server at
-`stun:stun.l.google.com:19302` to gather server-reflexive candidates alongside
-local candidates. This enables direct connections between players on different
-networks when their NATs and firewalls permit it. Both candidate types are
-preserved in the invitation and answer. No TURN relay is configured; game data
-travels directly between peers, and restrictive networks may prevent a
-connection.
+The game-mode radio buttons default to **Yksinpeli**. Selecting **Moninpeli**
+shows the automatic invite card. **Luo kutsulinkki** opens a PeerJS identity on
+the shared public PeerJS Cloud signaling service; it needs no account or personal
+API key. The reusable URL contains a random host identity and a 128-bit invite
+capability in its fragment. Each visitor creates an independent reliable data
+connection to the host. The same link remains valid as guests join and leave,
+and changing the article updates the URL without changing the host identity.
+The host must keep the game page open. Ending multiplayer, switching to solo,
+or reloading the host page ends that identity and invalidates its link.
+
+`src/peerjs-session.ts` uses the pinned PeerJS npm package, bundled locally by
+esbuild. It validates the invite capability on incoming connections and rejects
+media calls and unsolicited connections on guests. The application does not
+contact the signaling service in solo play or just from opening the multiplayer
+panel. A signaling outage displays an error while established data channels
+remain usable. Manual connection is offered only when its feature flag is
+enabled. The host can retry signaling with the
+same identity when the connection to PeerJS Cloud is temporarily lost.
+
+`src/feature-flags.ts` sets `manualMultiplayer` to `false` for both local
+development and production builds. This hides **Yhdistä käsin**, disables manual
+negotiation and manual invitation URLs, and omits manual fallback instructions.
+Set the flag to `true` and rebuild to enable the following manual flow.
+
+The collapsed **Yhdistä käsin** disclosure preserves manual offer/answer
+exchange. Its invitation and reply are shown side by side, stacking on mobile.
+Each manual invitation accepts one guest; additional guests need separate
+manual invitations. Opening an old invitation URL automatically opens these
+controls. The host can cancel a pending manual invitation without closing
+established connections, and automatic and manual guests can share a game.
+`src/signaling-payload.ts` preserves the path and query when adding a manual
+invitation to the URL fragment. Its binary profiles and dictionary format
+reconstruct SDP exactly, including multiple candidates and browser-specific
+fields. The receiving browser removes invite fragments from the address bar
+before connecting. Manual descriptions wait until ICE gathering completes,
+so no external signaling service is needed for this connection method.
+The optional **payload debug** checkbox reveals decoded manual descriptions.
+
+`src/data-peer.ts` implements the same bounded JSON framing, small chunks and
+send-buffer backpressure for both connection methods. `src/manual-peer.ts`
+owns native manual WebRTC connections. Both methods configure only Google's
+public STUN server at `stun:stun.l.google.com:19302`; no TURN relay is configured.
+Game data travels directly between browsers. STUN enables different-network
+connections when NATs and firewalls permit them; restrictive networks may still
+prevent a direct connection.
 This follows the native [WebRTC offer/answer and ICE flow](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Connectivity).
 
 The inviter's browser owns the shared article and one peer connection per guest.
@@ -109,7 +118,8 @@ controls and local semantic indexing while keeping the current board when
 available. A guest disconnect or invalid message closes only that guest's
 connection; other guests and pending invitations remain unaffected. The host
 can disconnect everyone explicitly. Reloading a page closes that browser's
-connections; reconnection requires a fresh offer/answer exchange.
+connections. An automatic guest can reopen the reusable link while its host
+identity remains active; a manual guest needs a fresh offer/answer exchange.
 
 Enter one word in the article's language in **Arvaa sana** and press Enter or
 **Arvaa**. A base-form guess reveals that word and its inflected forms, preserving the original spelling

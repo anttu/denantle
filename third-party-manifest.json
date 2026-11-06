@@ -46,6 +46,91 @@
       "bytes": 1079,
       "origin": "https://cdn.jsdelivr.net/npm/compromise@14.19.0/LICENSE",
       "license": "MIT"
+    },
+    {
+      "path": "licenses/peerjs-LICENSE.txt",
+      "sha256": "9407807dba7f47a79bfb3ac55759d63d77c9371ebd0616d5a093e97d3e810397",
+      "bytes": 1108,
+      "origin": "https://registry.npmjs.org/peerjs/-/peerjs-1.5.5.tgz",
+      "license": "MIT"
+    },
+    {
+      "path": "licenses/msgpack-msgpack-LICENSE.txt",
+      "sha256": "d95a411bcdadac85d678a99367ff51719e53539fa5ee9994943cd760c4ae64e4",
+      "bytes": 740,
+      "origin": "https://registry.npmjs.org/@msgpack/msgpack/-/msgpack-2.8.0.tgz",
+      "license": "ISC"
+    },
+    {
+      "path": "licenses/eventemitter3-LICENSE.txt",
+      "sha256": "3aecc12b1cb28832b5f65ab64291de96568c3f236a74d646281b4491f7bcadbf",
+      "bytes": 1082,
+      "origin": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-4.0.7.tgz",
+      "license": "MIT"
+    },
+    {
+      "path": "licenses/peerjs-js-binarypack-LICENSE.txt",
+      "sha256": "9517e6f46b30231a62407f94a8c7adf8b4d14038c01807cd769f1d4de5911ba4",
+      "bytes": 1093,
+      "origin": "https://registry.npmjs.org/peerjs-js-binarypack/-/peerjs-js-binarypack-2.1.0.tgz",
+      "license": "MIT"
+    },
+    {
+      "path": "licenses/webrtc-adapter-LICENSE.txt",
+      "sha256": "00a46c6cfc219593b97586398b477e188391556e70487225d3ff9d60ccda6dce",
+      "bytes": 1584,
+      "origin": "https://registry.npmjs.org/webrtc-adapter/-/webrtc-adapter-9.0.6.tgz",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "path": "licenses/sdp-LICENSE.txt",
+      "sha256": "798e82590af6a84bfbde3d6bb0fb9162c519edf16122404fea00acefdc55cbd9",
+      "bytes": 1058,
+      "origin": "https://registry.npmjs.org/sdp/-/sdp-3.2.2.tgz",
+      "license": "MIT"
     }
-  ]
+  ],
+  "multiplayerRuntime": {
+    "id": "peerjs",
+    "version": "1.5.5",
+    "license": "MIT",
+    "components": [
+      {
+        "id": "peerjs",
+        "version": "1.5.5",
+        "license": "MIT",
+        "notice": "licenses/peerjs-LICENSE.txt"
+      },
+      {
+        "id": "@msgpack/msgpack",
+        "version": "2.8.0",
+        "license": "ISC",
+        "notice": "licenses/msgpack-msgpack-LICENSE.txt"
+      },
+      {
+        "id": "eventemitter3",
+        "version": "4.0.7",
+        "license": "MIT",
+        "notice": "licenses/eventemitter3-LICENSE.txt"
+      },
+      {
+        "id": "peerjs-js-binarypack",
+        "version": "2.1.0",
+        "license": "MIT",
+        "notice": "licenses/peerjs-js-binarypack-LICENSE.txt"
+      },
+      {
+        "id": "webrtc-adapter",
+        "version": "9.0.6",
+        "license": "BSD-3-Clause",
+        "notice": "licenses/webrtc-adapter-LICENSE.txt"
+      },
+      {
+        "id": "sdp",
+        "version": "3.2.2",
+        "license": "MIT",
+        "notice": "licenses/sdp-LICENSE.txt"
+      }
+    ]
+  }
 }

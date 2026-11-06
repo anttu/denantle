@@ -101,8 +101,8 @@ moduulitiedostot kopioidaan npm-paketista `dist/vendor/onnx/`-hakemistoon.
 ## Teknologiat
 
 Denantle on käytännössä teknologiademo, jossa kokeillaan selaimessa ajettavia
-embedding-malleja, sekä selainten välistä reaaliaikaista tiedonsiirtoa ilman
-signalointipalvelinta.
+embedding-malleja sekä selainten välistä reaaliaikaista tiedonsiirtoa.
+Moninpelin yhteydenmuodostus käyttää PeerJS Cloudin julkista signalointipalvelua.
 
 Sanojen merkityksiä verrataan MiniLM-pohjaisilla embedding-malleilla, jotka
 muuttavat tekstin numeerisiksi vektoreiksi. Vektorien läheisyyden perusteella
@@ -110,12 +110,25 @@ peli tunnistaa merkitykseltään samankaltaisia sanoja. Mallit ajetaan paikallis
 selaimessa Transformers.js:n ja WebAssemblyn avulla.
 
 Moninpeli välittää pelitilan suoraan selainten välillä WebRTC-datakanavilla.
-Signalointi eli yhteyden muodostamiseen tarvittavien tietojen vaihto tehdään
-käsin kutsulinkillä ja vastauksella, joten erillistä signalointipalvelinta ei
-tarvita. Kaikki moninpeliyhteydet käyttävät Googlen julkista STUN-palvelinta
+Valitse moninpeli, luo kutsulinkki ja jaa sama linkki kaikille pelikavereille.
+Liittyminen tapahtuu automaattisesti PeerJS Cloudin maksuttoman julkisen
+signalointipalvelun kautta ilman tiliä tai omaa API-avainta. Linkki pysyy
+voimassa niin kauan kuin kutsujan moninpeli-istunto on auki. Sivun lataaminen
+uudelleen tai moninpelin lopettaminen sulkee istunnon.
+
+**Yhdistä käsin** -lisävalintaa ohjaa `src/feature-flags.ts`-tiedoston
+`manualMultiplayer`-feature flag. Sen arvo on `false` sekä paikallisessa ajossa
+että tuotantokoontiin julkaistavassa versiossa. Tällöin lisävalinta on piilossa
+eivätkä aiemmat käsin tehdyt kutsulinkit käynnistä yhteydenmuodostusta.
+Toiminnon saa takaisin käyttöön vaihtamalla arvoksi `true` ja kokoamalla
+sivuston uudelleen. Käsin tehtävät kutsut ovat kertakäyttöisiä.
+Julkisen signalointipalvelun häiriö ei katkaise jo avattuja suoria datayhteyksiä.
+
+Molemmat yhteystavat käyttävät Googlen julkista STUN-palvelinta
 (`stun:stun.l.google.com:19302`) julkisten yhteysosoitteiden selvittämiseen.
-Tämä mahdollistaa suoran yhteyden myös eri verkoissa olevien pelaajien välillä,
-jos verkkojen NAT- ja palomuuriasetukset sallivat sen. TURN-välitystä ei käytetä.
+TURN-välitystä ei käytetä, joten verkkojen NAT- ja palomuuriasetusten pitää
+sallia suora yhteys. PeerJS ja sen riippuvuudet toimitetaan paikallisessa
+koonnissa; selain ei lataa kirjastoa CDN-palvelusta.
 
 ## Lisätiedot ja lisenssit
 
@@ -127,14 +140,15 @@ on kuvattu tiedostossa [ARTWORK.md](ARTWORK.md) ja kolmansien osapuolten lisenss
 tiedostossa [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Denantle on teknologiademo, jolla tutkitaan selainten välistä reaaliaikaista
-tiedonsiirtoa ilman erillistä signalointipalvelinta. Sovellus on toteutettu
-HTML:llä, CSS:llä ja TypeScriptillä. TypeScript käännetään selaimessa ajettavaksi
+tiedonsiirtoa PeerJS Cloudin julkisen signalointipalvelun avulla. Sovellus on
+toteutettu HTML:llä, CSS:llä ja TypeScriptillä. TypeScript käännetään selaimessa ajettavaksi
 JavaScriptiksi, ja valmis sivusto julkaistaan staattisena ilman omaa
 sovelluspalvelinta. Moninpeli välittää pelitilan WebRTC-datakanavien kautta;
-yhteyden muodostamiseen tarvittavat SDP-yhteyskuvaukset vaihdetaan käsin
-kutsulinkillä ja vastauksella. Googlen STUN-palvelin auttaa muodostamaan suoran
-yhteyden myös eri verkkojen välille; pelidata kulkee selainten välillä ilman
-TURN-välitystä. Sanojen merkitysten
+yhteyden muodostamiseen tarvittavat SDP-yhteyskuvaukset vaihdetaan oletuksena
+automaattisesti. Kutsun ja vastauksen käsinvaihto on feature flagin takana ja
+oletuksena pois päältä. Googlen
+STUN-palvelin auttaa muodostamaan suoran yhteyden myös eri verkkojen välille;
+pelidata kulkee selainten välillä ilman TURN-välitystä. Sanojen merkitysten
 vertailussa käytettävät kielimallit ajetaan paikallisesti selaimessa
 Transformers.js:n ja WebAssemblyn avulla, joten myöskään tämä laskenta ei
 tarvitse erillistä taustapalvelua.

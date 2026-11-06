@@ -299,6 +299,12 @@ button:disabled {
   color: #59684f;
   font-size: 11px;
 }
+#multiplayer-manual > summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 6px 0;
+}
 #multiplayer-invitations {
   margin: 0;
 }
@@ -364,6 +370,13 @@ button:disabled {
 }
 .multiplayer-invitation-body {
   padding: 18px 20px 15px;
+}
+.multiplayer-auto {
+  margin-bottom: 14px;
+}
+#multiplayer-auto-status {
+  color: var(--muted);
+  font-size: 12px;
 }
 .multiplayer-columns {
   display: grid;
