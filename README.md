@@ -78,10 +78,22 @@ poikkeukset:
 | `manualMultiplayer` | `false` | `false` |
 
 `npm run build` tekee tuotantokoonnin, jossa moninpelin valinta ja ohje ovat
-piilossa eivätkä kutsulinkit käynnistä yhteyttä. GitHub Pagesiin julkaistaan tämä
-sama tuotantokoonti. `./start-local.sh` ja `npm run dev` käyttävät kehitysasetuksia.
+oletuksena piilossa. `multiplayer` ohjaa vain käyttöliittymää: jaetulla
+automaattisella kutsulinkillä voi liittyä peliin myös lipun ollessa pois päältä.
+Liittyjälle näkyvät yhteyden tila ja pelistä poistuminen.
+GitHub Pagesiin julkaistaan tämä sama tuotantokoonti.
+`./start-local.sh` ja `npm run dev` käyttävät kehitysasetuksia.
 Pelkkä kehityskoonti syntyy komennolla `npm run build -- --development`.
 Flagien muutokset tulevat voimaan uudelleenkokoamisen ja sivun päivityksen jälkeen.
+
+Tuotannon käyttöliittymän saa päälle omaa käyttöä varten avaamalla
+[pelin parametrilla `multiplayer=1`](https://anttu.github.io/denantle/?multiplayer=1).
+Jos URL:ssa on jo pelitunniste, lisää loppuun `&multiplayer=1`.
+Valinta koskee kyseistä URL:ia, eikä sitä tallenneta selaimeen tai kopioida
+kutsulinkkiin. Ilman parametria tuotannon oletus on jälleen voimassa.
+Jos haluat näyttää moninpelivalinnan kaikille, muuta
+`src/feature-flags.ts`-tiedoston `featureFlags.multiplayer` arvoon `true`, kokoa
+ja julkaise sivusto normaalisti.
 
 ## Tarkistukset ja julkaisuversio
 
@@ -140,8 +152,9 @@ muuttavat tekstin numeerisiksi vektoreiksi. Vektorien läheisyyden perusteella
 peli tunnistaa merkitykseltään samankaltaisia sanoja. Mallit ajetaan paikallisesti
 selaimessa Transformers.js:n ja WebAssemblyn avulla.
 
-Moninpeli on tällä hetkellä käytössä vain kehityskoonnissa. Se välittää pelitilan
-suoraan selainten välillä WebRTC-datakanavilla.
+Moninpelin valinta näkyy oletuksena kehityskoonnissa ja tuotannossa parametrilla
+`multiplayer=1`. Kutsulinkillä liittyminen toimii myös ilman valinnan näyttämistä.
+Moninpeli välittää pelitilan suoraan selainten välillä WebRTC-datakanavilla.
 Valitse moninpeli ja kutsulinkin **Yhteysverkko**:
 
 - **Lähiverkko** on samassa lähiverkossa oleville pelaajille. Se käyttää laitteiden
@@ -164,7 +177,8 @@ olla liittyjien saavutettavissa: `localhost` toimii vain samalla koneella.
 että tuotantokoontiin julkaistavassa versiossa. Tällöin lisävalinta on piilossa
 eivätkä aiemmat käsin tehdyt kutsulinkit käynnistä yhteydenmuodostusta.
 Toiminnon saa takaisin käyttöön vaihtamalla arvoksi `true` ja kokoamalla
-sivuston uudelleen. Myös `multiplayer`-lipun pitää olla käytössä.
+sivuston uudelleen. Kutsun luomisen käyttöliittymän saa näkyviin
+`multiplayer`-lipulla tai URL-parametrilla `multiplayer=1`.
 Käsin tehtävät kutsut ovat kertakäyttöisiä.
 Julkisen signalointipalvelun häiriö ei katkaise jo avattuja suoria datayhteyksiä.
 Jos kutsujan istuntoa ei löydy, peli pyytää uuden kutsulinkin. Muissa

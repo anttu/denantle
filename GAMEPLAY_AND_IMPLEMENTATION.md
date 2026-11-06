@@ -62,10 +62,16 @@ production defaults; `developmentFeatureFlags` overrides them for local work.
 `npm run dev` and `./start-local.sh` pass `--development` to the build instead.
 The deployment pipeline continues to publish the same production artifact that
 the Firefox tests exercised. Production hides and disables the game-mode
-controls and hides multiplayer help. Automatic and manual invitation URLs and
-connection entry points are ignored while `multiplayer` is off, so the game
-continues in solo mode without contacting the signaling service. Flags are
-build-time settings: rebuild and reload after changing them.
+controls and hides multiplayer help. The `multiplayer` flag controls UI
+discovery only: automatic invitation URLs still join the host when it is off,
+showing connection status and the leave button. Host controls stay hidden for
+these guests after they leave. Ordinary solo visits do not contact signaling.
+The URL parameter `multiplayer=1` enables the UI for that page, including in
+production, without changing the build or persisting a browser setting. Invite
+links omit this parameter so recipients keep their own UI defaults. To enable
+the UI for everyone, set `featureFlags.multiplayer` to `true` and rebuild and
+publish normally. Flag defaults are build-time settings: rebuild and reload
+after changing them.
 
 With multiplayer enabled, the game-mode radio buttons default to **Yksinpeli**.
 Selecting **Moninpeli**
@@ -108,8 +114,9 @@ are distinct from the data connection's ICE/SDP failure path.
 `src/feature-flags.ts` sets `manualMultiplayer` to `false` for both local
 development and production builds. This hides **Yhdistä käsin**, disables manual
 negotiation and manual invitation URLs, and omits manual fallback instructions.
-Set the flag to `true` and rebuild to enable the following manual flow, provided
-the parent `multiplayer` flag is also enabled.
+Set the flag to `true` and rebuild to enable the following manual flow. The
+`multiplayer` flag or `multiplayer=1` URL parameter exposes the host controls;
+incoming manual invites do not require that UI flag.
 
 The collapsed **Yhdistä käsin** disclosure preserves manual offer/answer
 exchange. Its invitation and reply are shown side by side, stacking on mobile.

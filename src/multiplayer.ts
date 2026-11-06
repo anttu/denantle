@@ -160,6 +160,9 @@ export function createMultiplayerGame(
     resumeSolo,
   }: MultiplayerHooks,
 ) {
+  const multiplayerUiEnabled =
+    featureFlags.multiplayer ||
+    new URLSearchParams(window.location.search).get('multiplayer') === '1'
   const elements = {
     mode: elementById('game-mode', HTMLFieldSetElement),
     help: elementById('multiplayer-help', HTMLElement),
@@ -441,9 +444,13 @@ export function createMultiplayerGame(
           : 'multiplayer.networkInternetHelp',
       ),
     )
-    elements.autoPanel.hidden = guest && connected()
+    elements.autoPanel.hidden =
+      (guest && connected()) ||
+      (!multiplayerUiEnabled && !guest && !autoSession)
     elements.manual.hidden =
-      !featureFlags.manualMultiplayer || (guest && connected())
+      !featureFlags.manualMultiplayer ||
+      (guest && connected()) ||
+      (!multiplayerUiEnabled && !guest)
     i18n.text(
       elements.autoTitle,
       i18n.message(guest ? 'multiplayer.autoJoining' : 'multiplayer.autoTitle'),
@@ -565,7 +572,7 @@ export function createMultiplayerGame(
   }
 
   async function startAutomaticHost() {
-    if (!featureFlags.multiplayer || isGuest() || autoConnecting) return
+    if (isGuest() || autoConnecting) return
     i18n.text(elements.status, '')
     i18n.text(elements.error, '')
     if (autoSession) {
@@ -654,8 +661,9 @@ export function createMultiplayerGame(
   }
 
   function refreshInviteLink() {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('multiplayer')
     if (role === 'host' && autoHostId && autoToken) {
-      const url = new URL(window.location.href)
       const params = new URLSearchParams({
         peer: autoHostId,
         token: autoToken,
@@ -665,12 +673,11 @@ export function createMultiplayerGame(
       elements.autoLocal.value = url.href
     }
     if (role === 'host' && localPayload) {
-      elements.local.value = createInviteUrl(localPayload, window.location.href)
+      elements.local.value = createInviteUrl(localPayload, url.href)
     }
   }
 
   function acceptInviteFromLocation() {
-    if (!featureFlags.multiplayer) return false
     const url = new URL(window.location.href)
     const params = new URLSearchParams(url.hash.slice(1))
     const hostId = params.get('peer')
@@ -730,7 +737,6 @@ export function createMultiplayerGame(
 
   async function negotiateManual(create: boolean) {
     if (
-      !featureFlags.multiplayer ||
       !featureFlags.manualMultiplayer ||
       negotiating ||
       (create && (peer || isGuest()))
@@ -1075,16 +1081,16 @@ export function createMultiplayerGame(
     if (wasGuest) resumeSolo()
   }
 
-  elements.mode.hidden = !featureFlags.multiplayer
-  elements.mode.disabled = !featureFlags.multiplayer
-  elements.help.hidden = !featureFlags.multiplayer
-  if (!featureFlags.multiplayer) {
+  elements.mode.hidden = !multiplayerUiEnabled
+  elements.mode.disabled = !multiplayerUiEnabled
+  elements.help.hidden = !multiplayerUiEnabled
+  if (!multiplayerUiEnabled) {
     elements.enabled.checked = false
     elementById('singleplayer-enabled', HTMLInputElement).checked = true
     elements.panel.hidden = true
   }
   elements.mode.addEventListener('change', () => {
-    if (!featureFlags.multiplayer) return
+    if (!multiplayerUiEnabled) return
     elements.panel.hidden = !elements.enabled.checked
     if (!elements.enabled.checked) disconnect()
     else if (!window.RTCPeerConnection)
