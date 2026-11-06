@@ -841,7 +841,7 @@ const translations = {
   }
 };
 
-const i18n = (() => {
+export const i18n = (() => {
   const storageKey = "denantle-language";
   const supported = (value) => value === "fi" || value === "en";
   const browserLanguage = (navigator.language || "en").toLowerCase().split(/[-_]/)[0];

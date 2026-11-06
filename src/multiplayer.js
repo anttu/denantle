@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { i18n } from "./i18n.js";
+import { GUESS_PATTERN } from "./game.js";
+import { createInviteUrl, decodeSignalingPayload, encodeSignalingPayload } from "./signaling-payload.js";
+
 // Signaling is manual: each description includes all gathered ICE candidates.
 // Google's STUN server discovers public addresses; game data stays peer-to-peer.
 function readSignalingDescription(text, type) {
@@ -199,7 +203,7 @@ function validateMultiplayerMessage(message, isGuest) {
   } else if (!["loading", "game", "state", "unavailable"].includes(message.type)) throw new Error();
 }
 
-function createMultiplayerGame(game, { getArticle, showArticle, cancelLoading, refreshControls, resumeSolo }) {
+export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoading, refreshControls, resumeSolo }) {
   const elements = {
     enabled: document.getElementById("multiplayer-enabled"),
     panel: document.getElementById("multiplayer-panel"),

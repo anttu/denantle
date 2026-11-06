@@ -1,6 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { i18n } from "./i18n.js";
+import { wikipediaSources } from "./categories.js";
+import { articleVectors } from "./embeddings.js";
+import { finnishInflections } from "./finnish-inflections.js";
+import { createArticleGame } from "./game.js";
+import { createMultiplayerGame } from "./multiplayer.js";
+
 const randomButton = document.getElementById("random-article");
 const sourceSelect = document.getElementById("wikipedia-source");
 const guessHint = document.getElementById("guess-hint");

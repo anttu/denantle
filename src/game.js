@@ -1,10 +1,12 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { i18n } from "./i18n.js";
+
 // Cosine similarity between the model's normalized word vectors.
 const SIMILARITY_THRESHOLD = 0.6;
 const DETAIL_SIMILARITY_THRESHOLD = 0.5;
-const GUESS_PATTERN = /^\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*$/u;
+export const GUESS_PATTERN = /^\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*$/u;
 
 function normalizeGuess(text) {
   return text.normalize("NFKC").replaceAll("’", "'").toLowerCase();
@@ -146,7 +148,7 @@ function mergeSharedGameState(state, shared) {
     revealed: [...words.values()].reduce((count, entry) => count + (entry.revealed ? entry.count : 0), 0) };
 }
 
-function createArticleGame(vectors, inflections = null) {
+export function createArticleGame(vectors, inflections = null) {
   const elements = {
     inflectionStatus: document.getElementById("inflection-status"),
     title: document.getElementById("article-title"),

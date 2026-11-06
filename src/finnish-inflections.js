@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { i18n } from "./i18n.js";
+
 function matchingFinnishForms(forms, guess) {
   return new Set([guess, ...(forms.get(guess) || [])]);
 }
@@ -25,7 +27,7 @@ function createFinnishInflections() {
     const result = await new Promise((resolve, reject) => {
       pending = { resolve, reject };
       if (!worker) {
-        const activeWorker = worker = new Worker("src/finnish-inflections-worker.js");
+        const activeWorker = worker = new Worker(new URL("./finnish-inflections-worker.js", import.meta.url));
         activeWorker.onmessage = ({ data }) => {
           if (data.revision !== revision || !pending) return;
           const request = pending;
@@ -52,4 +54,4 @@ function createFinnishInflections() {
   return { clear, build, matchingForms: (guess) => matchingFinnishForms(forms, guess) };
 }
 
-const finnishInflections = createFinnishInflections();
+export const finnishInflections = createFinnishInflections();

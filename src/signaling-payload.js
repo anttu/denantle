@@ -35,7 +35,7 @@ function decodeBase64Url(text) {
   return bytes;
 }
 
-function encodeSignalingPayload(text) {
+export function encodeSignalingPayload(text) {
   if (typeof text !== "string" || !text || text.length > SIGNALING_MAX_LENGTH) throw new Error();
   const data = JSON.parse(text);
   // D2 covers single mDNS host offers; D3 adds an answer's DTLS role byte.
@@ -83,7 +83,7 @@ function encodeSignalingPayload(text) {
   return "D1:" + encodeBase64Url(bytes);
 }
 
-function decodeSignalingPayload(input) {
+export function decodeSignalingPayload(input) {
   if (typeof input !== "string" || input.length > 160000) throw new Error();
   let text = input.trim();
   if (/^https?:\/\//i.test(text)) {
@@ -116,7 +116,7 @@ function decodeSignalingPayload(input) {
   return result;
 }
 
-function createInviteUrl(text, currentUrl) {
+export function createInviteUrl(text, currentUrl) {
   const url = new URL(currentUrl);
   url.hash = "join=" + encodeSignalingPayload(text);
   return url.href;

@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { i18n } from "./i18n.js";
+
 function validateVectorSearch(info, text, limit) {
   if (!info) throw i18n.error("vectors.notReady");
   if (typeof text !== "string" || !text.trim()) throw i18n.error("vectors.query");
@@ -54,7 +56,7 @@ function createArticleVectors() {
         return;
       }
       if (!worker) {
-        worker = new Worker("src/embedding-worker.js", { type: "module" });
+        worker = new Worker(new URL("./embedding-worker.js", import.meta.url), { type: "module" });
         worker.onmessage = ({ data: message }) => {
           const pending = requests.get(message.id);
           if (!pending) return;
@@ -84,4 +86,4 @@ function createArticleVectors() {
   return { clear, build, search, get info() { return info; } };
 }
 
-const articleVectors = createArticleVectors();
+export const articleVectors = createArticleVectors();
