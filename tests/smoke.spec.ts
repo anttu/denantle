@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-const { test, expect } = require("@playwright/test");
+import { test, expect } from "@playwright/test";
 
 test("pelimuodon voi vaihtaa yksinpelistä moninpeliin ja takaisin", async ({ page }) => {
   // Virheellinen pelitunniste estää Wikipedia-haun ja kielimallien lataamisen.

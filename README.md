@@ -34,15 +34,17 @@ paikallisesti selaimessa.
 Sovellus on julkaistu GitHub Pagesissa: [https://anttu.github.io/denantle/](https://anttu.github.io/denantle/).
 
 Pages-julkaisu tapahtuu GitHub Actionsissa vain `main`-haaran pushista, kun saman
-commitin Playwright-testit ovat menneet läpi. Epäonnistunut testiajo jättää
-nykyisen julkaistun version ennalleen.
+commitin tyyppitarkistukset ja Playwright-testit ovat menneet läpi. Pagesiin
+julkaistaan sama `dist/`-hakemisto, jota testit käyttivät. Epäonnistunut ajo
+jättää nykyisen julkaistun version ennalleen.
 
 ## Paikallinen käynnistys
 
 Tarvitset [NVM:n](https://github.com/nvm-sh/nvm#installing-and-updating) ja
 ajantasaisen selaimen. Käynnistysskripti ottaa NVM:llä käyttöön `.nvmrc`:hen
 lukitun Node.js-version (26.13.0 LTS) ja asentaa sen tarvittaessa.
-Sovellus ei tarvitse npm-pakettien asennusta tai erillistä koontivaihetta.
+Skripti asentaa kehitysriippuvuudet ensimmäisellä käynnistyksellä, kääntää
+TypeScriptin JavaScriptiksi ja kokoaa staattisen sivuston `dist/`-hakemistoon.
 
 1. Avaa terminaali projektin juurihakemistossa.
 2. Käynnistä paikallinen palvelin:
@@ -53,12 +55,40 @@ Sovellus ei tarvitse npm-pakettien asennusta tai erillistä koontivaihetta.
 
 3. Avaa Firefoxissa [http://localhost:8000](http://localhost:8000).
 
-Palvelimen voi pysäyttää terminaalissa painamalla `Ctrl+C`.
+Lähteiden ja sivuston tiedostojen muutokset käännetään automaattisesti.
+Päivitä Firefoxin sivu nähdäksesi muutokset. Jos käännös epäonnistuu,
+palvelin tarjoaa edellistä onnistunutta koontia. Palvelimen ja tiedostoseurannan
+voi pysäyttää terminaalissa painamalla `Ctrl+C`.
 
 Sovellus tarvitsee internetyhteyden Wikipedia-artikkelien hakemiseen sekä
 kielimallien ja niiden ajoympäristön ensimmäiseen lataamiseen. Käytä paikallista
 palvelinta, jotta myös sanojen merkityksiä vertaileva toiminto toimii.
 
+
+## Tarkistukset ja julkaisuversio
+
+Kaikki kehitysriippuvuudet ja testit käyttävät juurihakemiston lukitustiedostoa.
+Kun `.nvmrc`:n mukainen Node.js on käytössä:
+
+```sh
+npm ci --ignore-scripts --no-audit --no-fund
+npm run typecheck
+npm test
+```
+
+`npm test` kokoaa sivuston ja ajaa TypeScriptillä kirjoitetut Playwright-testit
+Firefoxilla. Paikallista ajoa varten asenna Playwrightin Firefox komennolla
+`npx playwright install firefox`. CI:n kanssa saman ajon saa Dockerilla:
+
+```sh
+docker compose -f tests/compose.yaml run --build --rm playwright
+```
+
+Pelkkä julkaisuversio kootaan komennolla `npm run build`. Julkaistava sisältö
+on `dist/`, joka sisältää myös kolmansien osapuolten lisenssit ja Voikon
+lähdepaketin. Esikatsele koontia komennolla `node tools/serve.mts`.
+Selaimessa ajettava koodi ja workerit käännetään omilla TypeScript-asetuksillaan;
+kehitystyökalut ja testit tyyppitarkistetaan erikseen.
 
 ## Teknologiat
 
@@ -90,8 +120,8 @@ tiedostossa [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Denantle on teknologiademo, jolla tutkitaan selainten välistä reaaliaikaista
 tiedonsiirtoa ilman erillistä signalointipalvelinta. Sovellus on toteutettu
-HTML:llä, CSS:llä ja JavaScriptillä ilman käyttöliittymäkehystä tai
-koontivaihetta, joten sen voi julkaista staattisena sivustona ilman omaa
+HTML:llä, CSS:llä ja TypeScriptillä. TypeScript käännetään selaimessa ajettavaksi
+JavaScriptiksi, ja valmis sivusto julkaistaan staattisena ilman omaa
 sovelluspalvelinta. Moninpeli välittää pelitilan WebRTC-datakanavien kautta;
 yhteyden muodostamiseen tarvittavat SDP-yhteyskuvaukset vaihdetaan käsin
 kutsulinkillä ja vastauksella. Googlen STUN-palvelin auttaa muodostamaan suoran

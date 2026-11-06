@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-const { test, expect } = require("@playwright/test");
+import { test, expect } from "@playwright/test";
 
 test("artikkeli latautuu peitettynä ja arvaus paljastaa sanan kaikki esiintymät", async ({ page, context }) => {
   // Exact guesses work without the remotely downloaded semantic hint model.

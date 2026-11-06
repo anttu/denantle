@@ -10,21 +10,23 @@ and Wikipedia text retain the licenses listed in
 
 A word guessing game that hides a Simple English, Finnish or English Wikipedia
 article's title and body behind black bars. Word embeddings are computed locally
-in the browser. No application server, API key, package installation, or build
-step is required.
+in the browser. The TypeScript sources are compiled into a static site; no
+application server or API key is required by the published game.
 
 Keep `index.html` and `favicon.ico` in the repository root, with the application's
-JavaScript source files in `src/`, the PNG assets in `images/` and the bundled
+TypeScript source files in `src/`, the PNG assets in `images/` and the bundled
 language libraries in `vendor/`. For development,
-run `./start-local.sh` and open `http://localhost:8000` in a current browser.
+run `./start-local.sh` and open `http://localhost:8000` in Firefox. The script
+selects the pinned Node.js version with NVM, installs development dependencies
+on first use, builds `dist/`, serves that output and rebuilds on source changes.
 For publication, follow the [publishing instructions](#publishing) below.
 The page heading displays three separate images: the seven-bar mark
 (`images/denantle-mark.png`), the Denantle wordmark
 (`images/denantle-wordmark.png`) and the hand-drawn face
 (`images/denantle-icon.png`). The smaller icon PNGs and `favicon.ico` provide
 browser and touch icons.
-The embedding worker requires HTTP(S); opening `index.html` directly
-still displays articles but cannot create word vectors. An internet connection
+Serve the generated `dist/` directory over HTTP(S); native browser modules and
+workers require a web server. An internet connection
 is required to fetch articles and initially download the embedding runtime and model.
 
 The page automatically loads a random Simple English Wikipedia article. Use
@@ -67,7 +69,7 @@ Once connected, a compact status strip shows the player count. Guest signaling
 controls disappear, and used payloads are cleared. The host's **Kutsu lisää
 pelaajia** disclosure creates a separate invitation for each additional guest.
 The host can cancel a pending invitation without closing established channels.
-`src/signaling-payload.js` stores invitations in the URL fragment, preserving the
+`src/signaling-payload.ts` stores invitations in the URL fragment, preserving the
 current path and query. Its D2 binary profile reconstructs matching single-host
 offers exactly; the D1 dictionary format preserves all other descriptions,
 including browser-specific fields and multiple candidates. The codec has no
@@ -77,7 +79,7 @@ remain tied to the inviter's open peer connection.
 The optional **payload debug** checkbox reveals the decoded local and remote
 JSON descriptions, including every SDP field restored by the codec. It is off by
 default; hiding it, connecting or disconnecting clears the displayed payloads.
-`src/multiplayer.js` uses the browser's native
+`src/multiplayer.ts` uses the browser's native
 `RTCPeerConnection` and an ordered, reliable data channel. Both descriptions wait
 for ICE gathering to complete, so candidates travel in the copied text and no
 signaling service is needed. There are no additional packages or application
@@ -153,7 +155,7 @@ Once word vectors are ready, guesses also provide semantic hints: a cosine
 similarity of at least `0.6` displays the guessed word on the matching black bars.
 Hint text changes continuously from blue (farther) to red (closer). Each word keeps
 its closest guess so far; hints never replace revealed
-words. The threshold is defined by `SIMILARITY_THRESHOLD` in `src/game.js`. Similarity
+words. The threshold is defined by `SIMILARITY_THRESHOLD` in `src/game.ts`. Similarity
 is a model score, not a probability that the guess is correct. Exact guesses work
 while vectors are loading or if the model fails; retry an early exact guess after
 indexing to use it for semantic hints too, without increasing the guess count.
@@ -177,7 +179,7 @@ Repeating a guess moves it to the front and refreshes its counts and hints witho
 increasing the guess count. Choosing another article clears the history.
 
 Articles are chosen from the groups listed in
-`src/categories.js`, including their subcategories. Both English editions start from
+`src/categories.ts`, including their subcategories. Both English editions start from
 Everyday life, Geography, History, Knowledge, Language, Literature, Religion, and Science;
 the People category is skipped. The Finnish search starts from Maantiede, Historia,
 Tieto, Kieli, Kirjallisuus, Uskonto, and Tiede; Henkilöt is skipped.
@@ -214,7 +216,7 @@ and an 8-bit quantized model: [Xenova/all-MiniLM-L6-v2](https://huggingface.co/X
 for English (approximately 23 MB of weights), or
 [onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX](https://huggingface.co/onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX)
 for Finnish. Both model publications explicitly state Apache-2.0, and their
-download revisions are pinned in `src/embedding-worker.js` and
+download revisions are pinned in `src/embedding-worker.ts` and
 `third-party-manifest.json`. Their model cards and license are in `licenses/`.
 The multilingual model is larger and takes longer to download on first
 use. Switching languages releases the previous model and cancels its pending work.
@@ -240,6 +242,7 @@ The `articleVectors` object provides a search API, also usable in the browser's
 developer console after the ready message appears:
 
 ```js
+const { articleVectors } = await import(new URL("src/embeddings.js", location.href).href);
 articleVectors.info; // { title, wordCount, dimensions, model }, or null before ready
 await articleVectors.search("water", 5); // [{ word, count, score }, ...]
 ```
@@ -250,14 +253,27 @@ it does not use their surrounding sentence as context.
 
 ## Publishing
 
-Publish directly from the repository root with GitHub Pages:
+Use **GitHub Actions** as the repository's Pages publishing source.
+`.github/workflows/playwright.yaml` runs the same command used locally:
 
-1. Open the repository's **Settings → Pages**.
-2. Under **Build and deployment**, select **Deploy from a branch**.
-3. Select **main** and **/ (root)**, then **Save**.
+```sh
+docker compose -f tests/compose.yaml run --build --rm playwright
+```
 
-GitHub Pages publishes updates pushed to `main`. No packaging or build command
-is required. The site is available at https://anttu.github.io/denantle/.
+The container installs the root lockfile with `npm ci`, strictly typechecks the
+browser code, both worker environments, Node.js tools and Playwright tests, then
+builds the complete `dist/` site and runs all tests in Firefox. On successful
+pushes to `main`, the test job uploads that exact tested directory as the Pages
+artifact. The deployment job publishes it without rebuilding. A failing check
+leaves the currently published version in place.
+
+For a local production build, use `npm ci --ignore-scripts --no-audit --no-fund`
+and `npm run build`. Preview it with `node tools/serve.mts`. `npm test` builds
+and runs the TypeScript Playwright tests; a local run needs Playwright's Firefox
+installed with `npx playwright install firefox`. `npm run typecheck` checks
+application, worker, tool and test types without emitting files.
+
+The published site is available at https://anttu.github.io/denantle/.
 
 Keep `LICENSE`, `licenses.html`, `THIRD_PARTY_NOTICES.md`, `ARTWORK.md`,
 `third-party-manifest.json`, `licenses/` and
