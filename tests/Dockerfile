@@ -12,4 +12,4 @@ RUN . "$NVM_DIR/nvm.sh" --no-use && nvm use && npm ci --ignore-scripts --no-audi
 
 COPY . /app
 
-CMD ["bash", "-c", ". \"$NVM_DIR/nvm.sh\" --no-use && nvm use && npm run typecheck && exec npm test"]
+CMD ["bash", "-c", ". \"$NVM_DIR/nvm.sh\" --no-use && nvm use && npm run check && npm run typecheck && exec npm test"]

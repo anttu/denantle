@@ -3,6 +3,8 @@
 !tests/**
 !index.html
 !.nvmrc
+!.gitignore
+!biome.json
 !package.json
 !package-lock.json
 !tsconfig*.json
@@ -20,6 +22,8 @@
 !vendor/**
 !images/
 !images/**
+!designs/
+!designs/**
 !licenses/
 !licenses/**
 !source/

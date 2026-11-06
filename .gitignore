@@ -4,3 +4,5 @@ dist/
 /.superpowers/
 /node_modules/
 /.denantle-build-*/
+/test-results/
+/playwright-report/

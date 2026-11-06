@@ -1,33 +1,58 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
-import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { spawnSync } from 'node:child_process'
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = fileURLToPath(new URL("../", import.meta.url));
-const staging = mkdtempSync(join(root, ".denantle-build-"));
+const root = fileURLToPath(new URL('../', import.meta.url))
+const staging = mkdtempSync(join(root, '.denantle-build-'))
 const assets = [
-  "index.html", "licenses.html", "styles.css", "language.css", "licenses.css", "favicon.ico",
-  "images", "vendor", "licenses", "source", "LICENSE", "ARTWORK.md", "THIRD_PARTY_NOTICES.md",
-  "third-party-manifest.json", "README.md", "GAMEPLAY_AND_IMPLEMENTATION.md",
-];
+  'index.html',
+  'licenses.html',
+  'styles.css',
+  'language.css',
+  'licenses.css',
+  'favicon.ico',
+  'images',
+  'vendor',
+  'licenses',
+  'source',
+  'LICENSE',
+  'ARTWORK.md',
+  'THIRD_PARTY_NOTICES.md',
+  'third-party-manifest.json',
+  'README.md',
+  'GAMEPLAY_AND_IMPLEMENTATION.md',
+]
 
 try {
-  for (const config of ["tsconfig.json", "tsconfig.embedding-worker.json", "tsconfig.finnish-worker.json"]) {
-    const result = spawnSync(process.execPath, ["node_modules/typescript/bin/tsc", "-p", config, "--outDir", staging], {
-      cwd: root, stdio: "inherit",
-    });
-    if (result.error) throw result.error;
-    if (result.status !== 0) throw new Error(`TypeScript compilation failed: ${config}`);
+  for (const config of [
+    'tsconfig.json',
+    'tsconfig.embedding-worker.json',
+    'tsconfig.finnish-worker.json',
+  ]) {
+    const result = spawnSync(
+      process.execPath,
+      ['node_modules/typescript/bin/tsc', '-p', config, '--outDir', staging],
+      {
+        cwd: root,
+        stdio: 'inherit',
+      },
+    )
+    if (result.error) throw result.error
+    if (result.status !== 0)
+      throw new Error(`TypeScript compilation failed: ${config}`)
   }
-  for (const asset of assets) cpSync(join(root, asset), join(staging, asset), { recursive: true });
-  const output = join(root, "dist");
-  mkdirSync(output, { recursive: true });
-  for (const entry of readdirSync(output)) rmSync(join(output, entry), { recursive: true, force: true });
-  cpSync(staging, output, { recursive: true });
-  console.log("Built static site in dist/");
+  for (const asset of assets)
+    cpSync(join(root, asset), join(staging, asset), { recursive: true })
+  const output = join(root, 'dist')
+  mkdirSync(output, { recursive: true })
+  for (const entry of readdirSync(output))
+    rmSync(join(output, entry), { recursive: true, force: true })
+  cpSync(staging, output, { recursive: true })
+  console.log('Built static site in dist/')
 } finally {
-  rmSync(staging, { recursive: true, force: true });
+  rmSync(staging, { recursive: true, force: true })
 }

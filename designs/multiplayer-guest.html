@@ -2,268 +2,1160 @@
 <!-- SPDX-FileCopyrightText: 2026 Antero Fagerstedt -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <html lang="fi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Denantle · Kutsutun yhteysnäkymä</title>
-  <link rel="icon" href="../favicon.ico">
-  <style>
-    :root { color-scheme: light; --paper: #fcfbf7; --ink: #282920; --muted: #727465; --rule: #d9d9cc; --olive: #62694e; --wash: #eeefe5; --green: #426240; }
-    * { box-sizing: border-box; }
-    [hidden] { display: none !important; }
-    body { margin: 0; background: #eae9e2; color: var(--ink); font: 14px/1.55 system-ui, sans-serif; }
-    h1, h2, h3, p { margin: 0; }
-    button, textarea { font: inherit; }
-    button { cursor: pointer; }
-    button, a, textarea, summary { outline-offset: 4px; }
-    :focus-visible { outline: 2px solid var(--olive); }
-    a { color: inherit; text-underline-offset: 3px; }
-    .design-bar { background: var(--ink); color: white; display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; gap: 20px; }
-    .design-bar p { font-size: 11px; letter-spacing: .13em; text-transform: uppercase; color: #d2d4c3; }
-    .design-bar strong { font-size: 13px; font-weight: 550; }
-    .design-nav { display: flex; gap: 5px; }
-    .design-nav a { padding: 9px 14px; text-decoration: none; font-size: 12px; border: 1px solid #ffffff28; border-radius: 4px; color: #d2d4c3; }
-    .design-nav a[aria-current="page"] { color: var(--ink); background: var(--paper); border-color: var(--paper); }
-    .design-intro { max-width: 1040px; margin: auto; padding: 30px 0 22px; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
-    .design-title { display: flex; align-items: center; gap: 15px; }
-    .design-number { width: 40px; height: 40px; border: 1px solid #bfc0b0; border-radius: 50%; display: grid; place-items: center; font: 20px Georgia, serif; flex-shrink: 0; }
-    h1 { font: 27px/1.2 Georgia, serif; letter-spacing: -.025em; }
-    .design-intro p { font-size: 12px; color: #666a5a; margin-top: 4px; }
-    .design-tag { font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--olive); border-bottom: 1px solid #a7ad96; padding-bottom: 4px; white-space: nowrap; }
-    .stage { max-width: 1040px; margin: 0 auto 22px; background: var(--paper); border: 1px solid #d4d4c6; border-radius: 8px; box-shadow: 0 14px 40px #28292008; }
-    .game-page { max-width: 720px; margin: auto; padding: 28px 0 32px; }
-    .masthead { display: flex; align-items: center; justify-content: space-between; padding-bottom: 19px; border-bottom: 1px solid var(--rule); }
-    .brand { display: flex; align-items: center; gap: 11px; }
-    .brand-icon { width: 53px; height: 53px; }
-    .brand-name { width: 143px; }
-    .brand-name img { display: block; width: 100%; }
-    .brand-name img + img { margin-top: -13%; }
-    .help { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid #a9ad99; border-radius: 50%; background: transparent; color: var(--muted); font: 16px Georgia, serif; text-decoration: none; }
-    .welcome { padding: 23px 0 20px; }
-    .eyebrow { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
-    .welcome h2 { font: 36px/1.12 Georgia, serif; letter-spacing: -.04em; margin: 9px 0; }
-    .welcome > p:last-child { font-size: 12px; color: var(--muted); }
-    .mode-row { display: flex; align-items: center; gap: 14px; margin-bottom: 15px; }
-    .modes { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--rule); border-radius: 5px; }
-    .modes span { font-size: 11px; padding: 7px 13px; border-radius: 3px; color: var(--muted); }
-    .modes .selected { background: var(--ink); color: var(--paper); }
-    .role { font-size: 10px; color: var(--muted); }
-    .compact-panel { border: 1px solid #ced1be; border-radius: 7px; overflow: hidden; }
-    .compact-heading { padding: 18px 20px 16px; display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; background: #f3f3eb; border-bottom: 1px solid var(--rule); }
-    .compact-heading h3 { font: 24px/1.2 Georgia, serif; letter-spacing: -.025em; margin-bottom: 5px; }
-    .compact-heading p { font-size: 11px; color: var(--muted); }
-    .network { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); white-space: nowrap; margin-top: 3px; }
-    svg { width: 15px; height: 15px; flex-shrink: 0; }
-    .network svg { width: 13px; height: 13px; }
-    .compact-content { padding: 20px; }
-    .compact-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .compact-columns > div + div { border-left: 1px solid var(--rule); padding-left: 24px; }
-    .step-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; margin-bottom: 11px; }
-    .step-num { width: 21px; height: 21px; flex-shrink: 0; border: 1px solid #b8bda6; border-radius: 50%; display: grid; place-items: center; font-size: 10px; color: var(--olive); }
-    .active .step-num { background: var(--ink); border-color: var(--ink); color: white; }
-    .body-copy { font-size: 11px; color: var(--muted); line-height: 1.65; }
-    .field-label { display: block; font-size: 10px; color: #626654; margin: 15px 0 6px; }
-    .answer { display: block; width: 100%; height: 57px; resize: none; border: 1px solid var(--rule); border-radius: 4px; background: #f8f8f2; padding: 9px 10px; color: #687058; font: 10px/1.7 ui-monospace, monospace; overflow-wrap: anywhere; }
-    .btn { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 40px; border: 1px solid var(--ink); border-radius: 5px; padding: 9px 12px; background: var(--ink); color: white; font-size: 11px; font-weight: 550; }
-    .btn:hover { background: #414435; }
-    .copy-button { width: 100%; margin-top: 8px; }
-    .copy-button.copied { background: #edf1e7; border-color: #bdcbb1; color: var(--green); }
-    .copy-note { margin-top: 9px; min-height: 33px; font-size: 10px; line-height: 1.6; color: var(--muted); }
-    .connection-visual { display: flex; align-items: center; justify-content: center; margin: 17px 0 12px; gap: 12px; }
-    .player { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 9px; color: var(--muted); }
-    .avatar { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #b8bda6; border-radius: 50%; color: var(--olive); background: #eeefe5; }
-    .player.pending .avatar { background: transparent; border-style: dashed; color: #8b917b; }
-    .avatar svg { width: 17px; height: 17px; }
-    .connection-line { width: 56px; border-top: 1px dashed #b8bda6; margin-bottom: 18px; }
-    .awaiting-note { text-align: center; font-size: 10px; line-height: 1.6; color: var(--olive); }
-    .compact-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 17px; padding-top: 13px; border-top: 1px solid var(--rule); }
-    .status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
-    .dot { display: inline-block; width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: #b18842; }
-    .keep-open { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); }
-    .keep-open svg { width: 12px; height: 12px; }
-    .trouble { font-size: 10px; color: var(--muted); margin-top: 14px; }
-    .trouble summary { cursor: pointer; width: fit-content; text-underline-offset: 3px; }
-    .trouble p { margin-top: 8px; max-width: 560px; line-height: 1.7; }
-    .game-placeholder { display: flex; align-items: center; gap: 13px; margin-top: 23px; padding-top: 19px; border-top: 1px solid var(--rule); }
-    .article-symbol { width: 31px; height: 37px; padding: 8px 6px; border: 1px solid #cdd0be; border-radius: 2px; flex-shrink: 0; }
-    .article-symbol i { display: block; height: 2px; background: #aaaf9c; margin-bottom: 4px; }
-    .article-symbol i:nth-child(2) { width: 70%; }
-    .game-placeholder strong { display: block; font-size: 11px; color: #656b58; font-weight: 550; }
-    .game-placeholder p { margin-top: 3px; font-size: 10px; color: var(--muted); }
-    .connected-panel { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 19px 20px; border: 1px solid #cbd5bd; border-radius: 6px; background: #f0f3e9; }
-    .connected-panel h3 { font: 22px/1.25 Georgia, serif; }
-    .connected-panel p { font-size: 11px; color: #64705a; margin-top: 5px; }
-    .connected-panel .status { color: #4e6a41; white-space: nowrap; }
-    .connected-panel .dot { background: #6c8657; }
-    .joined-note { font-size: 10px; color: var(--muted); margin-top: 10px; }
-    .fake-game { margin-top: 23px; border-top: 1px solid var(--rule); padding-top: 19px; }
-    .progress-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
-    .progress { height: 3px; background: #e6e7dc; margin: 8px 0 17px; }
-    .progress::before { content: ""; display: block; width: 18%; height: 100%; background: var(--olive); }
-    .guess { border: 1px solid #c5c8b8; border-radius: 6px; padding: 5px; display: flex; justify-content: space-between; align-items: center; background: white; color: #858778; font-size: 12px; }
-    .guess > span { padding-left: 10px; }
-    .guess > span:last-child { background: var(--ink); color: white; border-radius: 4px; padding: 6px 14px; font-size: 11px; }
-    .redactions { display: flex; flex-wrap: wrap; gap: 8px 7px; align-items: center; margin-top: 21px; }
-    .redactions i { height: 13px; width: 62px; background: var(--ink); border-radius: 1px; }
-    .redactions i:nth-child(3n) { width: 35px; }
-    .redactions i:nth-child(4n) { width: 87px; }
-    .redactions span { font: 15px Georgia, serif; }
-    .error-panel { padding: 20px; border: 1px solid #d8c9af; border-radius: 6px; background: #f8f3e9; }
-    .error-panel h3 { font: 24px/1.25 Georgia, serif; margin-bottom: 9px; }
-    .error-panel p { max-width: 450px; font-size: 12px; color: #796b54; line-height: 1.7; }
-    .error-panel .body-copy { margin-top: 11px; font-size: 11px; }
-    .demo-note { max-width: 1040px; margin: 0 auto 35px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; color: var(--muted); font-size: 11px; }
-    .demo-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
-    .demo-controls > span { margin-right: 4px; }
-    .demo-controls button { background: transparent; border: 1px solid #c5c7b9; padding: 6px 10px; border-radius: 3px; color: #626654; font-size: 10px; }
-    .demo-controls button[aria-pressed="true"] { background: #dedfd3; border-color: #a7ad96; }
-    .design-note { max-width: 300px; font-size: 10px; }
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Denantle · Kutsutun yhteysnäkymä</title>
+    <link rel="icon" href="../favicon.ico">
+    <style>
+    :root {
+      color-scheme: light;
+      --paper: #fcfbf7;
+      --ink: #282920;
+      --muted: #727465;
+      --rule: #d9d9cc;
+      --olive: #62694e;
+      --wash: #eeefe5;
+      --green: #426240;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    [hidden] {
+      display: none !important;
+    }
+    body {
+      margin: 0;
+      background: #eae9e2;
+      color: var(--ink);
+      font:
+        14px / 1.55 system-ui,
+        sans-serif;
+    }
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+    button,
+    textarea {
+      font: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+    button,
+    a,
+    textarea,
+    summary {
+      outline-offset: 4px;
+    }
+    :focus-visible {
+      outline: 2px solid var(--olive);
+    }
+    a {
+      color: inherit;
+      text-underline-offset: 3px;
+    }
+    .design-bar {
+      background: var(--ink);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      gap: 20px;
+    }
+    .design-bar p {
+      font-size: 11px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #d2d4c3;
+    }
+    .design-bar strong {
+      font-size: 13px;
+      font-weight: 550;
+    }
+    .design-nav {
+      display: flex;
+      gap: 5px;
+    }
+    .design-nav a {
+      padding: 9px 14px;
+      text-decoration: none;
+      font-size: 12px;
+      border: 1px solid #ffffff28;
+      border-radius: 4px;
+      color: #d2d4c3;
+    }
+    .design-nav a[aria-current='page'] {
+      color: var(--ink);
+      background: var(--paper);
+      border-color: var(--paper);
+    }
+    .design-intro {
+      max-width: 1040px;
+      margin: auto;
+      padding: 30px 0 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+    }
+    .design-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .design-number {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #bfc0b0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font:
+        20px Georgia,
+        serif;
+      flex-shrink: 0;
+    }
+    h1 {
+      font:
+        27px / 1.2 Georgia,
+        serif;
+      letter-spacing: -0.025em;
+    }
+    .design-intro p {
+      font-size: 12px;
+      color: #666a5a;
+      margin-top: 4px;
+    }
+    .design-tag {
+      font-size: 10px;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--olive);
+      border-bottom: 1px solid #a7ad96;
+      padding-bottom: 4px;
+      white-space: nowrap;
+    }
+    .stage {
+      max-width: 1040px;
+      margin: 0 auto 22px;
+      background: var(--paper);
+      border: 1px solid #d4d4c6;
+      border-radius: 8px;
+      box-shadow: 0 14px 40px #28292008;
+    }
+    .game-page {
+      max-width: 720px;
+      margin: auto;
+      padding: 28px 0 32px;
+    }
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 19px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+    .brand-icon {
+      width: 53px;
+      height: 53px;
+    }
+    .brand-name {
+      width: 143px;
+    }
+    .brand-name img {
+      display: block;
+      width: 100%;
+    }
+    .brand-name img + img {
+      margin-top: -13%;
+    }
+    .help {
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #a9ad99;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      font:
+        16px Georgia,
+        serif;
+      text-decoration: none;
+    }
+    .welcome {
+      padding: 23px 0 20px;
+    }
+    .eyebrow {
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 650;
+    }
+    .welcome h2 {
+      font:
+        36px / 1.12 Georgia,
+        serif;
+      letter-spacing: -0.04em;
+      margin: 9px 0;
+    }
+    .welcome > p:last-child {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .mode-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 15px;
+    }
+    .modes {
+      display: inline-flex;
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--rule);
+      border-radius: 5px;
+    }
+    .modes span {
+      font-size: 11px;
+      padding: 7px 13px;
+      border-radius: 3px;
+      color: var(--muted);
+    }
+    .modes .selected {
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .role {
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .compact-panel {
+      border: 1px solid #ced1be;
+      border-radius: 7px;
+      overflow: hidden;
+    }
+    .compact-heading {
+      padding: 18px 20px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      background: #f3f3eb;
+      border-bottom: 1px solid var(--rule);
+    }
+    .compact-heading h3 {
+      font:
+        24px / 1.2 Georgia,
+        serif;
+      letter-spacing: -0.025em;
+      margin-bottom: 5px;
+    }
+    .compact-heading p {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .network {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-top: 3px;
+    }
+    svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+    .network svg {
+      width: 13px;
+      height: 13px;
+    }
+    .compact-content {
+      padding: 20px;
+    }
+    .compact-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .compact-columns > div + div {
+      border-left: 1px solid var(--rule);
+      padding-left: 24px;
+    }
+    .step-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 11px;
+    }
+    .step-num {
+      width: 21px;
+      height: 21px;
+      flex-shrink: 0;
+      border: 1px solid #b8bda6;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      color: var(--olive);
+    }
+    .active .step-num {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: white;
+    }
+    .body-copy {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .field-label {
+      display: block;
+      font-size: 10px;
+      color: #626654;
+      margin: 15px 0 6px;
+    }
+    .answer {
+      display: block;
+      width: 100%;
+      height: 57px;
+      resize: none;
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      background: #f8f8f2;
+      padding: 9px 10px;
+      color: #687058;
+      font:
+        10px / 1.7 ui-monospace,
+        monospace;
+      overflow-wrap: anywhere;
+    }
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      border: 1px solid var(--ink);
+      border-radius: 5px;
+      padding: 9px 12px;
+      background: var(--ink);
+      color: white;
+      font-size: 11px;
+      font-weight: 550;
+    }
+    .btn:hover {
+      background: #414435;
+    }
+    .copy-button {
+      width: 100%;
+      margin-top: 8px;
+    }
+    .copy-button.copied {
+      background: #edf1e7;
+      border-color: #bdcbb1;
+      color: var(--green);
+    }
+    .copy-note {
+      margin-top: 9px;
+      min-height: 33px;
+      font-size: 10px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .connection-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 17px 0 12px;
+      gap: 12px;
+    }
+    .player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      font-size: 9px;
+      color: var(--muted);
+    }
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid #b8bda6;
+      border-radius: 50%;
+      color: var(--olive);
+      background: #eeefe5;
+    }
+    .player.pending .avatar {
+      background: transparent;
+      border-style: dashed;
+      color: #8b917b;
+    }
+    .avatar svg {
+      width: 17px;
+      height: 17px;
+    }
+    .connection-line {
+      width: 56px;
+      border-top: 1px dashed #b8bda6;
+      margin-bottom: 18px;
+    }
+    .awaiting-note {
+      text-align: center;
+      font-size: 10px;
+      line-height: 1.6;
+      color: var(--olive);
+    }
+    .compact-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 17px;
+      padding-top: 13px;
+      border-top: 1px solid var(--rule);
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      flex: 0 0 6px;
+      border-radius: 50%;
+      background: #b18842;
+    }
+    .keep-open {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .keep-open svg {
+      width: 12px;
+      height: 12px;
+    }
+    .trouble {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+    .trouble summary {
+      cursor: pointer;
+      width: fit-content;
+      text-underline-offset: 3px;
+    }
+    .trouble p {
+      margin-top: 8px;
+      max-width: 560px;
+      line-height: 1.7;
+    }
+    .game-placeholder {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-top: 23px;
+      padding-top: 19px;
+      border-top: 1px solid var(--rule);
+    }
+    .article-symbol {
+      width: 31px;
+      height: 37px;
+      padding: 8px 6px;
+      border: 1px solid #cdd0be;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .article-symbol i {
+      display: block;
+      height: 2px;
+      background: #aaaf9c;
+      margin-bottom: 4px;
+    }
+    .article-symbol i:nth-child(2) {
+      width: 70%;
+    }
+    .game-placeholder strong {
+      display: block;
+      font-size: 11px;
+      color: #656b58;
+      font-weight: 550;
+    }
+    .game-placeholder p {
+      margin-top: 3px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .connected-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 19px 20px;
+      border: 1px solid #cbd5bd;
+      border-radius: 6px;
+      background: #f0f3e9;
+    }
+    .connected-panel h3 {
+      font:
+        22px / 1.25 Georgia,
+        serif;
+    }
+    .connected-panel p {
+      font-size: 11px;
+      color: #64705a;
+      margin-top: 5px;
+    }
+    .connected-panel .status {
+      color: #4e6a41;
+      white-space: nowrap;
+    }
+    .connected-panel .dot {
+      background: #6c8657;
+    }
+    .joined-note {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .fake-game {
+      margin-top: 23px;
+      border-top: 1px solid var(--rule);
+      padding-top: 19px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .progress {
+      height: 3px;
+      background: #e6e7dc;
+      margin: 8px 0 17px;
+    }
+    .progress::before {
+      content: '';
+      display: block;
+      width: 18%;
+      height: 100%;
+      background: var(--olive);
+    }
+    .guess {
+      border: 1px solid #c5c8b8;
+      border-radius: 6px;
+      padding: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      color: #858778;
+      font-size: 12px;
+    }
+    .guess > span {
+      padding-left: 10px;
+    }
+    .guess > span:last-child {
+      background: var(--ink);
+      color: white;
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 11px;
+    }
+    .redactions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 7px;
+      align-items: center;
+      margin-top: 21px;
+    }
+    .redactions i {
+      height: 13px;
+      width: 62px;
+      background: var(--ink);
+      border-radius: 1px;
+    }
+    .redactions i:nth-child(3n) {
+      width: 35px;
+    }
+    .redactions i:nth-child(4n) {
+      width: 87px;
+    }
+    .redactions span {
+      font:
+        15px Georgia,
+        serif;
+    }
+    .error-panel {
+      padding: 20px;
+      border: 1px solid #d8c9af;
+      border-radius: 6px;
+      background: #f8f3e9;
+    }
+    .error-panel h3 {
+      font:
+        24px / 1.25 Georgia,
+        serif;
+      margin-bottom: 9px;
+    }
+    .error-panel p {
+      max-width: 450px;
+      font-size: 12px;
+      color: #796b54;
+      line-height: 1.7;
+    }
+    .error-panel .body-copy {
+      margin-top: 11px;
+      font-size: 11px;
+    }
+    .demo-note {
+      max-width: 1040px;
+      margin: 0 auto 35px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .demo-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .demo-controls > span {
+      margin-right: 4px;
+    }
+    .demo-controls button {
+      background: transparent;
+      border: 1px solid #c5c7b9;
+      padding: 6px 10px;
+      border-radius: 3px;
+      color: #626654;
+      font-size: 10px;
+    }
+    .demo-controls button[aria-pressed='true'] {
+      background: #dedfd3;
+      border-color: #a7ad96;
+    }
+    .design-note {
+      max-width: 300px;
+      font-size: 10px;
+    }
     @media (max-width: 1100px) {
-      .design-intro, .demo-note { margin-left: 24px; margin-right: 24px; }
-      .stage { margin-left: 24px; margin-right: 24px; }
-      .game-page { padding-left: 24px; padding-right: 24px; }
-      .design-tag { display: none; }
+      .design-intro,
+      .demo-note {
+        margin-left: 24px;
+        margin-right: 24px;
+      }
+      .stage {
+        margin-left: 24px;
+        margin-right: 24px;
+      }
+      .game-page {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+      .design-tag {
+        display: none;
+      }
     }
     @media (max-width: 650px) {
-      .design-bar { flex-direction: column; align-items: stretch; padding: 18px 20px; gap: 12px; }
-      .design-nav a { flex: 1; text-align: center; padding: 8px; font-size: 10px; }
-      .design-intro { margin: 0 16px; padding: 22px 0 18px; }
-      .design-title { gap: 10px; }
-      .design-number { width: 32px; height: 32px; font-size: 17px; }
-      h1 { font-size: 25px; }
-      .design-intro p { font-size: 11px; }
-      .stage { margin: 0 12px 18px; }
-      .game-page { padding: 22px 18px 26px; }
-      .brand-icon { width: 43px; height: 43px; }
-      .brand-name { width: 120px; }
-      .welcome h2 { font-size: 32px; }
-      .compact-heading { padding: 16px; flex-direction: column; gap: 9px; }
-      .compact-heading h3 { font-size: 23px; }
-      .compact-content { padding: 16px; }
-      .compact-columns { grid-template-columns: 1fr; gap: 18px; }
-      .compact-columns > div + div { padding: 18px 0 0; border-left: 0; border-top: 1px solid var(--rule); }
-      .copy-note { min-height: 0; }
-      .compact-footer { flex-direction: column; align-items: flex-start; gap: 9px; }
-      .connected-panel { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
-      .demo-note { flex-direction: column; gap: 12px; margin: 0 16px 26px; }
-      .design-note { max-width: 400px; }
-      .role { font-size: 9px; }
+      .design-bar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 18px 20px;
+        gap: 12px;
+      }
+      .design-nav a {
+        flex: 1;
+        text-align: center;
+        padding: 8px;
+        font-size: 10px;
+      }
+      .design-intro {
+        margin: 0 16px;
+        padding: 22px 0 18px;
+      }
+      .design-title {
+        gap: 10px;
+      }
+      .design-number {
+        width: 32px;
+        height: 32px;
+        font-size: 17px;
+      }
+      h1 {
+        font-size: 25px;
+      }
+      .design-intro p {
+        font-size: 11px;
+      }
+      .stage {
+        margin: 0 12px 18px;
+      }
+      .game-page {
+        padding: 22px 18px 26px;
+      }
+      .brand-icon {
+        width: 43px;
+        height: 43px;
+      }
+      .brand-name {
+        width: 120px;
+      }
+      .welcome h2 {
+        font-size: 32px;
+      }
+      .compact-heading {
+        padding: 16px;
+        flex-direction: column;
+        gap: 9px;
+      }
+      .compact-heading h3 {
+        font-size: 23px;
+      }
+      .compact-content {
+        padding: 16px;
+      }
+      .compact-columns {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+      .compact-columns > div + div {
+        padding: 18px 0 0;
+        border-left: 0;
+        border-top: 1px solid var(--rule);
+      }
+      .copy-note {
+        min-height: 0;
+      }
+      .compact-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 9px;
+      }
+      .connected-panel {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+      }
+      .demo-note {
+        flex-direction: column;
+        gap: 12px;
+        margin: 0 16px 26px;
+      }
+      .design-note {
+        max-width: 400px;
+      }
+      .role {
+        font-size: 9px;
+      }
     }
-  </style>
-</head>
-<body>
-  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><defs>
-    <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
-    <symbol id="wifi" viewBox="0 0 24 24"><path d="M3 8a14 14 0 0 1 18 0M6.5 12a8.5 8.5 0 0 1 11 0M10 16a3 3 0 0 1 4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="20" r="1" fill="currentColor"/></symbol>
-    <symbol id="person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
-    <symbol id="window" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 9h18M6 6.5h1M9 6.5h1" stroke="currentColor" stroke-width="1.5"/></symbol>
-    <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  </defs></svg>
-  <header class="design-bar">
-    <div><p>Denantle / luonnokset</p><strong>Moninpelin yhteysnäkymä</strong></div>
-    <nav class="design-nav" aria-label="Valitse näkymä"><a href="multiplayer.html?concept=1">Kutsujan näkymä</a><a href="multiplayer-guest.html" aria-current="page">Kutsutun näkymä</a></nav>
-  </header>
-  <div class="design-intro">
-    <div class="design-title"><span class="design-number">01</span><div><h1>Kutsusta yhteiseen peliin</h1><p>Tiivis paneeli · kutsutun pelaajan näkymä</p></div></div>
-    <span class="design-tag">Sama ilme, toinen puoli kutsusta</span>
-  </div>
-  <main class="stage" aria-label="Kutsutun pelaajan käyttöliittymäluonnos">
-    <div class="game-page">
-      <div class="masthead">
-        <div class="brand"><img class="brand-icon" src="../images/denantle-icon.png" alt=""><div class="brand-name"><img src="../images/denantle-mark.png" alt=""><img src="../images/denantle-wordmark.png" alt="Denantle"></div></div>
-        <a class="help" href="#connection-help" aria-label="Ohje yhteyden muodostamiseen">?</a>
+    </style>
+  </head>
+  <body>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      style="display:none"
+      aria-hidden="true"
+    >
+      <defs>
+        <symbol id="copy" viewBox="0 0 24 24">
+          <rect
+            x="8"
+            y="8"
+            width="12"
+            height="13"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <path
+            d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+        </symbol>
+        <symbol id="wifi" viewBox="0 0 24 24">
+          <path
+            d="M3 8a14 14 0 0 1 18 0M6.5 12a8.5 8.5 0 0 1 11 0M10 16a3 3 0 0 1 4 0"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+          />
+          <circle cx="12" cy="20" r="1" fill="currentColor" />
+        </symbol>
+        <symbol id="person" viewBox="0 0 24 24">
+          <circle
+            cx="12"
+            cy="8"
+            r="3.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <path
+            d="M5 21v-2a7 7 0 0 1 14 0v2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+        </symbol>
+        <symbol id="window" viewBox="0 0 24 24">
+          <rect
+            x="3"
+            y="4"
+            width="18"
+            height="16"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <path
+            d="M3 9h18M6 6.5h1M9 6.5h1"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+        </symbol>
+        <symbol id="check" viewBox="0 0 24 24">
+          <path
+            d="m5 12 4 4L19 6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </symbol>
+      </defs>
+    </svg>
+    <header class="design-bar">
+      <div>
+        <p>Denantle / luonnokset</p>
+        <strong>Moninpelin yhteysnäkymä</strong>
       </div>
-      <div class="welcome"><p class="eyebrow">Pieni arvoitus. Sana kerrallaan.</p><h2>Mitä rivien<br>väliin kätkeytyy?</h2><p>Paljasta Wikipedia-artikkeli arvaamalla sanoja.</p></div>
-      <div class="mode-row"><div class="modes" aria-label="Pelimuoto: moninpeli"><span>Yksinpeli</span><span class="selected">Moninpeli</span></div><span class="role">Sinut on kutsuttu mukaan</span></div>
-      <div id="connection-view">
-        <section class="compact-panel" aria-labelledby="invitation-title">
-          <div class="compact-heading"><div><h3 id="invitation-title">Sait kutsun yhteiseen peliin.</h3><p>Kutsu on avattu. Yksi vaihe vielä, niin pääsette pelaamaan.</p></div><span class="network"><svg aria-hidden="true"><use href="#wifi"/></svg>Sama lähiverkko</span></div>
-          <div class="compact-content">
-            <div class="compact-columns">
-              <div id="send-step" class="active">
-                <div class="step-label"><span class="step-num">1</span>Lähetä vastaus kutsujalle</div>
-                <p class="body-copy">Kopioi vastaus ja lähetä se takaisin samassa keskustelussa, jossa sait kutsun.</p>
-                <label class="field-label" for="guest-answer">Vastauksesi kutsujalle</label>
-                <textarea class="answer" id="guest-answer" readonly spellcheck="false" aria-describedby="copy-note">D1.eyJ0eXBlIjoiYW5zd2Vy…
-(esimerkkivastaus)</textarea>
-                <button class="btn copy-button" id="copy-answer" type="button"><svg aria-hidden="true"><use id="copy-icon" href="#copy"/></svg><span id="copy-label">Kopioi vastaus</span></button>
-                <p class="copy-note" id="copy-note">Kutsuja liittää vastauksen omaan näkymäänsä ja hyväksyy sen.</p>
+      <nav class="design-nav" aria-label="Valitse näkymä">
+        <a href="multiplayer.html?concept=1">Kutsujan näkymä</a
+        ><a href="multiplayer-guest.html" aria-current="page"
+          >Kutsutun näkymä</a
+        >
+      </nav>
+    </header>
+    <div class="design-intro">
+      <div class="design-title">
+        <span class="design-number">01</span>
+        <div>
+          <h1>Kutsusta yhteiseen peliin</h1>
+          <p>Tiivis paneeli · kutsutun pelaajan näkymä</p>
+        </div>
+      </div>
+      <span class="design-tag">Sama ilme, toinen puoli kutsusta</span>
+    </div>
+    <main class="stage" aria-label="Kutsutun pelaajan käyttöliittymäluonnos">
+      <div class="game-page">
+        <div class="masthead">
+          <div class="brand">
+            <img class="brand-icon" src="../images/denantle-icon.png" alt="">
+            <div class="brand-name">
+              <img src="../images/denantle-mark.png" alt="">
+              <img src="../images/denantle-wordmark.png" alt="Denantle">
+            </div>
+          </div>
+          <a
+            class="help"
+            href="#connection-help"
+            aria-label="Ohje yhteyden muodostamiseen"
+            >?</a
+          >
+        </div>
+        <div class="welcome">
+          <p class="eyebrow">Pieni arvoitus. Sana kerrallaan.</p>
+          <h2>Mitä rivien<br>väliin kätkeytyy?</h2>
+          <p>Paljasta Wikipedia-artikkeli arvaamalla sanoja.</p>
+        </div>
+        <div class="mode-row">
+          <section class="modes" aria-label="Pelimuoto: moninpeli">
+            <span>Yksinpeli</span><span class="selected">Moninpeli</span>
+          </section>
+          <span class="role">Sinut on kutsuttu mukaan</span>
+        </div>
+        <div id="connection-view">
+          <section class="compact-panel" aria-labelledby="invitation-title">
+            <div class="compact-heading">
+              <div>
+                <h3 id="invitation-title">Sait kutsun yhteiseen peliin.</h3>
+                <p>
+                  Kutsu on avattu. Yksi vaihe vielä, niin pääsette pelaamaan.
+                </p>
               </div>
-              <div id="wait-step">
-                <div class="step-label"><span class="step-num">2</span>Odota hyväksyntää</div>
-                <p class="body-copy">Kun kutsuja hyväksyy vastauksesi, yhteinen peli avautuu automaattisesti.</p>
-                <div class="connection-visual" aria-hidden="true"><div class="player"><span class="avatar"><svg><use href="#person"/></svg></span>Sinä</div><span class="connection-line"></span><div class="player pending"><span class="avatar"><svg><use href="#person"/></svg></span>Kutsuja</div></div>
-                <p class="awaiting-note">Kutsuja viimeistelee yhteyden.<br>Peli avautuu tähän.</p>
+              <span class="network"
+                ><svg aria-hidden="true"><use href="#wifi" /></svg>Sama
+                lähiverkko</span
+              >
+            </div>
+            <div class="compact-content">
+              <div class="compact-columns">
+                <div id="send-step" class="active">
+                  <div class="step-label">
+                    <span class="step-num">1</span>Lähetä vastaus kutsujalle
+                  </div>
+                  <p class="body-copy">
+                    Kopioi vastaus ja lähetä se takaisin samassa keskustelussa,
+                    jossa sait kutsun.
+                  </p>
+                  <label class="field-label" for="guest-answer"
+                    >Vastauksesi kutsujalle</label
+                  >
+                  <textarea
+                    class="answer"
+                    id="guest-answer"
+                    readonly
+                    spellcheck="false"
+                    aria-describedby="copy-note"
+                  >D1.eyJ0eXBlIjoiYW5zd2Vy…
+(esimerkkivastaus)</textarea>
+                  <button
+                    class="btn copy-button"
+                    id="copy-answer"
+                    type="button"
+                  >
+                    <svg aria-hidden="true">
+                      <use id="copy-icon" href="#copy" />
+                    </svg><span id="copy-label">Kopioi vastaus</span>
+                  </button>
+                  <p class="copy-note" id="copy-note">
+                    Kutsuja liittää vastauksen omaan näkymäänsä ja hyväksyy sen.
+                  </p>
+                </div>
+                <div id="wait-step">
+                  <div class="step-label">
+                    <span class="step-num">2</span>Odota hyväksyntää
+                  </div>
+                  <p class="body-copy">
+                    Kun kutsuja hyväksyy vastauksesi, yhteinen peli avautuu
+                    automaattisesti.
+                  </p>
+                  <div class="connection-visual" aria-hidden="true">
+                    <div class="player">
+                      <span class="avatar"
+                        ><svg aria-hidden="true">
+                          <use href="#person" />
+                        </svg></span
+                      >Sinä
+                    </div>
+                    <span class="connection-line"></span>
+                    <div class="player pending">
+                      <span class="avatar"
+                        ><svg aria-hidden="true">
+                          <use href="#person" />
+                        </svg></span
+                      >Kutsuja
+                    </div>
+                  </div>
+                  <p class="awaiting-note">
+                    Kutsuja viimeistelee yhteyden.<br>Peli avautuu tähän.
+                  </p>
+                </div>
+              </div>
+              <div class="compact-footer">
+                <span class="status" role="status"
+                  ><i class="dot" aria-hidden="true"></i
+                  ><span id="connection-status"
+                    >Vastaus valmis lähetettäväksi</span
+                  ></span
+                ><span class="keep-open"
+                  ><svg aria-hidden="true"><use href="#window" /></svg>Pidä tämä
+                  sivu auki</span
+                >
               </div>
             </div>
-            <div class="compact-footer"><span class="status" role="status"><i class="dot" aria-hidden="true"></i><span id="connection-status">Vastaus valmis lähetettäväksi</span></span><span class="keep-open"><svg aria-hidden="true"><use href="#window"/></svg>Pidä tämä sivu auki</span></div>
+          </section>
+        </div>
+        <section id="connected-view" hidden aria-labelledby="connected-title">
+          <div class="connected-panel">
+            <div>
+              <h3 id="connected-title">Olet mukana. Ratkaiskaa yhdessä.</h3>
+              <p>Molempien arvaukset näkyvät samassa artikkelissa.</p>
+            </div>
+            <span class="status"
+              ><i class="dot" aria-hidden="true"></i>2 pelaajaa · yhteys
+              auki</span
+            >
           </div>
+          <p class="joined-note">
+            Kutsuja valitsee artikkelin. Sinä voit keskittyä arvaamiseen.
+          </p>
         </section>
+        <section
+          class="error-panel"
+          id="error-view"
+          hidden
+          aria-labelledby="error-title"
+        >
+          <h3 id="error-title">Yhteyttä ei saatu muodostettua.</h3>
+          <p>
+            Varmistakaa, että olette samassa lähiverkossa ja että kutsujan
+            pelisivu on edelleen auki.
+          </p>
+          <p class="body-copy">
+            Pyydä kutsujalta uusi kutsulinkki ja avaa se tässä selaimessa.
+          </p>
+        </section>
+        <details class="trouble" id="connection-help">
+          <summary>Eikö yhteys avaudu?</summary>
+          <p>
+            Lähetä kopioitu vastaus kutsujalle ja pyydä häntä hyväksymään se.
+            Pitäkää molemmat pelisivut auki ja käyttäkää samaa lähiverkkoa. Jos
+            yhteyttä ei synny, pyydä uusi kutsulinkki.
+          </p>
+        </details>
+        <div class="game-placeholder" id="game-placeholder">
+          <div class="article-symbol" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </div>
+          <div>
+            <strong>Yhteinen arvoitus odottaa</strong>
+            <p>
+              Kutsujan artikkeli ja aiemmat arvaukset tulevat näkyviin yhteyden
+              avauduttua.
+            </p>
+          </div>
+        </div>
+        <div class="fake-game" id="game-view" hidden>
+          <div class="progress-label">
+            <span>Paljastettu <strong>24 / 136</strong> sanaa</span
+            ><span>18 %</span>
+          </div>
+          <div class="progress"></div>
+          <section class="guess" aria-label="Esimerkki pelin arvauskentästä">
+            <span>Arvaa seuraava sana…</span><span>Arvaa ↵</span>
+          </section>
+          <div class="redactions" aria-hidden="true">
+            <i></i><i></i><span>is a</span><i></i><i></i><i></i
+            ><span>of the</span><i></i><i></i><i></i>
+          </div>
+        </div>
       </div>
-      <section id="connected-view" hidden aria-labelledby="connected-title">
-        <div class="connected-panel"><div><h3 id="connected-title">Olet mukana. Ratkaiskaa yhdessä.</h3><p>Molempien arvaukset näkyvät samassa artikkelissa.</p></div><span class="status"><i class="dot" aria-hidden="true"></i>2 pelaajaa · yhteys auki</span></div>
-        <p class="joined-note">Kutsuja valitsee artikkelin. Sinä voit keskittyä arvaamiseen.</p>
+    </main>
+    <footer class="demo-note">
+      <section class="demo-controls" aria-label="Esikatselun tila">
+        <span>Kokeile tilaa</span
+        ><button type="button" data-state="ready" aria-pressed="true">
+          Vastaus valmis
+        </button><button
+          type="button"
+          data-state="waiting"
+          aria-pressed="false"
+        >
+          Odotetaan kutsujaa
+        </button><button
+          type="button"
+          data-state="connected"
+          aria-pressed="false"
+        >
+          Yhdistetty
+        </button><button type="button" data-state="error" aria-pressed="false">
+          Yhteys ei onnistu
+        </button>
       </section>
-      <section class="error-panel" id="error-view" hidden aria-labelledby="error-title">
-        <h3 id="error-title">Yhteyttä ei saatu muodostettua.</h3><p>Varmistakaa, että olette samassa lähiverkossa ja että kutsujan pelisivu on edelleen auki.</p><p class="body-copy">Pyydä kutsujalta uusi kutsulinkki ja avaa se tässä selaimessa.</p>
-      </section>
-      <details class="trouble" id="connection-help"><summary>Eikö yhteys avaudu?</summary><p>Lähetä kopioitu vastaus kutsujalle ja pyydä häntä hyväksymään se. Pitäkää molemmat pelisivut auki ja käyttäkää samaa lähiverkkoa. Jos yhteyttä ei synny, pyydä uusi kutsulinkki.</p></details>
-      <div class="game-placeholder" id="game-placeholder"><div class="article-symbol" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div><strong>Yhteinen arvoitus odottaa</strong><p>Kutsujan artikkeli ja aiemmat arvaukset tulevat näkyviin yhteyden avauduttua.</p></div></div>
-      <div class="fake-game" id="game-view" hidden>
-        <div class="progress-label"><span>Paljastettu <strong>24 / 136</strong> sanaa</span><span>18 %</span></div><div class="progress"></div>
-        <div class="guess" aria-label="Esimerkki pelin arvauskentästä"><span>Arvaa seuraava sana…</span><span>Arvaa ↵</span></div>
-        <div class="redactions" aria-hidden="true"><i></i><i></i><span>is a</span><i></i><i></i><i></i><span>of the</span><i></i><i></i><i></i></div>
-      </div>
-    </div>
-  </main>
-  <footer class="demo-note">
-    <div class="demo-controls" aria-label="Esikatselun tila"><span>Kokeile tilaa</span><button type="button" data-state="ready" aria-pressed="true">Vastaus valmis</button><button type="button" data-state="waiting" aria-pressed="false">Odotetaan kutsujaa</button><button type="button" data-state="connected" aria-pressed="false">Yhdistetty</button><button type="button" data-state="error" aria-pressed="false">Yhteys ei onnistu</button></div>
-    <p class="design-note">Ulkoasuluonnos. Kopiointi ja yhteyden tilat ovat esimerkkejä; oikeaa yhteyttä ei muodosteta.</p>
-  </footer>
-  <script>
-    const states = ['ready', 'waiting', 'connected', 'error'];
-    const params = new URLSearchParams(location.search);
-    let state = states.includes(params.get('state')) ? params.get('state') : 'ready';
+      <p class="design-note">
+        Ulkoasuluonnos. Kopiointi ja yhteyden tilat ovat esimerkkejä; oikeaa
+        yhteyttä ei muodosteta.
+      </p>
+    </footer>
+    <script>
+    const states = ['ready', 'waiting', 'connected', 'error']
+    const params = new URLSearchParams(location.search)
+    let state = states.includes(params.get('state'))
+      ? params.get('state')
+      : 'ready'
 
     function render() {
-      const connected = state === 'connected';
-      const waiting = state === 'waiting';
-      document.getElementById('connection-view').hidden = connected || state === 'error';
-      document.getElementById('connected-view').hidden = !connected;
-      document.getElementById('error-view').hidden = state !== 'error';
-      document.getElementById('game-placeholder').hidden = connected;
-      document.getElementById('game-view').hidden = !connected;
-      document.getElementById('connection-help').hidden = connected;
-      document.getElementById('send-step').classList.toggle('active', !waiting);
-      document.getElementById('wait-step').classList.toggle('active', waiting);
-      document.getElementById('copy-answer').classList.toggle('copied', waiting);
-      document.getElementById('copy-icon').setAttribute('href', waiting ? '#check' : '#copy');
-      document.getElementById('copy-label').textContent = waiting ? 'Kopioitu · kopioi uudelleen' : 'Kopioi vastaus';
+      const connected = state === 'connected'
+      const waiting = state === 'waiting'
+      document.getElementById('connection-view').hidden =
+        connected || state === 'error'
+      document.getElementById('connected-view').hidden = !connected
+      document.getElementById('error-view').hidden = state !== 'error'
+      document.getElementById('game-placeholder').hidden = connected
+      document.getElementById('game-view').hidden = !connected
+      document.getElementById('connection-help').hidden = connected
+      document.getElementById('send-step').classList.toggle('active', !waiting)
+      document.getElementById('wait-step').classList.toggle('active', waiting)
+      document.getElementById('copy-answer').classList.toggle('copied', waiting)
+      document
+        .getElementById('copy-icon')
+        .setAttribute('href', waiting ? '#check' : '#copy')
+      document.getElementById('copy-label').textContent = waiting
+        ? 'Kopioitu · kopioi uudelleen'
+        : 'Kopioi vastaus'
       document.getElementById('copy-note').textContent = waiting
         ? 'Vastaus kopioitu (luonnos). Lähetä se nyt kutsujalle ja pidä tämä sivu auki.'
-        : 'Kutsuja liittää vastauksen omaan näkymäänsä ja hyväksyy sen.';
-      document.getElementById('connection-status').textContent = waiting ? 'Odotetaan kutsujan hyväksyntää' : 'Vastaus valmis lähetettäväksi';
-      document.querySelectorAll('[data-state]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.state === state)));
+        : 'Kutsuja liittää vastauksen omaan näkymäänsä ja hyväksyy sen.'
+      document.getElementById('connection-status').textContent = waiting
+        ? 'Odotetaan kutsujan hyväksyntää'
+        : 'Vastaus valmis lähetettäväksi'
+      document
+        .querySelectorAll('[data-state]')
+        .forEach((button) =>
+          button.setAttribute(
+            'aria-pressed',
+            String(button.dataset.state === state),
+          ),
+        )
     }
 
     document.getElementById('copy-answer').addEventListener('click', () => {
-      state = 'waiting';
-      render();
-    });
-    document.querySelectorAll('[data-state]').forEach(button => button.addEventListener('click', () => {
-      state = button.dataset.state;
-      const url = new URL(location.href);
-      if (state === 'ready') url.searchParams.delete('state');
-      else url.searchParams.set('state', state);
-      history.replaceState(null, '', url);
-      render();
-    }));
+      state = 'waiting'
+      render()
+    })
+    document.querySelectorAll('[data-state]').forEach((button) =>
+      button.addEventListener('click', () => {
+        state = button.dataset.state
+        const url = new URL(location.href)
+        if (state === 'ready') url.searchParams.delete('state')
+        else url.searchParams.set('state', state)
+        history.replaceState(null, '', url)
+        render()
+      }),
+    )
     document.querySelector('.help').addEventListener('click', () => {
-      const help = document.getElementById('connection-help');
-      help.hidden = false;
-      help.open = true;
-    });
-    render();
-  </script>
-</body>
+      const help = document.getElementById('connection-help')
+      help.hidden = false
+      help.open = true
+    })
+    render()
+    </script>
+  </body>
 </html>

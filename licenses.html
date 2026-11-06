@@ -1,60 +1,180 @@
-<!DOCTYPE html>
+<!doctype html>
 <!-- SPDX-FileCopyrightText: 2026 Antero Fagerstedt -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title data-i18n="licenses.pageTitle"></title>
-  <link rel="stylesheet" href="licenses.css">
-  <link rel="stylesheet" href="language.css">
-</head>
-<body>
-  <nav>
-    <a href="index.html" data-i18n="licenses.back"></a>
-    <div class="language-control">
-      <label for="language-select" data-i18n="language.label"></label>
-      <select id="language-select" name="language">
-        <option value="en" lang="en" data-i18n="language.en"></option>
-        <option value="fi" lang="fi" data-i18n="language.fi"></option>
-      </select>
-    </div>
-  </nav>
-  <main>
-    <h1 data-i18n="licenses.title"></h1>
-    <p><span data-i18n="licenses.intro"></span> <a href="LICENSE" data-i18n="licenses.gpl"></a>
-      <span data-i18n="licenses.terms"></span></p>
-    <p data-i18n="licenses.warranty"></p>
-    <h2 data-i18n="licenses.source"></h2>
-    <p><span data-i18n="licenses.repositoryIntro"></span>
-      <a href="https://github.com/anttu/denantle" data-i18n="licenses.repository"></a>.</p>
-    <p><span data-i18n="licenses.files"></span>
-      <a href="index.html">HTML</a>, <a href="src/game.js" data-i18n="licenses.gameLogic"></a>,
-      <a href="src/wikipedia.js" data-i18n="licenses.wikipedia"></a>, <a href="src/categories.js" data-i18n="licenses.categories"></a>,
-      <a href="src/embeddings.js" data-i18n="licenses.vectors"></a>, <a href="src/embedding-worker.js" data-i18n="licenses.model"></a>,
-      <a href="src/finnish-inflections.js" data-i18n="licenses.inflections"></a> <span data-i18n="licenses.and"></span>
-      <a href="src/finnish-inflections-worker.js" data-i18n="licenses.voikkoRuntime"></a>.</p>
-    <h2 id="voikko" data-i18n="licenses.voikkoTitle"></h2>
-    <p data-i18n="licenses.voikko"></p>
-    <p><a href="source/voikko-corresponding-source.tar.gz" download data-i18n="licenses.voikkoDownload"></a><span data-i18n="licenses.voikkoAuthors"></span></p>
-    <h2 data-i18n="licenses.libraries"></h2>
-    <ul>
-      <li>Compromise 14.19.0: © 2026 Spencer Kelly,
-        <a href="vendor/compromise-LICENSE.txt" data-i18n="licenses.mit"></a>.</li>
-      <li><span data-i18n="licenses.transformers"></span>
-        <a href="licenses/Apache-2.0.txt">Apache-2.0</a><span data-i18n="licenses.models"></span></li>
-      <li>ONNX Runtime: © Microsoft Corporation,
-        <a href="licenses/ONNX-Runtime-LICENSE.txt" data-i18n="licenses.mit"></a> <span data-i18n="licenses.and"></span>
-        <a href="licenses/ONNX-Runtime-ThirdPartyNotices.txt" data-i18n="licenses.thirdParty"></a>.</li>
-      <li>Hugging Face Jinja: <a href="licenses/Hugging-Face-Jinja-LICENSE.txt" data-i18n="licenses.mit"></a>.
-        Emscripten: <a href="licenses/Emscripten-LICENSE.txt" data-i18n="licenses.notices"></a>.</li>
-    </ul>
-    <p><a href="THIRD_PARTY_NOTICES.md" data-i18n="licenses.origins"></a> ·
-      <a href="third-party-manifest.json" data-i18n="licenses.checksums"></a>.</p>
-    <h2 data-i18n="licenses.artworkTitle"></h2>
-    <p><span data-i18n="licenses.articles"></span> <a href="licenses/CC-BY-SA-4.0.txt">CC BY-SA 4.0</a><span data-i18n="licenses.articleLicence"></span></p>
-    <p><span data-i18n="licenses.artwork"></span> <a href="ARTWORK.md" data-i18n="licenses.artworkDetails"></a>.</p>
-  </main>
-  <script type="module" src="src/i18n.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title data-i18n="licenses.pageTitle">
+      Licences and source code – Denantle
+    </title>
+    <link rel="stylesheet" href="licenses.css">
+    <link rel="stylesheet" href="language.css">
+  </head>
+  <body>
+    <nav>
+      <a href="index.html" data-i18n="licenses.back">← Back to the game</a>
+      <div class="language-control">
+        <label for="language-select" data-i18n="language.label">Language</label>
+        <select id="language-select" name="language">
+          <option value="en" lang="en" data-i18n="language.en">English</option>
+          <option value="fi" lang="fi" data-i18n="language.fi">Suomi</option>
+        </select>
+      </div>
+    </nav>
+    <main>
+      <h1 data-i18n="licenses.title">Licences and source code</h1>
+      <p>
+        <span data-i18n="licenses.intro"
+          >© 2026 Antero Fagerstedt. Denantle’s own code is free software,
+          released under</span
+        >
+        <a href="LICENSE" data-i18n="licenses.gpl"
+          >GNU GPL version 3 or later</a
+        >
+        <span data-i18n="licenses.terms"
+          >(GPL-3.0-or-later). You may use, study, modify and share it,
+          including commercially, under the licence terms.</span
+        >
+      </p>
+      <p data-i18n="licenses.warranty">
+        The program is provided without warranty, including warranties of
+        merchantability or fitness for a particular purpose. The licence text
+        contains the full rights, terms and limitations of liability.
+      </p>
+      <h2 data-i18n="licenses.source">Source code</h2>
+      <p>
+        <span data-i18n="licenses.repositoryIntro"
+          >The game’s source code and change history are available in the</span
+        >
+        <a
+          href="https://github.com/anttu/denantle"
+          data-i18n="licenses.repository"
+          >GitHub repository</a
+        >.
+      </p>
+      <p>
+        <span data-i18n="licenses.files"
+          >The source files delivered to your browser can also be read
+          directly:</span
+        >
+        <a href="index.html">HTML</a>,
+        <a href="src/game.js" data-i18n="licenses.gameLogic">game logic</a>,
+        <a href="src/wikipedia.js" data-i18n="licenses.wikipedia"
+          >Wikipedia queries</a
+        >,
+        <a href="src/categories.js" data-i18n="licenses.categories"
+          >categories</a
+        >,
+        <a href="src/embeddings.js" data-i18n="licenses.vectors">word vectors</a
+        >,
+        <a href="src/embedding-worker.js" data-i18n="licenses.model"
+          >model runtime</a
+        >,
+        <a href="src/finnish-inflections.js" data-i18n="licenses.inflections"
+          >Finnish inflections</a
+        > <span data-i18n="licenses.and">and</span>
+        <a
+          href="src/finnish-inflections-worker.js"
+          data-i18n="licenses.voikkoRuntime"
+          >Voikko runtime</a
+        >.
+      </p>
+      <h2 id="voikko" data-i18n="licenses.voikkoTitle">
+        Voikko and the Finnish dictionary
+      </h2>
+      <p data-i18n="licenses.voikko">
+        Finnish inflections use the Voikko 1.0.1 package, which includes
+        libvoikko 4.3.2 and the Finnish morpho dictionary. The bundle is
+        distributed under GPL-3.0-or-later. Original copyright and alternative
+        licence notices are preserved in the source archive.
+      </p>
+      <p>
+        <a
+          href="source/voikko-corresponding-source.tar.gz"
+          download
+          data-i18n="licenses.voikkoDownload"
+          >Download the corresponding source code and build instructions for
+          Voikko and the dictionary</a
+        ><span data-i18n="licenses.voikkoAuthors"
+          >. The dictionary’s authors include Hannu Väisänen, Harri Pitkänen,
+          Teemu Likonen and others named in the source archive.</span
+        >
+      </p>
+      <h2 data-i18n="licenses.libraries">Other libraries and models</h2>
+      <ul>
+        <li>
+          Compromise 14.19.0: © 2026 Spencer Kelly,
+          <a href="vendor/compromise-LICENSE.txt" data-i18n="licenses.mit"
+            >MIT licence</a
+          >.
+        </li>
+        <li>
+          <span data-i18n="licenses.transformers"
+            >Hugging Face Transformers.js 3.8.1 and both word vector
+            models:</span
+          >
+          <a href="licenses/Apache-2.0.txt">Apache-2.0</a
+          ><span data-i18n="licenses.models"
+            >. The models are Xenova/all-MiniLM-L6-v2 and
+            onnx-community/paraphrase-multilingual-MiniLM-L12-v2-ONNX.</span
+          >
+        </li>
+        <li>
+          ONNX Runtime: © Microsoft Corporation,
+          <a href="licenses/ONNX-Runtime-LICENSE.txt" data-i18n="licenses.mit"
+            >MIT licence</a
+          > <span data-i18n="licenses.and">and</span>
+          <a
+            href="licenses/ONNX-Runtime-ThirdPartyNotices.txt"
+            data-i18n="licenses.thirdParty"
+            >third-party notices</a
+          >.
+        </li>
+        <li>
+          Hugging Face Jinja:
+          <a
+            href="licenses/Hugging-Face-Jinja-LICENSE.txt"
+            data-i18n="licenses.mit"
+            >MIT licence</a
+          >. Emscripten:
+          <a href="licenses/Emscripten-LICENSE.txt" data-i18n="licenses.notices"
+            >licences and notices</a
+          >.
+        </li>
+      </ul>
+      <p>
+        <a href="THIRD_PARTY_NOTICES.md" data-i18n="licenses.origins"
+          >Detailed origins, versions and licence information</a
+        >
+        ·
+        <a href="third-party-manifest.json" data-i18n="licenses.checksums"
+          >Pinned versions and file checksums</a
+        >.
+      </p>
+      <h2 data-i18n="licenses.artworkTitle">Wikipedia articles and artwork</h2>
+      <p>
+        <span data-i18n="licenses.articles"
+          >The articles are written by Wikipedia contributors. The source link
+          accompanying an article leads to the original page, whose history
+          lists its authors. The text has been shortened and adapted for the
+          game: sections are removed, words are hidden and guesses may appear in
+          their place. The adapted article text is available under</span
+        > <a href="licenses/CC-BY-SA-4.0.txt">CC BY-SA 4.0</a
+        ><span data-i18n="licenses.articleLicence"
+          >. The article licence is separate from the software licence.</span
+        >
+      </p>
+      <p>
+        <span data-i18n="licenses.artwork"
+          >The game’s own icons and wordmark were created by Antero Fagerstedt.
+          They are licensed under CC BY-SA 4.0.</span
+        >
+        <a href="ARTWORK.md" data-i18n="licenses.artworkDetails"
+          >Artwork details</a
+        >.
+      </p>
+    </main>
+    <script type="module" src="src/i18n.js"></script>
+  </body>
 </html>

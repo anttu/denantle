@@ -72,9 +72,14 @@ Kun `.nvmrc`:n mukainen Node.js on käytössä:
 
 ```sh
 npm ci --ignore-scripts --no-audit --no-fund
+npm run check
 npm run typecheck
 npm test
 ```
+
+`npm run format` formatoi tiedostot `biome.json`-sääntöjen mukaan. `npm run check`
+tarkistaa formatoinnin, lint-säännöt ja importtien järjestyksen muuttamatta
+tiedostoja. CI ajaa saman Biome-tarkistuksen ennen käännöstä ja testejä.
 
 `npm test` kokoaa sivuston ja ajaa TypeScriptillä kirjoitetut Playwright-testit
 Firefoxilla. Paikallista ajoa varten asenna Playwrightin Firefox komennolla

@@ -260,7 +260,8 @@ Use **GitHub Actions** as the repository's Pages publishing source.
 docker compose -f tests/compose.yaml run --build --rm playwright
 ```
 
-The container installs the root lockfile with `npm ci`, strictly typechecks the
+The container installs the root lockfile with `npm ci`, checks formatting, lint
+rules and import organization with the pinned Biome version, strictly typechecks the
 browser code, both worker environments, Node.js tools and Playwright tests, then
 builds the complete `dist/` site and runs all tests in Firefox. On successful
 pushes to `main`, the test job uploads that exact tested directory as the Pages
