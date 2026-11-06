@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { createServer } from 'node:net'
 import { expect } from '@playwright/test'
 import { enableManualMultiplayer } from './feature-flags-fixture.js'
 import { test, useLocalPeerServer } from './peerjs-fixture.js'
@@ -281,7 +282,7 @@ test('vieraan kättelyvirhe ei merkitse kutsujan signalointia katkenneeksi', asy
   }
 })
 
-test('suljetun pelin kutsu näyttää virheen tarjoamatta käsin yhdistämistä', async ({
+test('suljetun pelin kutsu kertoo kutsujan puuttuvan eikä syytä signalointia', async ({
   page: host,
   context,
   browser,
@@ -303,7 +304,7 @@ test('suljetun pelin kutsu näyttää virheen tarjoamatta käsin yhdistämistä'
     const guest = await guestContext.newPage()
     await guest.goto(link)
     await expect(guest.locator('#multiplayer-error')).toContainText(
-      'Automaattinen liittyminen ei onnistu',
+      'Kutsujan peliä ei löydy',
       { timeout: 15000 },
     )
     await expect(guest.locator('#multiplayer-connected')).toBeHidden()
@@ -311,9 +312,43 @@ test('suljetun pelin kutsu näyttää virheen tarjoamatta käsin yhdistämistä'
     await expect(guest.locator('#multiplayer-error')).not.toContainText('käsin')
     await guest.getByLabel('Kieli', { exact: true }).selectOption('en')
     await expect(guest.locator('#multiplayer-error')).toHaveText(
-      'Automatic joining is unavailable. Try again.',
+      'The host’s game could not be found. Ask for a new invite link.',
     )
   } finally {
     await guestContext.close()
   }
+})
+
+test('signalointivirheen alkuperäinen koodi säilyy käyttöliittymässä', async ({
+  page,
+  context,
+}) => {
+  const address = await new Promise<string>((resolve, reject) => {
+    const server = createServer()
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      const local = server.address()
+      if (!local || typeof local === 'string')
+        throw new Error('No local address')
+      server.close((error) =>
+        error ? reject(error) : resolve(`127.0.0.1:${local.port}`),
+      )
+    })
+  })
+  await useLocalPeerServer(context, address)
+  await page.goto('/?game=invalid')
+  await page.getByText('Moninpeli', { exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Luo kutsulinkki', exact: true })
+    .click()
+  // Firefox can report either event first when the socket cannot be opened.
+  const error = page.locator('#multiplayer-error')
+  await expect(error).toContainText(/\((network|socket-error)\)/)
+  const code = (await error.textContent())!.match(
+    /\((network|socket-error)\)/,
+  )![1]
+  await page.getByLabel('Kieli', { exact: true }).selectOption('en')
+  await expect(error).toHaveText(
+    `Connection setup failed (${code}). Check your network connection and try again.`,
+  )
 })

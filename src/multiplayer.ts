@@ -546,18 +546,15 @@ export function createMultiplayerGame(
           i18n.text(elements.error, '')
           renderConnection()
         },
-        onUnavailable: () => {
+        onUnavailable: (message) => {
           if (!isCurrentSession(session)) return
           if (isGuest() && !connected()) {
-            disconnect(i18n.message('multiplayer.signalingUnavailable'))
+            disconnect(message)
           }
           autoAvailable = false
           autoConnecting = false
           elements.manual.open = featureFlags.manualMultiplayer
-          i18n.text(
-            elements.error,
-            i18n.message('multiplayer.signalingUnavailable'),
-          )
+          i18n.text(elements.error, message)
           renderConnection()
         },
       },
@@ -593,17 +590,14 @@ export function createMultiplayerGame(
       autoConnecting = false
       refreshInviteLink()
       renderConnection()
-    } catch {
+    } catch (error) {
       if (!isCurrentSession(session)) return
       autoSession = null
       session.close()
       autoConnecting = false
       autoAvailable = false
       elements.manual.open = featureFlags.manualMultiplayer
-      i18n.text(
-        elements.error,
-        i18n.message('multiplayer.signalingUnavailable'),
-      )
+      i18n.text(elements.error, i18n.errorMessage(error))
       renderConnection()
     }
   }
@@ -628,14 +622,12 @@ export function createMultiplayerGame(
       if (!isCurrentSession(session) || role !== 'guest') return
       autoConnecting = true
       registerPeer(session.connect(id, token))
-    } catch {
+    } catch (error) {
       if (!isCurrentSession(session)) return
-      disconnect(i18n.message('multiplayer.signalingUnavailable'))
+      const message = i18n.errorMessage(error)
+      disconnect(message)
       elements.manual.open = featureFlags.manualMultiplayer
-      i18n.text(
-        elements.error,
-        i18n.message('multiplayer.signalingUnavailable'),
-      )
+      i18n.text(elements.error, message)
     }
   }
 

@@ -23,8 +23,9 @@ export async function useLocalPeerServer(
       constructor(input: string | URL, protocols?: string | string[]) {
         const url = new URL(input)
         if (url.hostname === '0.peerjs.com') {
-          url.protocol = 'ws:'
-          url.host = host
+          const endpoint = new URL(host.includes('://') ? host : `ws://${host}`)
+          url.protocol = endpoint.protocol
+          url.host = endpoint.host
         }
         super(url, protocols)
         if (new URL(input).hostname === '0.peerjs.com') sockets.push(this)

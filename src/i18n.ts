@@ -179,6 +179,14 @@ const translations = {
       ? 'Automatic joining is unavailable. Try again or connect manually.'
       : 'Automatic joining is unavailable. Try again.',
   },
+  'multiplayer.hostUnavailable': {
+    fi: 'Kutsujan peliä ei löydy. Pyydä uusi kutsulinkki.',
+    en: 'The host’s game could not be found. Ask for a new invite link.',
+  },
+  'multiplayer.signalingError': {
+    fi: 'Yhteydenmuodostus epäonnistui ({code}). Tarkista verkkoyhteys ja yritä uudelleen.',
+    en: 'Connection setup failed ({code}). Check your network connection and try again.',
+  },
   'multiplayer.connected': {
     fi: 'Yhteys muodostettu',
     en: 'Connected',

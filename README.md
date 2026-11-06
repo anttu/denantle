@@ -107,6 +107,20 @@ Firefoxilla. Paikallista ajoa varten asenna Playwrightin Firefox komennolla
 docker compose -f tests/compose.yaml run --build --rm playwright
 ```
 
+Docker-ajo testaa moninpelin oikeilla Firefox-prosesseilla eri konteissa:
+kaksi selainta samassa lähiverkossa sekä selaimet kahden erillisen NAT-reitittimen
+takana. Lisäksi erillisten lähiverkkojen välisen lähiverkkokutsun pitää epäonnistua
+hallitusti. Testit käyttävät paikallista PeerServeriä ja STUN-palvelinta;
+WebRTC-yhteydet ja pelitilan välitys ovat aitoja. NAT-testin UDP-ohjaus sallii
+suoran yhteyden, joten testi ei takaa toimintaa kaikkien palomuurien läpi.
+Valitut ICE-osoiteparit ja yhteyden vaiheet tallentuvat tiedostoihin
+`tests/reports/network-*.json`. Pelkkä `npm test` ohittaa nämä Docker-verkkoja
+tarvitsevat testit. Pysäytä testiverkot ajon jälkeen:
+
+```sh
+docker compose -f tests/compose.yaml down --remove-orphans
+```
+
 Pelkkä julkaisuversio kootaan komennolla `npm run build`. Julkaistava sisältö
 on `dist/`, joka sisältää myös kolmansien osapuolten lisenssit ja Voikon
 lähdepaketin. Esikatsele koontia komennolla `node tools/serve.mts`.
@@ -153,6 +167,10 @@ Toiminnon saa takaisin käyttöön vaihtamalla arvoksi `true` ja kokoamalla
 sivuston uudelleen. Myös `multiplayer`-lipun pitää olla käytössä.
 Käsin tehtävät kutsut ovat kertakäyttöisiä.
 Julkisen signalointipalvelun häiriö ei katkaise jo avattuja suoria datayhteyksiä.
+Jos kutsujan istuntoa ei löydy, peli pyytää uuden kutsulinkin. Muissa
+signalointivirheissä virheilmoitus näyttää alkuperäisen PeerJS-virhekoodin,
+esimerkiksi `network` tai `socket-error`. Nämä erotetaan WebRTC-datayhteyden
+epäonnistumisesta.
 
 Internet-tila ja käsin yhdistäminen käyttävät Googlen julkista STUN-palvelinta
 (`stun:stun.l.google.com:19302`) julkisten yhteysosoitteiden selvittämiseen.

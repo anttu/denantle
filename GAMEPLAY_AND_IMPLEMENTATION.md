@@ -100,6 +100,10 @@ panel. A signaling outage displays an error while established data channels
 remain usable. Manual connection is offered only when its feature flag is
 enabled. The host can retry signaling with the
 same identity when the connection to PeerJS Cloud is temporarily lost.
+An unavailable host identity (`peer-unavailable`) asks the guest for a new invite.
+Other signaling failures retain the original PeerJS error code in the translated
+message; a subsequent close event cannot overwrite the first cause. These errors
+are distinct from the data connection's ICE/SDP failure path.
 
 `src/feature-flags.ts` sets `manualMultiplayer` to `false` for both local
 development and production builds. This hides **Yhdistä käsin**, disables manual
@@ -311,6 +315,21 @@ builds the complete `dist/` site and runs all tests in Firefox. On successful
 pushes to `main`, the test job uploads that exact tested directory as the Pages
 artifact. The deployment job publishes it without rebuilding. A failing check
 leaves the currently published version in place.
+
+The Compose topology also runs three remote Firefox servers, each attached to
+a single LAN, and two routing containers. Tests cover a shared LAN, two LANs
+behind separate NATs, and a LAN-only invitation that cannot cross those routers.
+HTTPS site delivery, PeerServer signaling and STUN run inside the test topology;
+the browsers use real ICE and data channels to replicate a guest's guess.
+The positive NAT case uses permissive UDP forwarding, so it proves the mapped
+address path without claiming support for restrictive real-world NATs. Docker's
+bridge masquerade is disabled: only the routing containers translate addresses.
+Assertions check the selected ICE candidate types, both remote WAN addresses and
+reciprocal ports. State transitions and selected paths are saved in
+`tests/reports/network-*.json` and attached to the tests. Failed tests also print
+the complete diagnostic report. CI stops the containers with
+`docker compose -f tests/compose.yaml down --remove-orphans`; run the same cleanup
+after a local Docker test. A plain `npm test` skips the topology-specific cases.
 
 For a local production build, use `npm ci --ignore-scripts --no-audit --no-fund`
 and `npm run build`. Preview it with `node tools/serve.mts`. `npm test` builds

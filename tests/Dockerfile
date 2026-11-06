@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/playwright:v1.64.1-noble
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN apt-get update && apt-get install -y --no-install-recommends iproute2 iptables && rm -rf /var/lib/apt/lists/*
 ENV NVM_DIR=/opt/nvm
 RUN git clone --depth 1 --branch v0.41.0 https://github.com/nvm-sh/nvm.git "$NVM_DIR"
 WORKDIR /app

@@ -1,13 +1,91 @@
 name: denantle-tests
 
+x-test-image: &test-image
+  image: denantle-playwright-tests
+  build:
+    context: ..
+    dockerfile: tests/Dockerfile
+  init: true
+
+x-network-process: &network-process
+  <<: *test-image
+  cap_add: [NET_ADMIN]
+  command: [bash, -c, '. "$$NVM_DIR/nvm.sh" --no-use && nvm use --silent && exec node tests/network-process.mts']
+  healthcheck:
+    test: [CMD, test, -f, /tmp/denantle-network-ready]
+    interval: 1s
+    timeout: 1s
+    retries: 30
+
 services:
   playwright:
-    build:
-      context: ..
-      dockerfile: tests/Dockerfile
-    init: true
-    # Firefox's WebRTC ICE gathering requires an interface and a default route.
-    network_mode: bridge
+    <<: *test-image
+    environment:
+      DENANTLE_NETWORK_TESTS: '1'
+    depends_on:
+      firefox-host: { condition: service_healthy }
+      firefox-lan: { condition: service_healthy }
+      firefox-internet: { condition: service_healthy }
+    networks:
+      wan: { ipv4_address: 198.51.100.2 }
+      lan-host: { ipv4_address: 172.28.241.2 }
+      lan-guest: { ipv4_address: 172.28.242.2 }
     volumes:
       - ./reports:/app/tests/reports
       - ../dist:/app/dist
+
+  router-host:
+    <<: *network-process
+    environment: { ROLE: router, WAN_ADDRESS: 198.51.100.10, FORWARD_UDP_TO: 172.28.241.10 }
+    sysctls: { net.ipv4.ip_forward: '1' }
+    networks:
+      wan: { ipv4_address: 198.51.100.10 }
+      lan-host: { ipv4_address: 172.28.241.254 }
+
+  router-guest:
+    <<: *network-process
+    environment: { ROLE: router, WAN_ADDRESS: 198.51.100.20, FORWARD_UDP_TO: 172.28.242.10 }
+    sysctls: { net.ipv4.ip_forward: '1' }
+    networks:
+      wan: { ipv4_address: 198.51.100.20 }
+      lan-guest: { ipv4_address: 172.28.242.254 }
+
+  firefox-host:
+    <<: *network-process
+    environment: { ROLE: browser, GATEWAY: 172.28.241.254 }
+    depends_on:
+      router-host: { condition: service_healthy }
+    networks:
+      lan-host: { ipv4_address: 172.28.241.10 }
+
+  firefox-lan:
+    <<: *network-process
+    environment: { ROLE: browser, GATEWAY: 172.28.241.254 }
+    depends_on:
+      router-host: { condition: service_healthy }
+    networks:
+      lan-host: { ipv4_address: 172.28.241.11 }
+
+  firefox-internet:
+    <<: *network-process
+    environment: { ROLE: browser, GATEWAY: 172.28.242.254 }
+    depends_on:
+      router-guest: { condition: service_healthy }
+    networks:
+      lan-guest: { ipv4_address: 172.28.242.10 }
+
+networks:
+  # Only the router containers may translate traffic. Docker bridge masquerade
+  # would rewrite forwarded ICE checks to a LAN gateway and bypass the routers.
+  wan:
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 'false'
+    ipam: { config: [{ subnet: 198.51.100.0/24 }] }
+  lan-host:
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 'false'
+    ipam: { config: [{ subnet: 172.28.241.0/24 }] }
+  lan-guest:
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 'false'
+    ipam: { config: [{ subnet: 172.28.242.0/24 }] }

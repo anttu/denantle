@@ -7,5 +7,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["*.ts", "../src/compromise.d.ts"]
+  "include": ["*.ts", "*.mts", "../src/compromise.d.ts"]
 }

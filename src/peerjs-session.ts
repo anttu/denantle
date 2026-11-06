@@ -10,7 +10,7 @@ import {
   type MultiplayerNetwork,
   type PeerCallbacks,
 } from './data-peer.js'
-import { i18n } from './i18n.js'
+import { i18n, type TranslationMessage } from './i18n.js'
 import { isRecord } from './validation.js'
 
 export function randomInvitationToken() {
@@ -89,7 +89,7 @@ interface SessionCallbacks {
   hostToken?: string
   onConnection(peer: GamePeer): void
   onOpen(): void
-  onUnavailable(): void
+  onUnavailable(message: TranslationMessage): void
 }
 
 export function createPeerJsSession(
@@ -102,21 +102,33 @@ export function createPeerJsSession(
     debug: 0,
   })
   let closed = false
+  let unavailableReported = false
   const connections = new Set<GamePeer>()
   let rejectReady: (error: Error) => void = () => {}
   const ready = new Promise<string>((resolve, reject) => {
     rejectReady = reject
     client.on('open', (id) => {
       if (closed) return
+      unavailableReported = false
       clearTimeout(timer)
       resolve(id)
       callbacks.onOpen()
     })
   })
-  const timer = setTimeout(() => {
-    rejectReady(i18n.error('multiplayer.signalingUnavailable'))
-    callbacks.onUnavailable()
-  }, 20000)
+  const timer = setTimeout(() => unavailable('signaling-timeout'), 20000)
+  function unavailable(code: string) {
+    if (closed || unavailableReported) return
+    unavailableReported = true
+    clearTimeout(timer)
+    const message =
+      code === 'peer-unavailable'
+        ? i18n.message('multiplayer.hostUnavailable')
+        : code === 'browser-incompatible'
+          ? i18n.message('multiplayer.unsupported')
+          : i18n.message('multiplayer.signalingError', { code })
+    rejectReady(i18n.error(message))
+    callbacks.onUnavailable(message)
+  }
   client.on('connection', (connection) => {
     const metadata: unknown = connection.metadata
     if (
@@ -142,15 +154,13 @@ export function createPeerJsSession(
     // SDP failures belong to that data connection, not the signaling service.
     // Its own close/error/timeout path cleans it up without blocking other guests.
     if (closed || error.type === 'webrtc') return
-    clearTimeout(timer)
-    rejectReady(i18n.error('multiplayer.signalingUnavailable'))
-    callbacks.onUnavailable()
+    unavailable(error.type)
   })
   client.on('disconnected', () => {
-    if (!closed) callbacks.onUnavailable()
+    unavailable('signaling-disconnected')
   })
   client.on('close', () => {
-    if (!closed) callbacks.onUnavailable()
+    unavailable('signaling-closed')
   })
   return {
     ready,
