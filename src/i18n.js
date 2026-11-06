@@ -44,8 +44,8 @@ const translations = {
     "en": "Use the game ID to restart the same game. Save or share its link to play the same article revision later."
   },
   "help.multiplayer": {
-    "fi": "Moninpelissä pelaajat paljastavat samaa artikkelia yhdessä. Valitse moninpeli samassa lähiverkossa ja jaa kutsulinkki pelikaverille. Hän lähettää vastauksen takaisin kutsujalle. Voit kutsua lisää pelaajia yhteyden avauduttua.",
-    "en": "In multiplayer, players reveal the same article together. Choose multiplayer on the same local network and share an invite link with a friend. They send a response back to the host. You can invite more players once connected."
+    "fi": "Moninpelissä pelaajat paljastavat samaa artikkelia yhdessä. Valitse moninpeli ja jaa kutsulinkki pelikaverille. Hän lähettää vastauksen takaisin kutsujalle. Voit kutsua lisää pelaajia yhteyden avauduttua.",
+    "en": "In multiplayer, players reveal the same article together. Choose multiplayer and share an invite link with a friend. They send a response back to the host. You can invite more players once connected."
   },
   "welcome.tagline": {
     "fi": "Pieni arvoitus. Sana kerrallaan.",
@@ -100,8 +100,8 @@ const translations = {
     "en": "Single player"
   },
   "game.multiplayer": {
-    "fi": "Moninpeli samassa lähiverkossa",
-    "en": "Multiplayer on the same local network"
+    "fi": "Moninpeli",
+    "en": "Multiplayer"
   },
   "multiplayer.connected": {
     "fi": "Yhteys muodostettu",
@@ -120,8 +120,8 @@ const translations = {
     "en": "Reveal the same article together."
   },
   "multiplayer.network": {
-    "fi": "Sama lähiverkko",
-    "en": "Same local network"
+    "fi": "Suora yhteys",
+    "en": "Direct connection"
   },
   "multiplayer.sendInvite": {
     "fi": "Lähetä kutsu",

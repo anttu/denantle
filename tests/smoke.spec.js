@@ -14,8 +14,8 @@ test("pelimuodon voi vaihtaa yksinpelistä moninpeliin ja takaisin", async ({ pa
   const createInvite = page.getByRole("button", { name: "Luo kutsu", exact: true });
   await expect(createInvite).toBeHidden();
 
-  await page.getByText("Moninpeli samassa lähiverkossa", { exact: true }).click();
-  await expect(page.getByRole("radio", { name: "Moninpeli samassa lähiverkossa" })).toBeChecked();
+  await page.getByText("Moninpeli", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Moninpeli", exact: true })).toBeChecked();
   await expect(createInvite).toBeVisible();
 
   await page.getByText("Yksinpeli", { exact: true }).click();

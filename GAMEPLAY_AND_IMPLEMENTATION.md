@@ -53,7 +53,7 @@ article text. Guess and revealed-word counts sit above the input, with a progres
 bar tracking revealed occurrences. The **?** button opens the playing instructions.
 
 The game-mode radio buttons default to **Yksinpeli**. Selecting
-**Moninpeli samassa lähiverkossa** opens cooperative multiplayer. The
+**Moninpeli** opens cooperative multiplayer. The
 inviter creates an offer and shares an invitation URL. Opening the link enables
 multiplayer and accepts the offer; the guest returns an answer for the inviter
 to paste. Starting a new game with multiplayer enabled creates an invitation

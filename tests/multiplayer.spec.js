@@ -5,12 +5,12 @@ const { test, expect } = require("@playwright/test");
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/?game=invalid");
-  await page.getByText("Moninpeli samassa lähiverkossa", { exact: true }).click();
+  await page.getByText("Moninpeli", { exact: true }).click();
 });
 
 test("kutsuja näkee molemmat yhteyden muodostamisen vaiheet myös mobiilissa", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Yksi arvoitus. Kaksi päätä." })).toBeVisible();
-  await expect(page.getByText("Sama lähiverkko", { exact: true })).toBeVisible();
+  await expect(page.getByText("Suora yhteys", { exact: true })).toBeVisible();
   const sendStep = page.getByText("Lähetä kutsu", { exact: true });
   const answerStep = page.getByText("Liitä kaverin vastaus", { exact: true });
   await expect(sendStep).toBeVisible();
@@ -57,7 +57,7 @@ test("kutsulinkki ja vastaus muodostavat moninpeliyhteyden kahden pelaajan väli
 
     // The guest opens the real invitation in an independent browser session.
     await guest.goto(await invitation.inputValue());
-    await expect(guest.getByRole("radio", { name: "Moninpeli samassa lähiverkossa" })).toBeChecked();
+    await expect(guest.getByRole("radio", { name: "Moninpeli", exact: true })).toBeChecked();
     const answer = guest.locator("#multiplayer-local");
     await expect(answer).not.toHaveValue("");
     await expect(host.locator("#multiplayer-connected")).toBeHidden();
