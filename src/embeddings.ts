@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import type { VectorRequest, VectorResponse } from "./worker-messages.js";
+
 import type { ArticleVectors, Language, VectorInfo, VectorProgress, SearchResult } from "./contracts.js";
 
 import { i18n } from "./i18n.js";
@@ -26,7 +28,7 @@ function createArticleVectors(): ArticleVectors {
       request.reject(new DOMException(i18n.t("article.changed"), "AbortError"));
     }
     requests.clear();
-    worker?.postMessage({ type: "clear", revision });
+    worker?.postMessage({ type: "clear", revision } satisfies VectorRequest);
   }
 
   async function build(title: string, text: string, onProgress?: (progress: VectorProgress) => void, nextLanguage: Language = "en") {
@@ -53,7 +55,7 @@ function createArticleVectors(): ArticleVectors {
 
   function request(type: "index", data: { title: string; text: string; language: Language }, onProgress?: (progress: VectorProgress) => void): Promise<VectorInfo>;
   function request(type: "search", data: { text: string; limit: number }): Promise<SearchResult[]>;
-  function request(type: "index" | "search", data: object, onProgress?: (progress: VectorProgress) => void): Promise<VectorInfo | SearchResult[]> {
+  function request(type: "index" | "search", data: { title: string; text: string; language: Language } | { text: string; limit: number }, onProgress?: (progress: VectorProgress) => void): Promise<VectorInfo | SearchResult[]> {
     return new Promise((resolve, reject) => {
       if (location.protocol === "file:") {
         reject(i18n.error("vectors.server"));
@@ -61,7 +63,7 @@ function createArticleVectors(): ArticleVectors {
       }
       if (!worker) {
         worker = new Worker(new URL("./embedding-worker.js", import.meta.url), { type: "module" });
-        worker.onmessage = ({ data: message }: MessageEvent<VectorProgress | { id: number; type: "error"; error: string } | { id: number; type: "result"; result: VectorInfo | SearchResult[] }>) => {
+        worker.onmessage = ({ data: message }: MessageEvent<VectorResponse>) => {
           const pending = requests.get(message.id);
           if (!pending) return;
           if (message.type === "progress") {
@@ -84,7 +86,10 @@ function createArticleVectors(): ArticleVectors {
       }
       const id = ++nextId;
       requests.set(id, { resolve, reject, onProgress });
-      worker.postMessage({ id, type, revision, ...data });
+      const message: VectorRequest = "title" in data
+        ? { id, type: "index", revision, ...data }
+        : { id, type: "search", revision, ...data };
+      worker.postMessage(message);
     });
   }
   return { clear, build, search, get info() { return info; } };

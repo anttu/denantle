@@ -2,8 +2,8 @@
   "name": "denantle",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.embedding-worker.json && tsc -p tsconfig.finnish-worker.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.embedding-worker.json --noEmit && tsc -p tsconfig.finnish-worker.json --noEmit",
     "watch": "tsc -p tsconfig.json --watch"
   },
   "devDependencies": {

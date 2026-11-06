@@ -3,10 +3,13 @@
 
 // Unmodified Voikko 1.0.1: libvoikko 4.3.2 and the Finnish morpho dictionary.
 // License and complete corresponding source: ../licenses.html#voikko
-let analyzer;
+// Type queries preserve classic-worker output: importScripts must remain available.
+const replyInflections = (message: import("./worker-messages.js").InflectionResponse) => self.postMessage(message);
+
+let analyzer: VoikkoAnalyzer | undefined;
 let revision = 0;
 
-self.onmessage = async ({ data: message }) => {
+self.onmessage = async ({ data: message }: MessageEvent<import("./worker-messages.js").InflectionRequest>) => {
   revision = message.revision;
   if (message.type === "clear") return;
 
@@ -16,7 +19,7 @@ self.onmessage = async ({ data: message }) => {
       analyzer = Libvoikko().init("fi");
     }
 
-    const forms = new Map();
+    const forms = new Map<string, Set<string>>();
     for (let index = 0; index < message.words.length; index += 1) {
       if (message.revision !== revision) return;
       const word = message.words[index];
@@ -31,7 +34,7 @@ self.onmessage = async ({ data: message }) => {
           if (!baseform) continue;
           const base = baseform.normalize("NFKC").replaceAll("’", "'").toLowerCase();
           if (!forms.has(base)) forms.set(base, new Set());
-          forms.get(base).add(word);
+          forms.get(base)!.add(word);
         }
       }
       if ((index + 1) % 64 === 0) {
@@ -41,14 +44,14 @@ self.onmessage = async ({ data: message }) => {
     }
 
     if (message.revision === revision) {
-      self.postMessage({
+      replyInflections({
         type: "result", revision,
         forms: [...forms].map(([base, words]) => [base, [...words]]),
       });
     }
   } catch {
     if (message.revision === revision) {
-      self.postMessage({ type: "error", revision, error: "inflections.failed" });
+      replyInflections({ type: "error", revision, error: "inflections.failed" });
     }
   }
 };

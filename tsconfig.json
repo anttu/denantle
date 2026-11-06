@@ -1,18 +1,18 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ES2022",
-    "moduleResolution": "bundler",
-    "moduleDetection": "force",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": [],
-    "strict": true,
-    "allowJs": true,
-    "checkJs": false,
-    "noEmitOnError": true,
-    "sourceMap": true,
-    "rootDir": ".",
-    "outDir": "dist"
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ]
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/*-worker.ts",
+    "src/transformers.d.ts",
+    "src/voikko.d.ts"
+  ]
 }

@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import type { InflectionRequest, InflectionResponse } from "./worker-messages.js";
+
 import type { FinnishForms, FinnishInflections } from "./contracts.js";
 
 import { i18n } from "./i18n.js";
@@ -20,7 +22,7 @@ function createFinnishInflections(): FinnishInflections {
     forms = new Map();
     pending?.reject(new DOMException(i18n.t("article.changed"), "AbortError"));
     pending = null;
-    worker?.postMessage({ type: "clear", revision });
+    worker?.postMessage({ type: "clear", revision } satisfies InflectionRequest);
   }
 
   async function build(words: string[]) {
@@ -30,7 +32,7 @@ function createFinnishInflections(): FinnishInflections {
       pending = { resolve, reject };
       if (!worker) {
         const activeWorker = worker = new Worker(new URL("./finnish-inflections-worker.js", import.meta.url));
-        activeWorker.onmessage = ({ data }: MessageEvent<{ revision: number } & ({ type: "error"; error: string } | { type: "result"; forms: FinnishForms })>) => {
+        activeWorker.onmessage = ({ data }: MessageEvent<InflectionResponse>) => {
           if (data.revision !== revision || !pending) return;
           const request = pending;
           pending = null;
@@ -45,7 +47,7 @@ function createFinnishInflections(): FinnishInflections {
           worker = null;
         };
       }
-      worker.postMessage({ type: "index", revision: requestedRevision, words });
+      worker.postMessage({ type: "index", revision: requestedRevision, words } satisfies InflectionRequest);
     });
     if (requestedRevision !== revision) {
       throw new DOMException(i18n.t("article.changed"), "AbortError");
