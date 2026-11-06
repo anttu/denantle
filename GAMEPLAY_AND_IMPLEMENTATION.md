@@ -17,7 +17,7 @@ Keep `index.html` and `favicon.ico` in the repository root, with the application
 TypeScript source files in `src/`, the PNG assets in `images/` and the bundled
 language libraries in `vendor/`. For development,
 run `./start-local.sh` and open `http://localhost:8000` in Firefox. The script
-selects the pinned Node.js version with NVM, installs development dependencies
+selects the pinned Node.js version with NVM, installs npm dependencies
 on first use, builds `dist/`, serves that output and rebuilds on source changes.
 For publication, follow the [publishing instructions](#publishing) below.
 The page heading displays three separate images: the seven-bar mark
@@ -27,7 +27,8 @@ The page heading displays three separate images: the seven-bar mark
 browser and touch icons.
 Serve the generated `dist/` directory over HTTP(S); native browser modules and
 workers require a web server. An internet connection
-is required to fetch articles and initially download the embedding runtime and model.
+is required to fetch articles and initially download the embedding model.
+The embedding runtime is shipped with the static site.
 
 The page automatically loads a random Simple English Wikipedia article. Use
 **Datalähde** to choose **Simple English Wikipedia**, **Suomenkielinen Wikipedia**
@@ -222,8 +223,12 @@ The multilingual model is larger and takes longer to download on first
 use. Switching languages releases the previous model and cancels its pending work.
 Inference runs on the CPU through
 WebAssembly and does not require WebGPU. The model files are downloaded from
-Hugging Face and the runtime from jsDelivr, with the browser cache reused when
-available. Article text and search terms are processed locally.
+Hugging Face, with the browser cache reused when available. Transformers.js is
+an npm dependency pinned in `package-lock.json`, bundled into the embedding
+worker with esbuild. Its matching ONNX WebAssembly runtime and loader are copied
+from the installed package to `dist/vendor/onnx/` and loaded relative to the
+worker, including when the site is served from a subdirectory. No runtime files
+are fetched from a CDN. Article text and search terms are processed locally.
 
 Each distinct word has one normalized, 384-dimensional vector and an occurrence
 count. For Finnish, both article and query vectors are centered on the model's
@@ -283,8 +288,8 @@ Retain the visible license link and Voikko source download. The
 [license and source page](licenses.html) links to the
 [public GitHub repository](https://github.com/anttu/denantle) and the application
 source files served directly with the site.
-The application still needs network access to Wikipedia, Hugging Face and
-jsDelivr for articles and the embedding runtime/models.
+The application still needs network access to Wikipedia and Hugging Face for
+articles and embedding models.
 
 When updating Voikko, preserve the exact new library and dictionary sources,
 build scripts, licensing notices and checksums. Model or runtime changes also

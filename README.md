@@ -43,7 +43,7 @@ jättää nykyisen julkaistun version ennalleen.
 Tarvitset [NVM:n](https://github.com/nvm-sh/nvm#installing-and-updating) ja
 ajantasaisen selaimen. Käynnistysskripti ottaa NVM:llä käyttöön `.nvmrc`:hen
 lukitun Node.js-version (26.13.0 LTS) ja asentaa sen tarvittaessa.
-Skripti asentaa kehitysriippuvuudet ensimmäisellä käynnistyksellä, kääntää
+Skripti asentaa npm-riippuvuudet ensimmäisellä käynnistyksellä, kääntää
 TypeScriptin JavaScriptiksi ja kokoaa staattisen sivuston `dist/`-hakemistoon.
 
 1. Avaa terminaali projektin juurihakemistossa.
@@ -61,13 +61,14 @@ palvelin tarjoaa edellistä onnistunutta koontia. Palvelimen ja tiedostoseuranna
 voi pysäyttää terminaalissa painamalla `Ctrl+C`.
 
 Sovellus tarvitsee internetyhteyden Wikipedia-artikkelien hakemiseen sekä
-kielimallien ja niiden ajoympäristön ensimmäiseen lataamiseen. Käytä paikallista
-palvelinta, jotta myös sanojen merkityksiä vertaileva toiminto toimii.
+kielimallien ensimmäiseen lataamiseen. Mallien ajoympäristö toimitetaan sivuston
+mukana. Käytä paikallista palvelinta, jotta myös sanojen merkityksiä vertaileva
+toiminto toimii.
 
 
 ## Tarkistukset ja julkaisuversio
 
-Kaikki kehitysriippuvuudet ja testit käyttävät juurihakemiston lukitustiedostoa.
+Kaikki npm-riippuvuudet ja testit käyttävät juurihakemiston lukitustiedostoa.
 Kun `.nvmrc`:n mukainen Node.js on käytössä:
 
 ```sh
@@ -93,7 +94,9 @@ Pelkkä julkaisuversio kootaan komennolla `npm run build`. Julkaistava sisältö
 on `dist/`, joka sisältää myös kolmansien osapuolten lisenssit ja Voikon
 lähdepaketin. Esikatsele koontia komennolla `node tools/serve.mts`.
 Selaimessa ajettava koodi ja workerit käännetään omilla TypeScript-asetuksillaan;
-kehitystyökalut ja testit tyyppitarkistetaan erikseen.
+kehitystyökalut ja testit tyyppitarkistetaan erikseen. Vektoriworker ja sen
+Transformers.js-riippuvuus bundlataan esbuildilla. ONNX-ajoympäristön WASM- ja
+moduulitiedostot kopioidaan npm-paketista `dist/vendor/onnx/`-hakemistoon.
 
 ## Teknologiat
 

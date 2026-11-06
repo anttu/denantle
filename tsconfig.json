@@ -4,5 +4,5 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/*-worker.ts", "src/transformers.d.ts", "src/voikko.d.ts"]
+  "exclude": ["src/*-worker.ts", "src/voikko.d.ts"]
 }

@@ -54,8 +54,10 @@ Keep the accompanying copyright and permission notice when redistributing it.
 Transformers.js is provided by Hugging Face under
 [Apache License 2.0](licenses/Apache-2.0.txt).
 Source: https://github.com/huggingface/transformers.js/tree/3.8.1.
-The versioned browser build is downloaded from
-https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1.
+The npm dependency and its transitive dependencies are pinned in
+`package-lock.json`. The browser runtime is bundled into
+`src/embedding-worker.js` in the generated site. Its matching ONNX WebAssembly
+runtime and loader are shipped in `vendor/onnx/`; no CDN download is required.
 
 Its browser bundle includes Hugging Face Jinja 0.5.3 (MIT) and
 ONNX Runtime (MIT), including onnxruntime-common 1.21.0 and

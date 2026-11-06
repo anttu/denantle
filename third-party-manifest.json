@@ -16,7 +16,7 @@
     "id": "@huggingface/transformers",
     "version": "3.8.1",
     "license": "Apache-2.0",
-    "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1"
+    "url": "https://registry.npmjs.org/@huggingface/transformers/-/transformers-3.8.1.tgz"
   },
   "files": [
     {

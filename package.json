@@ -14,7 +14,11 @@
     "@biomejs/biome": "2.5.14",
     "@playwright/test": "1.64.1",
     "@types/node": "26.6.6",
+    "esbuild": "0.28.2",
     "typescript": "7.0.2"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@huggingface/transformers": "3.8.1"
+  }
 }

@@ -3,8 +3,9 @@
 
 import { spawnSync } from 'node:child_process'
 import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { build } from 'esbuild'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const staging = mkdtempSync(join(root, '.denantle-build-'))
@@ -47,6 +48,28 @@ try {
   }
   for (const asset of assets)
     cpSync(join(root, asset), join(staging, asset), { recursive: true })
+  await build({
+    absWorkingDir: root,
+    entryPoints: ['src/embedding-worker.ts'],
+    outfile: join(staging, 'src/embedding-worker.js'),
+    bundle: true,
+    platform: 'browser',
+    format: 'esm',
+    target: 'es2022',
+    sourcemap: true,
+    // Load the matching WASM module from the files copied below.
+    conditions: ['onnxruntime-web-use-extern-wasm'],
+  })
+  const runtime = dirname(
+    fileURLToPath(import.meta.resolve('@huggingface/transformers')),
+  )
+  const wasm = join(staging, 'vendor/onnx')
+  mkdirSync(wasm, { recursive: true })
+  for (const file of [
+    'ort-wasm-simd-threaded.jsep.mjs',
+    'ort-wasm-simd-threaded.jsep.wasm',
+  ])
+    cpSync(join(runtime, file), join(wasm, file))
   const output = join(root, 'dist')
   mkdirSync(output, { recursive: true })
   for (const entry of readdirSync(output))

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import type { FeatureExtractor } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1'
+import type { FeatureExtractionPipeline } from '@huggingface/transformers'
 import type { Language, SearchResult, VectorInfo } from './contracts.js'
 import type { VectorRequest, VectorResponse } from './worker-messages.js'
 
@@ -17,7 +17,7 @@ const MODEL_REVISIONS: Record<string, string> = {
   [MODELS.fi]: 'd4c06bf0d7680171ac30042a1387e1fdb7a90021',
 }
 const BATCH_SIZE = 32
-let extractorPromise: Promise<FeatureExtractor> | null = null
+let extractorPromise: Promise<FeatureExtractionPipeline> | null = null
 let finnishBackground: Float32Array | null = null
 let revision = 0
 let database: {
@@ -31,12 +31,13 @@ let queue = Promise.resolve()
 async function getExtractor(model: string) {
   if (!extractorPromise) {
     extractorPromise = (async () => {
-      const { pipeline, env } = await import(
-        'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1'
-      )
+      const { pipeline, env } = await import('@huggingface/transformers')
       env.allowLocalModels = false
+      const wasm = env.backends.onnx.wasm
+      if (!wasm) throw new Error('ONNX WASM backend is unavailable')
+      wasm.wasmPaths = new URL('../vendor/onnx/', import.meta.url).href
       // A single WASM thread also works without cross-origin isolation or WebGPU.
-      env.backends.onnx.wasm.numThreads = 1
+      wasm.numThreads = 1
       return pipeline('feature-extraction', model, {
         revision: MODEL_REVISIONS[model],
         dtype: 'q8',
@@ -48,6 +49,19 @@ async function getExtractor(model: string) {
     })
   }
   return extractorPromise
+}
+
+async function extractFeatures(
+  extractor: FeatureExtractionPipeline,
+  texts: string[],
+) {
+  const { data, dims } = await extractor(texts, {
+    pooling: 'mean',
+    normalize: true,
+  })
+  if (!(data instanceof Float32Array))
+    throw new TypeError('Expected float32 feature vectors')
+  return { data, dims }
 }
 
 function normalizeText(text: string) {
@@ -89,7 +103,7 @@ async function indexArticle(
   const extractor = await getExtractor(model)
   if (message.revision !== revision) return
   if (model === MODELS.fi && !finnishBackground) {
-    const output = await extractor([''], { pooling: 'mean', normalize: true })
+    const output = await extractFeatures(extractor, [''])
     finnishBackground = new Float32Array(output.data)
   }
   if (message.revision !== revision) return
@@ -101,7 +115,7 @@ async function indexArticle(
   for (let offset = 0; offset < vocabulary.length; offset += BATCH_SIZE) {
     if (message.revision !== revision) return
     const batch = vocabulary.slice(offset, offset + BATCH_SIZE)
-    const output = await extractor(batch, { pooling: 'mean', normalize: true })
+    const output = await extractFeatures(extractor, batch)
     if (message.revision !== revision) return
     dimensions = output.dims[1]
     for (let i = 0; i < batch.length; i += 1) {
@@ -135,10 +149,9 @@ async function search(
 ): Promise<SearchResult[] | undefined> {
   if (!database) throw new Error('vectors.notReady')
   const extractor = await getExtractor(database.model)
-  const output = await extractor([normalizeText(message.text.trim())], {
-    pooling: 'mean',
-    normalize: true,
-  })
+  const output = await extractFeatures(extractor, [
+    normalizeText(message.text.trim()),
+  ])
   if (message.revision !== revision) return
   const query = wordVector(output.data, database.background)
 
