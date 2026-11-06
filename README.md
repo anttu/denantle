@@ -39,7 +39,7 @@ nykyisen julkaistun version ennalleen.
 
 ## Paikallinen käynnistys
 
-Tarvitset Python 3:n ja ajantasaisen selaimen. Sovellus ei tarvitse pakettien
+Tarvitset Node.js:n ja ajantasaisen selaimen. Sovellus ei tarvitse pakettien
 asennusta tai erillistä koontivaihetta.
 
 1. Avaa terminaali projektin juurihakemistossa.

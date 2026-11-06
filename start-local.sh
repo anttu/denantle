@@ -1,1 +1,4 @@
-python3 -m http.server 8000
+#!/bin/sh
+set -eu
+
+exec node "$(dirname -- "$0")/tools/serve.mjs"
