@@ -1,21 +1,23 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import type { ArticleVectors, Language, VectorInfo, VectorProgress, SearchResult } from "./contracts.js";
+
 import { i18n } from "./i18n.js";
 
-function validateVectorSearch(info, text, limit) {
+function validateVectorSearch(info: VectorInfo | null, text: string, limit: number) {
   if (!info) throw i18n.error("vectors.notReady");
   if (typeof text !== "string" || !text.trim()) throw i18n.error("vectors.query");
   if (!Number.isInteger(limit) || limit < 1) throw i18n.error("vectors.limit");
 }
 
-function createArticleVectors() {
-  let worker = null;
-  const requests = new Map();
+function createArticleVectors(): ArticleVectors {
+  let worker: Worker | null = null;
+  const requests = new Map<number, { resolve: (result: VectorInfo | SearchResult[]) => void; reject: (reason: unknown) => void; onProgress?: (progress: VectorProgress) => void }>();
   let nextId = 0;
   let revision = 0;
-  let info = null;
-  let language = null;
+  let info: VectorInfo | null = null;
+  let language: Language | null = null;
 
   function clear() {
     revision += 1;
@@ -27,7 +29,7 @@ function createArticleVectors() {
     worker?.postMessage({ type: "clear", revision });
   }
 
-  async function build(title, text, onProgress, nextLanguage = "en") {
+  async function build(title: string, text: string, onProgress?: (progress: VectorProgress) => void, nextLanguage: Language = "en") {
     clear();
     if (language !== nextLanguage) {
       // Release the old model and cancel inference when the article language changes.
@@ -44,12 +46,14 @@ function createArticleVectors() {
     return result;
   }
 
-  async function search(text, limit = 10) {
+  async function search(text: string, limit = 10) {
     validateVectorSearch(info, text, limit);
     return request("search", { text, limit });
   }
 
-  function request(type, data, onProgress) {
+  function request(type: "index", data: { title: string; text: string; language: Language }, onProgress?: (progress: VectorProgress) => void): Promise<VectorInfo>;
+  function request(type: "search", data: { text: string; limit: number }): Promise<SearchResult[]>;
+  function request(type: "index" | "search", data: object, onProgress?: (progress: VectorProgress) => void): Promise<VectorInfo | SearchResult[]> {
     return new Promise((resolve, reject) => {
       if (location.protocol === "file:") {
         reject(i18n.error("vectors.server"));
@@ -57,7 +61,7 @@ function createArticleVectors() {
       }
       if (!worker) {
         worker = new Worker(new URL("./embedding-worker.js", import.meta.url), { type: "module" });
-        worker.onmessage = ({ data: message }) => {
+        worker.onmessage = ({ data: message }: MessageEvent<VectorProgress | { id: number; type: "error"; error: string } | { id: number; type: "result"; result: VectorInfo | SearchResult[] }>) => {
           const pending = requests.get(message.id);
           if (!pending) return;
           if (message.type === "progress") {
@@ -74,7 +78,7 @@ function createArticleVectors() {
           }
           requests.clear();
           info = null;
-          worker.terminate();
+          worker?.terminate();
           worker = null;
         };
       }

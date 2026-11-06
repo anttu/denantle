@@ -1,16 +1,48 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import type { Article, MultiplayerMessage, ReceivedMessage } from "./contracts.js";
+import type { createArticleGame } from "./game.js";
+import { errorName, isRecord } from "./validation.js";
+
+type ManualPeer = ReturnType<typeof createManualPeerConnection>;
+interface PeerCallbacks {
+  onOpen?: () => void;
+  onClose?: (message: unknown) => void;
+  onMessage?: (message: unknown) => void;
+}
+interface MultiplayerHooks {
+  getArticle(): Article | null;
+  showArticle(data: unknown): void;
+  cancelLoading(): void;
+  refreshControls(): void;
+  resumeSolo(): void;
+}
+interface ConnectionViewInput {
+  role: "host" | "guest" | null;
+  joining: boolean;
+  connectedCount: number;
+  remotePlayerCount: number;
+  hasPeer?: boolean;
+  signalingState?: RTCSignalingState;
+  negotiating: boolean;
+  hasRemote: boolean;
+  hasLocal: boolean;
+  peerCount: number;
+  invitationsOpen: boolean;
+}
+
+import { elementById } from "./dom.js";
 import { i18n } from "./i18n.js";
 import { GUESS_PATTERN } from "./game.js";
 import { createInviteUrl, decodeSignalingPayload, encodeSignalingPayload } from "./signaling-payload.js";
 
 // Signaling is manual: each description includes all gathered ICE candidates.
 // Google's STUN server discovers public addresses; game data stays peer-to-peer.
-function readSignalingDescription(text, type) {
+function readSignalingDescription(text: string, type: "offer" | "answer"): RTCSessionDescriptionInit {
   try {
-    const data = JSON.parse(decodeSignalingPayload(text));
-    if (data.denantle !== 1 || data.description?.type !== type
+    const data: unknown = JSON.parse(decodeSignalingPayload(text));
+    if (!isRecord(data) || data.denantle !== 1 || !isRecord(data.description) || data.description.type !== type
       || typeof data.description.sdp !== "string" || !data.description.sdp.startsWith("v=0")) throw new Error();
     return { type, sdp: data.description.sdp };
   } catch {
@@ -20,22 +52,22 @@ function readSignalingDescription(text, type) {
   }
 }
 
-function createManualPeerConnection({ onOpen, onClose, onMessage } = {}) {
+function createManualPeerConnection({ onOpen, onClose, onMessage }: PeerCallbacks = {}) {
   const peer = new RTCPeerConnection({
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
   });
   let sendQueue = Promise.resolve();
   let received = "";
   let closed = false;
-  let channel = null;
-  let connectionTimeout;
-  let cancelGathering;
+  let channel: RTCDataChannel | null = null;
+  let connectionTimeout: ReturnType<typeof setTimeout> | undefined;
+  let cancelGathering: (() => void) | null = null;
 
   function connected() {
     return !closed && channel?.readyState === "open";
   }
 
-  function bindChannel(nextChannel) {
+  function bindChannel(nextChannel: RTCDataChannel) {
     channel = nextChannel;
     channel.bufferedAmountLowThreshold = 65536;
     channel.onopen = () => {
@@ -47,12 +79,12 @@ function createManualPeerConnection({ onOpen, onClose, onMessage } = {}) {
     channel.onmessage = ({ data }) => {
       try {
         if (typeof data !== "string" || data.length > 20000) throw new Error();
-        const chunk = JSON.parse(data);
-        if (typeof chunk.part !== "string" || typeof chunk.last !== "boolean") throw new Error();
+        const chunk: unknown = JSON.parse(data);
+        if (!isRecord(chunk) || typeof chunk.part !== "string" || typeof chunk.last !== "boolean") throw new Error();
         received += chunk.part;
         if (received.length > 4 * 1024 * 1024) throw new Error();
         if (!chunk.last) return;
-        const message = JSON.parse(received);
+        const message: unknown = JSON.parse(received);
         received = "";
         onMessage?.(message);
       } catch {
@@ -61,11 +93,11 @@ function createManualPeerConnection({ onOpen, onClose, onMessage } = {}) {
     };
   }
 
-  async function localDescription(description) {
+  async function localDescription(description: RTCSessionDescriptionInit) {
     await peer.setLocalDescription(description);
     if (peer.iceGatheringState !== "complete") {
-      await new Promise((resolve, reject) => {
-        const done = (error) => {
+      await new Promise<void>((resolve, reject) => {
+        const done = (error?: unknown) => {
           clearTimeout(timer);
           peer.removeEventListener("icegatheringstatechange", changed);
           cancelGathering = null;
@@ -82,7 +114,7 @@ function createManualPeerConnection({ onOpen, onClose, onMessage } = {}) {
       });
     }
     if (closed) throw new DOMException(i18n.t("multiplayer.closed"), "AbortError");
-    return JSON.stringify({ denantle: 1, description: peer.localDescription.toJSON() });
+    return JSON.stringify({ denantle: 1, description: peer.localDescription!.toJSON() });
   }
 
   async function createOffer() {
@@ -90,52 +122,53 @@ function createManualPeerConnection({ onOpen, onClose, onMessage } = {}) {
     return localDescription(await peer.createOffer());
   }
 
-  async function acceptOffer(text) {
+  async function acceptOffer(text: string) {
     await peer.setRemoteDescription(readSignalingDescription(text, "offer"));
     return localDescription(await peer.createAnswer());
   }
 
-  async function acceptAnswer(text) {
+  async function acceptAnswer(text: string) {
     await peer.setRemoteDescription(readSignalingDescription(text, "answer"));
     connectionTimeout = setTimeout(() => {
       if (!connected()) close(i18n.message("multiplayer.noConnection"));
     }, 30000);
   }
 
-  function send(message) {
+  function send(message: MultiplayerMessage) {
     const task = sendQueue.then(async () => {
-      if (!connected()) throw i18n.error("multiplayer.notOpen");
+      if (!connected() || !channel) throw i18n.error("multiplayer.notOpen");
+      const activeChannel = channel;
       const text = JSON.stringify(message);
       if (text.length > 4 * 1024 * 1024) throw i18n.error("multiplayer.tooLarge");
       // Small chunks also work with browsers that limit messages to 16 KiB.
       // Splitting the JSON string preserves Unicode even across surrogate pairs.
       for (let offset = 0; offset < text.length; offset += 2000) {
         if (!connected()) throw i18n.error("multiplayer.interrupted");
-        if (channel.bufferedAmount > 131072) {
-          await new Promise((resolve, reject) => {
-            const finish = (error) => {
+        if (activeChannel.bufferedAmount > 131072) {
+          await new Promise<void>((resolve, reject) => {
+            const finish = (error?: unknown) => {
               clearTimeout(timer);
-              channel.removeEventListener("bufferedamountlow", ready);
-              channel.removeEventListener("close", onClosed);
+              activeChannel.removeEventListener("bufferedamountlow", ready);
+              activeChannel.removeEventListener("close", onClosed);
               if (error) reject(error);
               else resolve();
             };
             const ready = () => finish();
             const onClosed = () => finish(i18n.error("multiplayer.interrupted"));
             const timer = setTimeout(() => finish(i18n.error("multiplayer.sendTimeout")), 15000);
-            channel.addEventListener("bufferedamountlow", ready, { once: true });
-            channel.addEventListener("close", onClosed, { once: true });
-            if (channel.bufferedAmount <= 65536) ready();
+            activeChannel.addEventListener("bufferedamountlow", ready, { once: true });
+            activeChannel.addEventListener("close", onClosed, { once: true });
+            if (activeChannel.bufferedAmount <= 65536) ready();
           });
         }
-        channel.send(JSON.stringify({ part: text.slice(offset, offset + 2000), last: offset + 2000 >= text.length }));
+        activeChannel.send(JSON.stringify({ part: text.slice(offset, offset + 2000), last: offset + 2000 >= text.length }));
       }
     });
     sendQueue = task.catch(() => {});
     return task;
   }
 
-  function close(message = i18n.message("multiplayer.connectionClosed")) {
+  function close(message: unknown = i18n.message("multiplayer.connectionClosed")) {
     if (closed) return;
     closed = true;
     clearTimeout(connectionTimeout);
@@ -162,14 +195,14 @@ function createManualPeerConnection({ onOpen, onClose, onMessage } = {}) {
     createOffer, acceptOffer, acceptAnswer, send, close,
     get connected() { return connected(); },
     get signalingState() { return peer.signalingState; },
-    set onOpen(handler) { onOpen = handler; },
-    set onClose(handler) { onClose = handler; },
-    set onMessage(handler) { onMessage = handler; },
+    set onOpen(handler: PeerCallbacks["onOpen"]) { onOpen = handler; },
+    set onClose(handler: PeerCallbacks["onClose"]) { onClose = handler; },
+    set onMessage(handler: PeerCallbacks["onMessage"]) { onMessage = handler; },
   };
 }
 
 function connectionView({ role, joining: wantsToJoin, connectedCount, remotePlayerCount,
-  hasPeer = false, signalingState, negotiating, hasRemote, hasLocal, peerCount, invitationsOpen }) {
+  hasPeer = false, signalingState, negotiating, hasRemote, hasLocal, peerCount, invitationsOpen }: ConnectionViewInput) {
   const connected = connectedCount > 0;
   const isGuest = role === "guest";
   const joining = !role && wantsToJoin;
@@ -191,64 +224,81 @@ function connectionView({ role, joining: wantsToJoin, connectedCount, remotePlay
   };
 }
 
-function validateMultiplayerMessage(message, isGuest) {
-  if (!message || typeof message !== "object") throw new Error();
+export function validateMultiplayerMessage(message: unknown, isGuest: boolean): asserts message is ReceivedMessage {
+  if (!isRecord(message)) throw new Error();
+  const validSession = message.session === undefined || typeof message.session === "string";
   if (!isGuest) {
     if (message.type !== "guess" || typeof message.guess !== "string" || message.guess.length > 200
-      || !GUESS_PATTERN.test(message.guess) || !Number.isSafeInteger(message.request) || message.request <= 0) throw new Error();
+      || !GUESS_PATTERN.test(message.guess) || typeof message.request !== "number"
+      || !Number.isSafeInteger(message.request) || message.request <= 0 || !validSession) throw new Error();
     return;
   }
-  if (message.type === "players") {
-    if (!Number.isSafeInteger(message.count) || message.count < 2) throw new Error();
-  } else if (!["loading", "game", "state", "unavailable"].includes(message.type)) throw new Error();
+  switch (message.type) {
+    case "players":
+      if (typeof message.count !== "number" || !Number.isSafeInteger(message.count) || message.count < 2) throw new Error();
+      return;
+    case "loading":
+    case "unavailable":
+      return;
+    case "game":
+      if (!("article" in message) || !("state" in message)) throw new Error();
+      return;
+    case "state":
+      if (!validSession || typeof message.accepted !== "boolean"
+        || !(message.request === null || (typeof message.request === "number" && Number.isSafeInteger(message.request) && message.request > 0))
+        || !("state" in message)) throw new Error();
+      return;
+    default:
+      throw new Error();
+  }
 }
 
-export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoading, refreshControls, resumeSolo }) {
+export function createMultiplayerGame(game: ReturnType<typeof createArticleGame>, { getArticle, showArticle, cancelLoading, refreshControls, resumeSolo }: MultiplayerHooks) {
   const elements = {
-    enabled: document.getElementById("multiplayer-enabled"),
-    panel: document.getElementById("multiplayer-panel"),
-    connectedPanel: document.getElementById("multiplayer-connected"),
-    playerCount: document.getElementById("multiplayer-player-count"),
-    connectedNote: document.getElementById("multiplayer-connected-note"),
-    invitations: document.getElementById("multiplayer-invitations"),
-    invitationsSummary: document.getElementById("multiplayer-invitations-summary"),
-    invitationTitle: document.getElementById("multiplayer-invitation-title"),
-    invitationDescription: document.getElementById("multiplayer-invitation-description"),
-    invitationFooter: document.getElementById("multiplayer-invitation-footer"),
-    sessionStatus: document.getElementById("multiplayer-session-status"),
-    sendPanel: document.getElementById("multiplayer-send-panel"),
-    sendTitle: document.getElementById("multiplayer-send-title"),
-    sendDescription: document.getElementById("multiplayer-send-description"),
-    inviteNote: document.getElementById("multiplayer-invite-note"),
-    inviteNoteTitle: document.getElementById("multiplayer-invite-note-title"),
-    inviteNoteDescription: document.getElementById("multiplayer-invite-note-description"),
-    remoteLabel: document.getElementById("multiplayer-remote-label"),
-    remoteDescription: document.getElementById("multiplayer-remote-description"),
-    joinToggle: document.getElementById("multiplayer-join-toggle"),
-    cancelInvite: document.getElementById("multiplayer-cancel-invite"),
-    create: document.getElementById("multiplayer-create"),
-    accept: document.getElementById("multiplayer-accept"),
-    acceptLabel: document.getElementById("multiplayer-accept-label"),
-    copy: document.getElementById("multiplayer-copy"),
-    copyLabel: document.getElementById("multiplayer-copy-label"),
-    restart: document.getElementById("multiplayer-restart"),
-    local: document.getElementById("multiplayer-local"),
-    localPanel: document.getElementById("multiplayer-local-panel"),
-    localLabel: document.getElementById("multiplayer-local-label"),
-    remote: document.getElementById("multiplayer-remote"),
-    remotePanel: document.getElementById("multiplayer-remote-panel"),
-    payloadDebug: document.getElementById("multiplayer-debug"),
-    payloadDebugPanel: document.getElementById("multiplayer-debug-panel"),
-    payloadDebugLocal: document.getElementById("multiplayer-debug-local"),
-    payloadDebugRemote: document.getElementById("multiplayer-debug-remote"),
-    status: document.getElementById("multiplayer-status"),
-    error: document.getElementById("multiplayer-error"),
+    enabled: elementById("multiplayer-enabled", HTMLInputElement),
+    panel: elementById("multiplayer-panel", HTMLElement),
+    connectedPanel: elementById("multiplayer-connected", HTMLElement),
+    playerCount: elementById("multiplayer-player-count", HTMLElement),
+    connectedNote: elementById("multiplayer-connected-note", HTMLElement),
+    invitations: elementById("multiplayer-invitations", HTMLDetailsElement),
+    invitationsSummary: elementById("multiplayer-invitations-summary", HTMLElement),
+    invitationTitle: elementById("multiplayer-invitation-title", HTMLElement),
+    invitationDescription: elementById("multiplayer-invitation-description", HTMLElement),
+    invitationFooter: elementById("multiplayer-invitation-footer", HTMLElement),
+    sessionStatus: elementById("multiplayer-session-status", HTMLElement),
+    sendPanel: elementById("multiplayer-send-panel", HTMLElement),
+    sendTitle: elementById("multiplayer-send-title", HTMLElement),
+    sendDescription: elementById("multiplayer-send-description", HTMLElement),
+    inviteNote: elementById("multiplayer-invite-note", HTMLElement),
+    inviteNoteTitle: elementById("multiplayer-invite-note-title", HTMLElement),
+    inviteNoteDescription: elementById("multiplayer-invite-note-description", HTMLElement),
+    remoteLabel: elementById("multiplayer-remote-label", HTMLElement),
+    remoteDescription: elementById("multiplayer-remote-description", HTMLElement),
+    joinToggle: elementById("multiplayer-join-toggle", HTMLButtonElement),
+    cancelInvite: elementById("multiplayer-cancel-invite", HTMLButtonElement),
+    create: elementById("multiplayer-create", HTMLButtonElement),
+    accept: elementById("multiplayer-accept", HTMLButtonElement),
+    acceptLabel: elementById("multiplayer-accept-label", HTMLElement),
+    copy: elementById("multiplayer-copy", HTMLButtonElement),
+    copyLabel: elementById("multiplayer-copy-label", HTMLElement),
+    restart: elementById("multiplayer-restart", HTMLButtonElement),
+    local: elementById("multiplayer-local", HTMLInputElement),
+    localPanel: elementById("multiplayer-local-panel", HTMLElement),
+    localLabel: elementById("multiplayer-local-label", HTMLElement),
+    remote: elementById("multiplayer-remote", HTMLTextAreaElement),
+    remotePanel: elementById("multiplayer-remote-panel", HTMLElement),
+    payloadDebug: elementById("multiplayer-debug", HTMLInputElement),
+    payloadDebugPanel: elementById("multiplayer-debug-panel", HTMLElement),
+    payloadDebugLocal: elementById("multiplayer-debug-local", HTMLElement),
+    payloadDebugRemote: elementById("multiplayer-debug-remote", HTMLElement),
+    status: elementById("multiplayer-status", HTMLElement),
+    error: elementById("multiplayer-error", HTMLElement),
   };
   // The host retains established connections while negotiating one new invite.
-  let role = null;
+  let role: "host" | "guest" | null = null;
   let joining = false;
-  let peers = new Set();
-  let peer = null;
+  let peers = new Set<ManualPeer>();
+  let peer: ManualPeer | null = null;
   let remotePlayerCount = 2;
   let generation = 0;
   let localPayload = "";
@@ -256,8 +306,8 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
   let queue = Promise.resolve();
   let requestCounter = 0;
   let negotiating = false;
-  let pendingRequest = null;
-  let guessTimeout;
+  let pendingRequest: number | null = null;
+  let guessTimeout: ReturnType<typeof setTimeout> | undefined;
   let focusAfterJoin = false;
 
   function isGuest() { return role === "guest"; }
@@ -336,7 +386,7 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
   function renderPayloadDebug() {
     const visible = elements.payloadDebug.checked && !(isGuest() && connected());
     elements.payloadDebugPanel.hidden = !visible;
-    const show = (element, value) => {
+    const show = (element: HTMLElement, value: string) => {
       i18n.text(element, "");
       if (!visible || !value) return;
       try {
@@ -381,12 +431,12 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
     return true;
   }
 
-  function setNegotiating(busy) {
+  function setNegotiating(busy: boolean) {
     negotiating = busy;
     renderConnection();
   }
 
-  async function negotiate(create) {
+  async function negotiate(create: boolean) {
     if (negotiating || (create && (peer || isGuest()))) return;
     i18n.text(elements.error, "");
     // Validate pasted data before disturbing an existing invitation or solo game.
@@ -405,15 +455,16 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
     let negotiatingPeer = peer;
     try {
       if (!negotiatingPeer) {
-        negotiatingPeer = createManualPeerConnection();
-        peer = negotiatingPeer;
-        peers.add(negotiatingPeer);
+        const newPeer = createManualPeerConnection();
+        negotiatingPeer = newPeer;
+        peer = newPeer;
+        peers.add(newPeer);
         if (isGuest()) {
           cancelLoading();
           game.setBusy(true);
         }
-        negotiatingPeer.onOpen = () => {
-          if (!peers.has(negotiatingPeer)) return;
+        newPeer.onOpen = () => {
+          if (!peers.has(newPeer)) return;
           const moveFocus = elements.invitations.contains(document.activeElement);
           i18n.text(elements.status, "");
           clearSignaling();
@@ -426,7 +477,7 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
             sharePlayers();
             // A guess may already be awaiting model results when the peer joins.
             void queue.then(() => {
-              if (peers.has(negotiatingPeer)) shareGame(negotiatingPeer);
+              if (peers.has(newPeer)) shareGame(newPeer);
             });
           }
           if (moveFocus) {
@@ -435,10 +486,10 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
             else focusAfterJoin = true;
           }
         };
-        negotiatingPeer.onClose = (message) => {
-          removePeer(negotiatingPeer, message);
+        newPeer.onClose = (message) => {
+          removePeer(newPeer, message);
         };
-        negotiatingPeer.onMessage = (message) => receive(message, negotiatingPeer);
+        newPeer.onMessage = (message) => receive(message, newPeer);
       }
       renderConnection();
       refreshControls();
@@ -466,7 +517,7 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
         i18n.text(elements.status, i18n.message("multiplayer.connecting"));
       }
     } catch (error) {
-      if (error.name === "AbortError" || (negotiatingPeer && !peers.has(negotiatingPeer))) return;
+      if (errorName(error) === "AbortError" || (negotiatingPeer && !peers.has(negotiatingPeer))) return;
       const message = i18n.message("multiplayer.negotiationFailed");
       if (negotiatingPeer) removePeer(negotiatingPeer, message);
       else {
@@ -495,7 +546,7 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
     renderPayloadDebug();
   }
 
-  function removePeer(removedPeer, message) {
+  function removePeer(removedPeer: ManualPeer, message: unknown) {
     if (!peers.has(removedPeer)) return;
     if (isGuest()) {
       disconnect(message);
@@ -540,14 +591,14 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
     }
   }
 
-  function send(message, target = null) {
+  function send(message: MultiplayerMessage, target: ManualPeer | null = null) {
     for (const peer of target ? [target] : connectedPeers()) {
       if (!peers.has(peer) || !peer.connected) continue;
       void peer.send(message).catch((error) => removePeer(peer, i18n.errorMessage(error)));
     }
   }
 
-  function shareGame(target = null) {
+  function shareGame(target: ManualPeer | null = null) {
     if (isGuest() || !connected()) return;
     const article = getArticle();
     send(article && game.active
@@ -555,7 +606,7 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
       : { type: "loading" }, target);
   }
 
-  function requestGuess(guess) {
+  function requestGuess(guess: string) {
     if (!connected()) {
       if (isGuest()) return false;
       return enqueueGuess(guess);
@@ -570,7 +621,7 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
     return enqueueGuess(guess);
   }
 
-  function enqueueGuess(guess, request = null, requester = null) {
+  function enqueueGuess(guess: string, request: number | null = null, requester: ManualPeer | null = null) {
     const requestedGeneration = generation;
     const session = getArticle()?.session;
     queue = queue.then(async () => {
@@ -590,11 +641,11 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
     return queue;
   }
 
-  function receive(message, peer) {
+  function receive(message: unknown, peer: ManualPeer) {
     if (!peers.has(peer)) return;
     try {
       validateMultiplayerMessage(message, isGuest());
-      if (!isGuest()) {
+      if (message.type === "guess") {
         if (message.session === getArticle()?.session) void enqueueGuess(message.guess, message.request, peer);
         return;
       }
@@ -639,7 +690,7 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
     }
   }
 
-  function disconnect(message = i18n.message("multiplayer.ended")) {
+  function disconnect(message: unknown = i18n.message("multiplayer.ended")) {
     const wasGuest = isGuest();
     const closingPeers = [...peers];
     peers = new Set();
@@ -662,7 +713,7 @@ export function createMultiplayerGame(game, { getArticle, showArticle, cancelLoa
     if (wasGuest) resumeSolo();
   }
 
-  document.getElementById("game-mode").addEventListener("change", () => {
+  elementById("game-mode", HTMLElement).addEventListener("change", () => {
     elements.panel.hidden = !elements.enabled.checked;
     if (!elements.enabled.checked) disconnect();
     else if (!window.RTCPeerConnection) i18n.text(elements.error, i18n.message("multiplayer.unsupported"));

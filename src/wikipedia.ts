@@ -1,42 +1,46 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import type { Article, Language, WikipediaSource } from "./contracts.js";
+import { errorName, isArray, isRecord } from "./validation.js";
+
+import { elementById } from "./dom.js";
 import { i18n } from "./i18n.js";
-import { wikipediaSources } from "./categories.js";
+import { wikipediaSources, isSourceKey } from "./categories.js";
 import { articleVectors } from "./embeddings.js";
 import { finnishInflections } from "./finnish-inflections.js";
 import { createArticleGame } from "./game.js";
 import { createMultiplayerGame } from "./multiplayer.js";
 
-const randomButton = document.getElementById("random-article");
-const sourceSelect = document.getElementById("wikipedia-source");
-const guessHint = document.getElementById("guess-hint");
-const status = document.getElementById("status");
-const errorMessage = document.getElementById("error");
-const article = document.getElementById("article");
-const articleSource = document.getElementById("article-source");
-const gameVersion = document.getElementById("game-version");
-const gameVersionLink = document.getElementById("game-version-link");
-const vectorStatus = document.getElementById("vector-status");
+const randomButton = elementById("random-article", HTMLButtonElement);
+const sourceSelect = elementById("wikipedia-source", HTMLSelectElement);
+const guessHint = elementById("guess-hint", HTMLElement);
+const status = elementById("status", HTMLElement);
+const errorMessage = elementById("error", HTMLElement);
+const article = elementById("article", HTMLElement);
+const articleSource = elementById("article-source", HTMLElement);
+const gameVersion = elementById("game-version", HTMLElement);
+const gameVersionLink = elementById("game-version-link", HTMLAnchorElement);
+const vectorStatus = elementById("vector-status", HTMLElement);
 const articleGame = createArticleGame(articleVectors, finnishInflections);
-let currentArticle = null;
+let currentArticle: Article | null = null;
 let articleLoading = false;
 let loadRevision = 0;
-let loadController = null;
+let loadController: AbortController | null = null;
 const multiplayer = createMultiplayerGame(articleGame, {
   getArticle: () => currentArticle,
   showArticle: (data) => {
-    if (!data || typeof data.title !== "string" || !data.title || data.title.length > 1000
+    if (!isRecord(data) || typeof data.title !== "string" || !data.title || data.title.length > 1000
       || typeof data.body !== "string" || !data.body || data.body.length > 2000000
       || typeof data.session !== "string" || data.session.length > 100
       || typeof data.version !== "string" || !/^(simple|fi|en)-[1-9]\d*$/.test(data.version)
-      || data.version.split("-")[0] !== data.sourceKey || !wikipediaSources[data.sourceKey]) {
+      || data.version.split("-")[0] !== data.sourceKey || !isSourceKey(data.sourceKey)) {
       throw i18n.error("error.articleData");
     }
     cancelArticleLoading();
     articleVectors.clear();
     i18n.text(vectorStatus, i18n.message("vectors.shared"));
-    displayArticle(data);
+    displayArticle({ title: data.title, body: data.body, session: data.session, version: data.version, sourceKey: data.sourceKey });
   },
   cancelLoading: cancelArticleLoading,
   refreshControls: refreshArticleControls,
@@ -64,7 +68,7 @@ function cancelArticleLoading() {
   refreshArticleControls();
 }
 
-function displayArticle(data) {
+function displayArticle(data: Article) {
   const source = wikipediaSources[data.sourceKey];
   currentArticle = data;
   sourceSelect.value = data.sourceKey;
@@ -85,7 +89,7 @@ function displayArticle(data) {
   i18n.text(errorMessage, "");
 }
 
-async function buildArticleVectors(title, body, language) {
+async function buildArticleVectors(title: string, body: string, language: Language) {
   const revision = loadRevision;
   try {
     const info = await articleVectors.build(title, body, (progress) => {
@@ -96,14 +100,14 @@ async function buildArticleVectors(title, body, language) {
     }, language);
     if (revision === loadRevision) i18n.text(vectorStatus, i18n.message("vectors.ready", { count: info.wordCount }));
   } catch (error) {
-    if (revision === loadRevision && error.name !== "AbortError") i18n.text(vectorStatus, i18n.errorMessage(error));
+    if (revision === loadRevision && errorName(error) !== "AbortError") i18n.text(vectorStatus, i18n.errorMessage(error));
   }
 }
 
-function removeUnwantedSections(text, source) {
+function removeUnwantedSections(text: string, source: WikipediaSource) {
   const excludedSections = new Set(source.excludedSections);
   const lines = [];
-  let skippedLevel = null;
+  let skippedLevel: number | null = null;
 
   for (const line of text.split("\n")) {
     const heading = line.match(/^(={1,6})[ \t]*(.*?)[ \t]*\1[ \t]*$/);
@@ -120,7 +124,7 @@ function removeUnwantedSections(text, source) {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-function articleTextFromHtml(html, source) {
+function articleTextFromHtml(html: string, source: WikipediaSource) {
   // A template keeps remote markup inert; only its plain text enters the game.
   const template = document.createElement("template");
   template.innerHTML = html;
@@ -131,12 +135,12 @@ function articleTextFromHtml(html, source) {
     ".shortdescription", ".ambox", ".hatnote", ".sistersitebox", ".toc", ".mw-empty-elt",
   ].join(",")).forEach((node) => node.remove());
 
-  function textFromNode(node) {
-    if (node.nodeType === Node.TEXT_NODE) return node.textContent.replace(/\s+/g, " ");
+  function textFromNode(node: Node): string {
+    if (node.nodeType === Node.TEXT_NODE) return (node.textContent || "").replace(/\s+/g, " ");
     if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return "";
     if (/^H[1-6]$/.test(node.nodeName)) {
       const marker = "=".repeat(Number(node.nodeName[1]));
-      return `\n\n${marker} ${node.textContent.trim()} ${marker}\n\n`;
+      return `\n\n${marker} ${(node.textContent || "").trim()} ${marker}\n\n`;
     }
     if (node.nodeName === "BR") return "\n";
     const text = [...node.childNodes].map(textFromNode).join("");
@@ -148,7 +152,7 @@ function articleTextFromHtml(html, source) {
     .replace(/[ \t]+\n/g, "\n").replace(/\n[ \t]+/g, "\n"), source);
 }
 
-async function queryWikipedia(source, parameters, signal) {
+async function queryWikipedia(source: WikipediaSource, parameters: Record<string, string>, signal: AbortSignal): Promise<Record<string, unknown>> {
   const params = new URLSearchParams({
     action: "query",
     format: "json",
@@ -161,9 +165,10 @@ async function queryWikipedia(source, parameters, signal) {
     throw i18n.error(i18n.message("error.http", { status: response.status }));
   }
 
-  const data = await response.json();
-  if (data.error) {
-    if (["missingrev", "nosuchrevid", "missingtitle"].includes(data.error.code)) {
+  const data: unknown = await response.json();
+  if (!isRecord(data)) throw i18n.error("error.wikipedia");
+  if (isRecord(data.error)) {
+    if (typeof data.error.code === "string" && ["missingrev", "nosuchrevid", "missingtitle"].includes(data.error.code)) {
       throw i18n.error("error.revision");
     }
     throw i18n.error("error.wikipedia");
@@ -171,7 +176,7 @@ async function queryWikipedia(source, parameters, signal) {
   return data;
 }
 
-async function getRandomArticleTitle(source, signal) {
+async function getRandomArticleTitle(source: WikipediaSource, signal: AbortSignal) {
   const candidates = source.categories.map((title) => ({ ns: 14, title }));
   const visited = new Set();
 
@@ -182,7 +187,7 @@ async function getRandomArticleTitle(source, signal) {
     if (visited.has(candidate.title)) continue;
     visited.add(candidate.title);
 
-    let continuation;
+    let continuation: Record<string, string> | undefined;
     do {
       const data = await queryWikipedia(source, {
         list: "categorymembers",
@@ -194,20 +199,30 @@ async function getRandomArticleTitle(source, signal) {
         ...continuation,
       }, signal);
 
+      if (!isRecord(data.query) || !isArray(data.query.categorymembers)) throw i18n.error("error.wikipedia");
       for (const member of data.query.categorymembers) {
+        if (!isRecord(member) || typeof member.ns !== "number" || typeof member.title !== "string") throw i18n.error("error.wikipedia");
         if (member.ns === 0 || (member.ns === 14
           && member.title !== source.excludedCategory && !visited.has(member.title))) {
-          candidates.push(member);
+          candidates.push({ ns: member.ns, title: member.title });
         }
       }
-      continuation = data.continue;
+      continuation = undefined;
+      if (data.continue !== undefined) {
+        if (!isRecord(data.continue)) throw i18n.error("error.wikipedia");
+        continuation = {};
+        for (const [key, value] of Object.entries(data.continue)) {
+          if (typeof value !== "string") throw i18n.error("error.wikipedia");
+          continuation[key] = value;
+        }
+      }
     } while (continuation);
   }
 
   throw i18n.error("error.categories");
 }
 
-async function loadArticle(gameId = null, { invite = false } = {}) {
+async function loadArticle(gameId: string | null = null, { invite = false } = {}) {
   if (articleLoading || multiplayer.isGuest) return;
 
   const revision = ++loadRevision;
@@ -234,10 +249,11 @@ async function loadArticle(gameId = null, { invite = false } = {}) {
       throw i18n.error("error.gameId");
     }
     const sourceKey = savedGame ? savedGame[1] : sourceSelect.value;
+    if (!isSourceKey(sourceKey)) throw i18n.error("error.gameId");
     const source = wikipediaSources[sourceKey];
     sourceSelect.value = sourceKey;
     const signal = AbortSignal.any([loadController.signal, AbortSignal.timeout(15000)]);
-    const selection = savedGame
+    const selection: Record<string, string> = savedGame
       ? { oldid: savedGame[2] }
       : { page: await getRandomArticleTitle(source, signal), redirects: "1" };
     const data = await queryWikipedia(source, {
@@ -251,7 +267,7 @@ async function loadArticle(gameId = null, { invite = false } = {}) {
     if (revision !== loadRevision) return;
 
     const page = data.parse;
-    if (!page || !page.title || !Number.isSafeInteger(page.revid) || page.revid <= 0
+    if (!isRecord(page) || typeof page.title !== "string" || !page.title || typeof page.revid !== "number" || !Number.isSafeInteger(page.revid) || page.revid <= 0
       || (savedGame && page.revid !== Number(savedGame[2]))) {
       throw i18n.error("error.revision");
     }
@@ -269,11 +285,11 @@ async function loadArticle(gameId = null, { invite = false } = {}) {
     }
     void buildArticleVectors(page.title, body, source.language);
   } catch (error) {
-    if (revision !== loadRevision || error.name === "AbortError") return;
+    if (revision !== loadRevision || errorName(error) === "AbortError") return;
     multiplayer.send({ type: "unavailable" });
-    i18n.text(errorMessage, error.name === "TimeoutError"
+    i18n.text(errorMessage, errorName(error) === "TimeoutError"
       ? i18n.message("error.timeout")
-      : error.name === "TypeError"
+      : errorName(error) === "TypeError"
         ? i18n.message("error.network")
         : i18n.errorMessage(error) || i18n.message("error.article"));
   } finally {
@@ -301,7 +317,7 @@ if (!multiplayer.acceptInviteFromLocation()) {
   void loadArticle(new URLSearchParams(window.location.search).get("game"));
 }
 
-function updateGuessHint(language = wikipediaSources[sourceSelect.value].language) {
+function updateGuessHint(language: Language = wikipediaSources[isSourceKey(sourceSelect.value) ? sourceSelect.value : "simple"].language) {
   i18n.text(guessHint, i18n.message(language === "fi" ? "help.guessFinnish" : "help.guessEnglish"));
 }
 document.addEventListener("denantle:languagechange", () => updateGuessHint());

@@ -1,17 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import type { FinnishForms, FinnishInflections } from "./contracts.js";
+
 import { i18n } from "./i18n.js";
 
-function matchingFinnishForms(forms, guess) {
+function matchingFinnishForms(forms: Map<string, string[]>, guess: string) {
   return new Set([guess, ...(forms.get(guess) || [])]);
 }
 
-function createFinnishInflections() {
-  let worker = null;
+function createFinnishInflections(): FinnishInflections {
+  let worker: Worker | null = null;
   let revision = 0;
-  let pending = null;
-  let forms = new Map();
+  let pending: { resolve: (forms: FinnishForms) => void; reject: (reason: unknown) => void } | null = null;
+  let forms = new Map<string, string[]>();
 
   function clear() {
     revision += 1;
@@ -21,14 +23,14 @@ function createFinnishInflections() {
     worker?.postMessage({ type: "clear", revision });
   }
 
-  async function build(words) {
+  async function build(words: string[]) {
     clear();
     const requestedRevision = revision;
-    const result = await new Promise((resolve, reject) => {
+    const result = await new Promise<FinnishForms>((resolve, reject) => {
       pending = { resolve, reject };
       if (!worker) {
         const activeWorker = worker = new Worker(new URL("./finnish-inflections-worker.js", import.meta.url));
-        activeWorker.onmessage = ({ data }) => {
+        activeWorker.onmessage = ({ data }: MessageEvent<{ revision: number } & ({ type: "error"; error: string } | { type: "result"; forms: FinnishForms })>) => {
           if (data.revision !== revision || !pending) return;
           const request = pending;
           pending = null;

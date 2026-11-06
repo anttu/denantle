@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { isRecord } from "./validation.js";
+
 // Wire versions are independent of the game version. Never change an existing
 // dictionary or binary layout: old invitations must keep decoding the same way.
 const SIGNALING_MAX_LENGTH = 100000;
@@ -22,25 +24,26 @@ const SIGNALING_DICTIONARY = [
   "a=max-message-size:", "a=end-of-candidates\\r\\n", "a=sendrecv\\r\\n", "\\r\\n",
 ];
 
-function encodeBase64Url(bytes) {
+function encodeBase64Url(bytes: Uint8Array | number[]) {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function decodeBase64Url(text) {
+function decodeBase64Url(text: string) {
   if (!/^[A-Za-z0-9_-]+$/.test(text) || text.length > 150000 || text.length % 4 === 1) throw new Error();
   const bytes = Uint8Array.from(atob(text.replace(/-/g, "+").replace(/_/g, "/")), (char) => char.charCodeAt(0));
   if (bytes.length > SIGNALING_MAX_LENGTH || encodeBase64Url(bytes) !== text) throw new Error();
   return bytes;
 }
 
-export function encodeSignalingPayload(text) {
+export function encodeSignalingPayload(text: string) {
   if (typeof text !== "string" || !text || text.length > SIGNALING_MAX_LENGTH) throw new Error();
-  const data = JSON.parse(text);
+  const data: unknown = JSON.parse(text);
   // D2 covers single mDNS host offers; D3 adds an answer's DTLS role byte.
   // Exact reconstruction is required; other SDP layouts keep using D1.
-  if (data.denantle === 1 && ["offer", "answer"].includes(data.description?.type)
+  if (isRecord(data) && data.denantle === 1 && isRecord(data.description)
+    && (data.description.type === "offer" || data.description.type === "answer")
     && typeof data.description.sdp === "string") {
     try {
       const { type, sdp } = data.description;
@@ -63,9 +66,9 @@ export function encodeSignalingPayload(text) {
       // The general dictionary format preserves every original character.
     }
   }
-  const bytes = [];
+  const bytes: number[] = [];
   const pattern = new RegExp(SIGNALING_DICTIONARY.map((part) => part.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&")).join("|"), "g");
-  const literal = (part) => {
+  const literal = (part: string) => {
     if (!part) return;
     const raw = new TextEncoder().encode(part);
     bytes.push(0);
@@ -83,7 +86,7 @@ export function encodeSignalingPayload(text) {
   return "D1:" + encodeBase64Url(bytes);
 }
 
-export function decodeSignalingPayload(input) {
+export function decodeSignalingPayload(input: string) {
   if (typeof input !== "string" || input.length > 160000) throw new Error();
   let text = input.trim();
   if (/^https?:\/\//i.test(text)) {
@@ -116,14 +119,14 @@ export function decodeSignalingPayload(input) {
   return result;
 }
 
-export function createInviteUrl(text, currentUrl) {
+export function createInviteUrl(text: string, currentUrl: string) {
   const url = new URL(currentUrl);
   url.hash = "join=" + encodeSignalingPayload(text);
   return url.href;
 }
 
-function encodeSignalingNumber(value, width = 0) {
-  const bytes = [];
+function encodeSignalingNumber(value: string | number | bigint, width = 0) {
+  const bytes: number[] = [];
   let number = BigInt(value);
   if (number < 0n || number > 0xffffffffffffffffn) throw new Error();
   if (width) {
@@ -142,9 +145,9 @@ function encodeSignalingNumber(value, width = 0) {
   return bytes;
 }
 
-function createSignalingReader(bytes) {
+function createSignalingReader(bytes: Uint8Array) {
   let offset = 0;
-  const take = (length) => {
+  const take = (length: number) => {
     if (!Number.isSafeInteger(length) || length < 0 || offset + length > bytes.length) throw new Error();
     const part = bytes.subarray(offset, offset + length);
     offset += length;
@@ -172,18 +175,18 @@ function createSignalingReader(bytes) {
   };
 }
 
-function packSignalingOffer(sdp) {
+function packSignalingOffer(sdp: string) {
   const lines = sdp.split("\r\n");
   const origin = lines[1]?.match(/^o=- (\d+) (\d+) IN IP4 127\.0\.0\.1$/);
   const candidate = lines[9]?.match(/^a=candidate:(\d+) (\d+) udp (\d+) ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.local (\d+) typ host generation (\d+) network-cost (\d+)$/);
   const fingerprint = lines[13]?.match(/^a=fingerprint:sha-256 ((?:[0-9A-F]{2}:){31}[0-9A-F]{2})$/);
   if (!origin || !candidate || !fingerprint) throw new Error();
-  const bytes = [];
-  const number = (value, width) => bytes.push(...encodeSignalingNumber(value, width));
-  const hex = (value) => {
-    for (const pair of value.match(/../g)) bytes.push(parseInt(pair, 16));
+  const bytes: number[] = [];
+  const number = (value: string | number, width = 0) => bytes.push(...encodeSignalingNumber(value, width));
+  const hex = (value: string) => {
+    for (const pair of value.match(/../g) || []) bytes.push(parseInt(pair, 16));
   };
-  const chars = (value) => {
+  const chars = (value: string) => {
     if (!/^[A-Za-z0-9+/]+$/.test(value)) throw new Error();
     number(value.length);
     let bits = 0, accumulator = 0;
@@ -214,9 +217,9 @@ function packSignalingOffer(sdp) {
   return Uint8Array.from(bytes);
 }
 
-function unpackSignalingOffer(reader) {
-  const number = (width) => reader.number(width);
-  const hex = (length) => Array.from(reader.take(length), (byte) => byte.toString(16).padStart(2, "0"));
+function unpackSignalingOffer(reader: ReturnType<typeof createSignalingReader>) {
+  const number = (width = 0) => reader.number(width);
+  const hex = (length: number) => Array.from(reader.take(length), (byte) => byte.toString(16).padStart(2, "0"));
   const chars = () => {
     const length = Number(number());
     const bytes = reader.take(Math.ceil(length * 6 / 8));
