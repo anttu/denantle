@@ -1,0 +1,286 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Antero Fagerstedt -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Denantle · Kertakäyttöinen kutsu · kolme luonnosta</title>
+  <link rel="icon" href="../favicon.ico">
+  <style>
+    :root { color-scheme: light; --paper: #fcfbf7; --ink: #282920; --muted: #666b5a; --rule: #d5d8c9; --olive: #62694e; --wash: #f0f1e7; --green: #46613f; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: #eeede6; color: var(--ink); font: 14px/1.55 system-ui, sans-serif; }
+    h1, h2, h3, h4, p { margin: 0; }
+    button, input, textarea { font: inherit; }
+    button { color: inherit; cursor: pointer; }
+    button:disabled { cursor: default; opacity: .45; }
+    button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--olive); outline-offset: 4px; }
+    a { color: inherit; text-underline-offset: 3px; }
+    svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+    .sheet { max-width: 1620px; margin: auto; padding: 34px 32px 30px; }
+    .eyebrow { color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .13em; text-transform: uppercase; }
+    .intro { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; }
+    .intro h1 { margin: 9px 0 12px; font: 42px/1.1 Georgia, serif; letter-spacing: -.035em; }
+    .intro-copy { max-width: 720px; color: var(--muted); font-size: 13px; }
+    .draft { border: 1px solid #c9cdbb; border-radius: 30px; padding: 6px 11px; font-size: 11px; white-space: nowrap; color: #565e48; }
+    .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; margin: 25px 0 26px; padding: 17px 0; border-top: 1px solid #d7d8cc; border-bottom: 1px solid #d7d8cc; }
+    .control { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .control-label { font-size: 11px; color: var(--muted); }
+    .segmented { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border: 1px solid #d6d8cb; background: #e4e5da; border-radius: 6px; }
+    .segmented button { border: 0; border-radius: 4px; background: transparent; padding: 7px 11px; font-size: 11px; }
+    .segmented button[aria-pressed="true"] { background: var(--paper); box-shadow: 0 1px 3px #28292012; }
+    .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 23px; }
+    .concept { min-width: 0; }
+    .concept-heading { display: flex; align-items: baseline; gap: 9px; margin-bottom: 12px; }
+    .number { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .concept-heading h2 { font: 22px/1.2 Georgia, serif; letter-spacing: -.02em; }
+    .recommend { margin-left: auto; font-size: 10px; color: #4e6446; background: #e0e6d8; border-radius: 3px; padding: 3px 7px; }
+    .preview { padding: 24px; background: var(--paper); border: 1px solid #cfd2c2; border-radius: 8px; box-shadow: 0 8px 28px #28292006; }
+    .preview-inner { max-width: 720px; margin: auto; }
+    .masthead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 17px; border-bottom: 1px solid var(--rule); }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand-icon { width: 43px; height: 43px; object-fit: contain; }
+    .brand-type { width: 118px; }
+    .brand-type img { display: block; width: 100%; }
+    .brand-type img + img { margin-top: -13%; }
+    .role { color: var(--muted); font-size: 10px; border: 1px solid var(--rule); padding: 4px 7px; border-radius: 4px; }
+    .welcome { padding: 20px 0 15px; }
+    .welcome .eyebrow { font-size: 8px; }
+    .welcome h3 { margin: 8px 0; font: 30px/1.08 Georgia, serif; letter-spacing: -.035em; }
+    .mode { display: inline-flex; border: 1px solid var(--rule); border-radius: 4px; margin-bottom: 16px; font-size: 10px; overflow: hidden; }
+    .mode span { padding: 6px 10px; }
+    .mode .active { color: var(--paper); background: var(--ink); }
+    .connected { margin-bottom: 15px; border: 1px solid #d4ddca; background: #edf1e7; border-radius: 5px; padding: 11px 12px; font-size: 11px; }
+    .connected > div { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .connected strong { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
+    .connected p { color: #59684f; font-size: 10px; margin: 3px 0 0 13px; }
+    .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #587747; flex: 0 0 auto; }
+    .invitation { border: 1px solid #ced1be; border-radius: 7px; overflow: hidden; }
+    .invitation-heading { padding: 16px; background: #f3f3eb; border-bottom: 1px solid var(--rule); }
+    .invitation-heading h4 { font: 23px/1.15 Georgia, serif; letter-spacing: -.025em; margin-bottom: 5px; }
+    .invitation-heading p { color: var(--muted); font-size: 11px; }
+    .invitation-body { padding: 16px; }
+    .columns { display: grid; grid-template-columns: 1fr; gap: 18px; }
+    .columns > div { min-width: 0; }
+    .answer { border-top: 1px solid var(--rule); padding-top: 16px; }
+    .step { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+    .step-number { width: 21px; height: 21px; border: 1px solid #b8bda6; border-radius: 50%; display: inline-grid; place-items: center; color: var(--olive); font-size: 10px; flex: 0 0 auto; }
+    .help-text { color: var(--muted); font-size: 11px; margin-bottom: 12px; }
+    .link-label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 10px; }
+    .link { display: block; width: 100%; min-width: 0; border: 1px solid #d4d8c6; background: #f8f8f2; border-radius: 4px; padding: 10px; font: 10px/1.5 ui-monospace, monospace; color: #67705a; text-overflow: ellipsis; margin-bottom: 8px; }
+    .btn { width: 100%; min-height: 39px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--ink); border-radius: 5px; padding: 9px 12px; background: var(--ink); color: white; font-size: 11px; font-weight: 550; }
+    .btn:hover { background: #414435; }
+    .btn.secondary { background: transparent; color: var(--ink); border-color: #cfd3c0; }
+    .btn.secondary:hover { background: var(--wash); }
+    .answer textarea { display: block; width: 100%; min-height: 57px; resize: vertical; border: 1px solid #ccd0bd; border-radius: 4px; background: white; padding: 10px; font-size: 11px; color: var(--ink); margin: 0 0 8px; }
+    .answer textarea::placeholder { color: #757a69; }
+    .status { margin-top: 16px; padding-top: 11px; border-top: 1px solid var(--rule); display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
+    .status .dot { background: #b18842; }
+    .single-note { margin-bottom: 13px; padding-left: 10px; border-left: 2px solid #8e9975; font-size: 11px; }
+    .single-note strong { display: block; margin-bottom: 4px; font-size: 12px; }
+    .single-note p { color: var(--muted); }
+    .single-note.used { margin: 0 0 15px; }
+    .callout { display: flex; align-items: flex-start; gap: 11px; background: #ecefe1; border: 1px solid #cdd5b8; border-radius: 5px; padding: 13px; margin-bottom: 17px; font-size: 11px; }
+    .callout .one { width: 29px; height: 29px; display: grid; place-items: center; background: #dce3cc; border-radius: 50%; color: #4f5f3c; font: 19px Georgia, serif; flex: 0 0 auto; }
+    .callout strong { display: block; font-size: 12px; margin-bottom: 4px; }
+    .callout p { color: #566348; }
+    .ticket { position: relative; border: 1px solid #bfc8ad; border-radius: 6px; background: #f2f4e9; overflow: hidden; }
+    .ticket-top { padding: 14px; }
+    .ticket-label { display: flex; align-items: center; gap: 6px; color: #566344; font-size: 9px; font-weight: 650; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 9px; }
+    .ticket-label svg { width: 14px; height: 14px; }
+    .ticket-title { font: 21px/1.15 Georgia, serif; letter-spacing: -.02em; margin-bottom: 7px; }
+    .ticket .help-text { margin-bottom: 0; color: #5b664e; }
+    .ticket-bottom { position: relative; padding: 13px 14px 14px; border-top: 1px dashed #bcc6a9; background: #fbfcf6; }
+    .ticket-bottom::before, .ticket-bottom::after { content: ""; position: absolute; width: 13px; height: 13px; border: 1px solid #bfc8ad; background: var(--paper); border-radius: 50%; top: -7px; }
+    .ticket-bottom::before { left: -8px; }
+    .ticket-bottom::after { right: -8px; }
+    .ticket.used { border-color: #cbd1bd; }
+    .ticket.used .ticket-label { color: var(--green); }
+    .ticket.used .ticket-bottom { background: var(--paper); }
+    .after-link { margin-top: 10px; color: var(--muted); font-size: 10px; }
+    .used-message { font-size: 11px; color: var(--muted); margin: 0 0 15px; }
+    .used-message strong { display: block; color: var(--ink); font-size: 13px; margin-bottom: 5px; }
+    .mini-game { border-top: 1px solid var(--rule); margin-top: 20px; padding-top: 15px; }
+    .mini-game > p { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; margin-bottom: 9px; }
+    .progress { height: 3px; border-radius: 3px; background: #e3e5d9; overflow: hidden; margin-bottom: 14px; }
+    .progress::before { content: ""; display: block; width: 18%; height: 100%; background: var(--olive); }
+    .redacted { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; overflow: hidden; max-height: 38px; }
+    .redacted i { height: 10px; border-radius: 1px; background: var(--ink); width: 52px; }
+    .redacted i:nth-child(3n) { width: 27px; }
+    .redacted i:nth-child(4n) { width: 77px; }
+    .redacted span { font: 12px Georgia, serif; }
+    .concept-note { padding: 14px 1px 0; color: var(--muted); font-size: 11px; }
+    .concept-note strong { display: block; color: #4c5341; margin-bottom: 3px; font-size: 12px; }
+    .open-concept { border: 0; border-bottom: 1px solid #acb39b; background: transparent; padding: 0; margin-top: 10px; color: #4e5d3c; font-size: 11px; }
+    .page-footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 30px; padding-top: 17px; border-top: 1px solid #d7d8cc; color: var(--muted); font-size: 11px; }
+    .page-footer p { max-width: 760px; }
+    body:not([data-view="all"]) .gallery { display: block; max-width: 880px; margin: auto; }
+    body[data-view="1"] .concept:not([data-concept="1"]), body[data-view="2"] .concept:not([data-concept="2"]), body[data-view="3"] .concept:not([data-concept="3"]) { display: none; }
+    body:not([data-view="all"]) .preview { padding: 30px; }
+    body:not([data-view="all"]) .columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+    body:not([data-view="all"]) .answer { border-top: 0; border-left: 1px solid var(--rule); padding: 0 0 0 24px; }
+    body:not([data-view="all"]) .welcome h3 { font-size: 38px; }
+    body:not([data-view="all"]) .invitation-body { padding: 20px; }
+    body:not([data-view="all"]) .invitation-heading { padding: 18px 20px; }
+    @media (max-width: 1190px) { .sheet { padding: 28px 20px; } .gallery { gap: 15px; } .preview { padding: 17px; } .concept-heading h2 { font-size: 20px; } .recommend { display: none; } .role { font-size: 9px; padding: 3px 5px; } }
+    @media (max-width: 950px) { .gallery { grid-template-columns: 1fr; max-width: 560px; margin: auto; gap: 32px; } .preview { padding: 25px; } .recommend { display: block; } .intro h1 { font-size: 36px; } .page-footer { flex-direction: column; gap: 8px; } }
+    @media (max-width: 600px) { .sheet { padding: 24px 15px; } .intro h1 { font-size: 34px; } .intro-copy { font-size: 12px; } .draft { display: none; } .toolbar { margin-top: 20px; padding: 14px 0; } .control { gap: 8px; } .control-label { flex-basis: 100%; } .segmented button { padding: 8px 10px; } .preview, body:not([data-view="all"]) .preview { padding: 17px; } .preview .welcome h3 { font-size: 31px; } body:not([data-view="all"]) .columns { grid-template-columns: 1fr; gap: 18px; } body:not([data-view="all"]) .answer { border-left: 0; border-top: 1px solid var(--rule); padding: 16px 0 0; } body:not([data-view="all"]) .invitation-body, body:not([data-view="all"]) .invitation-heading { padding: 16px; } }
+    @media print { .toolbar, .open-concept, .draft { display: none; } body { background: white; } .sheet { padding: 0; } .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; max-width: none; } .preview { box-shadow: none; padding: 13px; } .concept { break-inside: avoid; } }
+  </style>
+</head>
+<body data-view="all">
+  <svg style="display:none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
+    <symbol id="person" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  </defs></svg>
+  <main class="sheet">
+    <header>
+      <div class="intro">
+        <div>
+          <p class="eyebrow">Denantle / Hostin kutsunäkymä / 3 vaihtoehtoa</p>
+          <h1>Yksi linkki. Yksi kutsuttu.</h1>
+          <p class="intro-copy">Kolme tapaa kertoa kutsun kertakäyttöisyydestä. Kaikissa sama periaate: yhdellä linkillä liittyy yksi henkilö, ja seuraavalle luodaan oma kutsu.</p>
+        </div>
+        <span class="draft">Klikattava ulkoasuluonnos</span>
+      </div>
+      <div class="toolbar">
+        <div class="control">
+          <span class="control-label" id="state-label">Kokeile vaihetta</span>
+          <div class="segmented" role="group" aria-labelledby="state-label">
+            <button type="button" data-state="create" aria-pressed="false">Ennen kutsua</button>
+            <button type="button" data-state="ready" aria-pressed="true">Kutsu valmiina</button>
+            <button type="button" data-state="used" aria-pressed="false">Kutsu käytetty</button>
+          </div>
+        </div>
+        <div class="control">
+          <span class="control-label" id="view-label">Näytä</span>
+          <div class="segmented" role="group" aria-labelledby="view-label">
+            <button type="button" data-view="all" aria-pressed="true">Rinnakkain</button>
+            <button type="button" data-view="1" aria-pressed="false">01</button>
+            <button type="button" data-view="2" aria-pressed="false">02</button>
+            <button type="button" data-view="3" aria-pressed="false">03</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div id="gallery" class="gallery"></div>
+    <footer class="page-footer">
+      <p>Ulkoasuluonnos: kutsulinkit ja vastaukset ovat esimerkkejä. Voit kokeilla kutsun luontia, kopiointia ja vastauksen hyväksymistä. Luonnos ei muodosta yhteyksiä.</p>
+      <a href="multiplayer.html?concept=1">Aiemmat yhteysnäkymät ↗</a>
+    </footer>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const validViews = ['all', '1', '2', '3'];
+    let view = validViews.includes(params.get('concept')) ? params.get('concept') : 'all';
+    let commonState = ['create', 'ready', 'used'].includes(params.get('state')) ? params.get('state') : 'ready';
+    const states = { 1: commonState, 2: commonState, 3: commonState };
+    const counts = { 1: commonState === 'used' ? 2 : 1, 2: commonState === 'used' ? 2 : 1, 3: commonState === 'used' ? 2 : 1 };
+    const concepts = {
+      1: { title: 'Ohje linkin vieressä', lead: 'Pieni muutos nykyiseen näkymään.', text: 'Rajoite kerrotaan suoraan ennen linkkiä ja kopiointipainiketta. Käytetyn kutsun tilalle tulee ohje luoda seuraavalle henkilölle uusi kutsu.' },
+      2: { title: 'Selkeä huomautus', lead: 'Rajoite erottuu jo ennen kopiointia.', text: 'Oma rauhallinen huomautus nostaa yhden henkilön rajoitteen näkyviin. Se näkyy myös ennen kutsun luomista ja selittää, miten lisää pelaajia kutsutaan.' },
+      3: { title: 'Kutsu yhdelle', lead: 'Kertakäyttöisyys on osa kutsun ulkoasua.', text: 'Linkki esitetään henkilökohtaisena kutsukorttina. Kutsun otsikko, kopiointipainike ja käytetty-tila vahvistavat kaikki samaa viestiä.' }
+    };
+    const icon = name => `<svg aria-hidden="true"><use href="#${name}"></use></svg>`;
+    const shell = () => `<div class="masthead"><div class="brand"><img class="brand-icon" src="../images/denantle-icon.png" alt=""><div class="brand-type"><img src="../images/denantle-mark.png" alt=""><img src="../images/denantle-wordmark.png" alt="Denantle"></div></div><span class="role">Kutsujan näkymä</span></div><div class="welcome"><p class="eyebrow">Pieni arvoitus. Sana kerrallaan.</p><h3>Mitä rivien<br>väliin kätkeytyy?</h3></div><div class="mode" aria-label="Pelimuoto"><span>Yksinpeli</span><span class="active">Moninpeli</span></div>`;
+    const game = () => `<div class="mini-game"><p><span>Paljastettu <strong>24 / 136</strong> sanaa</span><span>18 %</span></p><div class="progress"></div><div class="redacted" aria-hidden="true"><i></i><i></i><span>is a</span><i></i><i></i><i></i><span>of the</span><i></i><i></i><i></i></div></div>`;
+    const connected = id => counts[id] > 1 ? `<div class="connected"><div><strong><span class="dot"></span>Yhteys muodostettu</strong><span>${counts[id]} pelaajaa</span></div><p>Pelikaveri on mukana pelissäsi.</p></div>` : '';
+    const button = (action, text, symbol = '') => `<button type="button" class="btn" data-action="${action}">${symbol ? icon(symbol) : ''}<span>${text}</span></button>`;
+    const link = id => `<label class="link-label" for="invite-${id}">Kutsulinkki yhdelle pelaajalle</label><input class="link" id="invite-${id}" type="text" readonly spellcheck="false" value="https://anttu.github.io/denantle/#join=D1…" aria-describedby="limit-${id}">`;
+    function share(id) {
+      const ready = states[id] === 'ready';
+      return ready ? `${link(id)}${button('copy', id === 3 ? 'Kopioi kutsu yhdelle' : 'Kopioi kutsulinkki', 'copy')}` : button('create', counts[id] > 1 ? 'Luo uusi kutsu' : 'Luo kutsu', 'plus');
+    }
+    function answer(id) {
+      return `<div class="answer"><label class="step" for="answer-${id}"><span class="step-number" aria-hidden="true">2</span>Liitä kaverin vastaus</label><p class="help-text">Kaveri avaa linkin ja lähettää sinulle vastauksen.</p><textarea id="answer-${id}" placeholder="Liitä vastaus tähän…" spellcheck="false" ${states[id] !== 'ready' ? 'disabled' : ''}></textarea><button class="btn secondary" type="button" data-action="accept" disabled>Hyväksy vastaus <span aria-hidden="true">→</span></button></div>`;
+    }
+    function limit(id) {
+      const used = states[id] === 'used';
+      if (id === 1) return `<div class="single-note ${used ? 'used' : ''}" id="limit-${id}"><strong>${used ? 'Tämä kertakäyttöinen kutsu on käytetty.' : 'Kertakäyttöinen linkki yhdelle henkilölle.'}</strong><p>${used ? 'Yksi pelaaja on liittynyt tällä linkillä. Luo seuraavalle henkilölle uusi kutsu.' : 'Tällä linkillä voi liittyä vain yksi henkilö. Luo jokaiselle muulle pelaajalle oma kutsulinkki.'}</p></div>`;
+      if (id === 2) return `<aside class="callout" id="limit-${id}" aria-label="Kutsulinkin kertakäyttöisyys"><span class="one" aria-hidden="true">${used ? '✓' : '1'}</span><div><strong>${used ? 'Kutsu käytetty – luo seuraavalle uusi' : 'Yksi kutsulinkki, yksi kutsuttu'}</strong><p>${used ? 'Tällä linkillä on jo liittynyt yksi henkilö. Sillä ei voi liittyä uudelleen.' : 'Linkki on kertakäyttöinen: vain yksi henkilö voi liittyä sillä. Kutsu lisää pelaajia luomalla jokaiselle oma linkki.'}</p></div></aside>`;
+      return '';
+    }
+    function ticket(id) {
+      const used = states[id] === 'used';
+      return `<div class="ticket ${used ? 'used' : ''}"><div class="ticket-top"><p class="ticket-label">${icon(used ? 'check' : 'person')}${used ? 'Kutsu käytetty' : 'Kertakäyttöinen kutsu'}</p><p class="ticket-title">${used ? 'Yksi pelaaja on liittynyt.' : 'Vain yhdelle henkilölle.'}</p><p class="help-text" id="limit-${id}">${used ? 'Tällä linkillä ei voi enää liittyä. Luo seuraavalle henkilölle uusi kutsu.' : 'Tällä kutsulinkillä voi liittyä vain yksi henkilö.'}</p></div><div class="ticket-bottom">${used ? button('create', 'Luo uusi kutsu', 'plus') : share(id)}</div></div>${used ? '' : '<p class="after-link">Useampi pelikaveri? Luo jokaiselle oma kutsu.</p>'}`;
+    }
+    function panel(id) {
+      const used = states[id] === 'used';
+      const create = states[id] === 'create';
+      let body;
+      if (used) {
+        body = id === 3 ? ticket(id) : `${limit(id)}${button('create', 'Luo uusi kutsu', 'plus')}`;
+      } else {
+        const shareBody = id === 3 ? ticket(id) : `${id === 1 ? limit(id) : '<p class="help-text">Kopioi linkki ja lähetä se yhdelle pelikaverille.</p>'}${share(id)}`;
+        body = `${id === 2 ? limit(id) : ''}<div class="columns"><div><p class="step"><span class="step-number" aria-hidden="true">1</span>${id === 3 ? 'Lähetä kutsu yhdelle' : 'Lähetä kutsu'}</p>${shareBody}</div>${answer(id)}</div><p class="status" role="status"><span class="dot"></span>${create ? 'Luo kutsu aloittaaksesi yhteyden muodostamisen.' : 'Odotetaan tämän kutsun saajan vastausta.'}</p>`;
+      }
+      return `${connected(id)}<section class="invitation" aria-label="Pelikaverin kutsuminen"><div class="invitation-heading"><h4>${counts[id] > 1 ? 'Kutsu seuraava pelaaja.' : 'Yksi arvoitus. Kaksi päätä.'}</h4><p>${used ? 'Yhteinen peli jatkuu. Voit kutsua lisää pelaajia.' : 'Pelatkaa samaa artikkelia yhdessä.'}</p></div><div class="invitation-body">${body}</div></section>`;
+    }
+    function concept(id) {
+      const info = concepts[id];
+      return `<section class="concept" data-concept="${id}" aria-labelledby="concept-${id}"><div class="concept-heading"><span class="number">0${id}</span><h2 id="concept-${id}">${info.title}</h2>${id === 2 ? '<span class="recommend">Suositus</span>' : ''}</div><div class="preview"><div class="preview-inner">${shell()}${panel(id)}${game()}</div></div><div class="concept-note"><strong>${info.lead}</strong><p>${info.text}</p><button class="open-concept" type="button" data-focus="${id}">Katso koko näkymä <span aria-hidden="true">↗</span></button></div></section>`;
+    }
+    function updateControls() {
+      document.body.dataset.view = view;
+      document.querySelectorAll('[data-view]').forEach(element => {
+        if (element.tagName === 'BUTTON') element.setAttribute('aria-pressed', String(element.dataset.view === view));
+      });
+      document.querySelectorAll('[data-state]').forEach(element => element.setAttribute('aria-pressed', String(Object.values(states).every(state => state === element.dataset.state))));
+      const url = new URL(location.href);
+      url.searchParams.set('concept', view);
+      if (Object.values(states).every(state => state === states[1])) url.searchParams.set('state', states[1]);
+      else url.searchParams.delete('state');
+      history.replaceState(null, '', url);
+    }
+    function render() {
+      document.getElementById('gallery').innerHTML = [1, 2, 3].map(concept).join('');
+      updateControls();
+    }
+    document.addEventListener('input', event => {
+      const card = event.target.closest('[data-concept]');
+      if (card && event.target.tagName === 'TEXTAREA') card.querySelector('[data-action="accept"]').disabled = !event.target.value.trim();
+    });
+    document.addEventListener('click', event => {
+      const target = event.target.closest('button');
+      if (!target || target.disabled) return;
+      if (target.dataset.state) {
+        commonState = target.dataset.state;
+        for (const id of [1, 2, 3]) { states[id] = commonState; counts[id] = commonState === 'used' ? 2 : 1; }
+        render();
+        document.querySelector(`[data-state="${commonState}"]`).focus();
+        return;
+      }
+      if (target.dataset.view || target.dataset.focus) {
+        view = target.dataset.view || target.dataset.focus;
+        updateControls();
+        if (target.dataset.focus) document.querySelector(`[data-concept="${view}"]`).scrollIntoView({ block: 'start' });
+        return;
+      }
+      const card = target.closest('[data-concept]');
+      if (!card) return;
+      const id = Number(card.dataset.concept);
+      if (target.dataset.action === 'copy') {
+        target.querySelector('span').textContent = '✓ Kopioitu (luonnos)';
+        const status = card.querySelector('[role="status"]');
+        if (status) status.textContent = 'Lähetä tämä kertakäyttöinen linkki vain yhdelle henkilölle.';
+      }
+      if (target.dataset.action === 'create') {
+        states[id] = 'ready';
+        render();
+        document.getElementById(`invite-${id}`).focus();
+      }
+      if (target.dataset.action === 'accept') {
+        counts[id] += 1;
+        states[id] = 'used';
+        render();
+        document.querySelector(`[data-concept="${id}"] [data-action="create"]`).focus();
+      }
+    });
+    render();
+  </script>
+</body>
+</html>

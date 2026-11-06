@@ -1,0 +1,376 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Antero Fagerstedt -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Denantle · Kolme moninpeliluonnosta</title>
+  <link rel="icon" href="../favicon.ico">
+  <style>
+    :root { color-scheme: light; --paper: #fcfbf7; --ink: #282920; --muted: #6e7162; --rule: #d9d9cc; --green: #46613f; --sage: #edf1e7; --accent: #62694e; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: #eeede6; color: var(--ink); font: 14px/1.5 system-ui, sans-serif; }
+    button, input, textarea { font: inherit; }
+    button, summary { cursor: pointer; }
+    button { color: inherit; }
+    button:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
+    button { border: 1px solid var(--rule); border-radius: 5px; padding: 9px 12px; background: transparent; }
+    button:hover { background: #e9eadf; }
+    button.primary { background: var(--ink); border-color: var(--ink); color: white; }
+    button.primary:hover { background: #414435; }
+    a { color: inherit; text-underline-offset: 3px; }
+    .sheet { max-width: 1600px; margin: 0 auto; padding: 40px 36px 32px; }
+    .eyebrow { margin: 0; font-size: 10px; font-weight: 650; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+    .intro { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; }
+    .intro h1 { margin: 10px 0 12px; font: 42px/1.1 Georgia, serif; letter-spacing: -.035em; }
+    .intro p:last-child { color: var(--muted); max-width: 650px; margin: 0; }
+    .draft-tag { white-space: nowrap; border: 1px solid #c9cdba; padding: 6px 10px; border-radius: 30px; color: #565e48; font-size: 11px; margin-top: 3px; }
+    .preview-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; padding: 22px 0; margin-top: 12px; }
+    .control-group { display: flex; align-items: center; gap: 12px; }
+    .control-label { color: var(--muted); font-size: 12px; }
+    .segmented { display: inline-flex; padding: 3px; gap: 3px; border-radius: 7px; background: #e1e2d8; }
+    .segmented button { padding: 7px 15px; border: 0; font-size: 12px; border-radius: 4px; }
+    .segmented button[aria-pressed="true"] { background: var(--paper); box-shadow: 0 1px 3px #28292012; }
+    .view-switch button { padding: 7px 10px; }
+    .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: start; }
+    .concept { min-width: 0; }
+    .concept-title { display: flex; align-items: baseline; gap: 9px; margin: 0 0 12px; min-height: 24px; }
+    .concept-title span { font-size: 11px; font-variant-numeric: tabular-nums; color: var(--muted); }
+    .concept-title h2 { margin: 0; font: 20px/1.3 Georgia, serif; letter-spacing: -.02em; }
+    .recommended { margin-left: auto; color: #4e6446 !important; font-size: 10px !important; background: #e0e6d8; padding: 3px 7px; border-radius: 3px; }
+    .preview { background: var(--paper); padding: 24px; border: 1px solid #d0d2c4; border-radius: 9px; box-shadow: 0 7px 24px #28292006; min-height: 744px; overflow: hidden; }
+    .masthead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 17px; border-bottom: 1px solid var(--rule); }
+    .brand { display: flex; align-items: center; gap: 7px; }
+    .brand-icon { width: 42px; height: 42px; object-fit: contain; }
+    .brand-type { width: 113px; }
+    .brand-type img { display: block; width: 100%; height: auto; }
+    .brand-type img + img { margin-top: -13%; }
+    .help { display: grid; place-items: center; border: 1px solid #999c89; border-radius: 50%; width: 26px; height: 26px; font: 15px Georgia, serif; color: var(--muted); }
+    .welcome { padding: 21px 0 19px; }
+    .welcome .eyebrow { font-size: 8px; }
+    .welcome h3 { margin: 9px 0 8px; font: 32px/1.06 Georgia, serif; letter-spacing: -.04em; }
+    .welcome > p:last-child { margin: 0; font-size: 11px; color: var(--muted); }
+    .article-controls { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 11px; font-size: 10px; }
+    .source-select { border: 1px solid var(--rule); padding: 7px 9px; border-radius: 4px; }
+    .source-select span { margin-left: 7px; }
+    .new-game { padding: 5px 0; border: 0; font-size: 10px; }
+    .mode { display: inline-flex; border: 1px solid var(--ink); border-radius: 4px; font-size: 10px; overflow: hidden; margin-bottom: 12px; }
+    .mode span { padding: 8px 10px; }
+    .mode span + span { background: var(--ink); color: white; }
+    .connection { font-size: 11px; }
+    .status-line { display: flex; align-items: center; gap: 7px; font-weight: 600; white-space: nowrap; }
+    .dot { flex: 0 0 6px; height: 6px; background: #587747; border-radius: 50%; display: inline-block; }
+    .muted { color: var(--muted); }
+    .status-note { margin: 4px 0 0 13px; color: #59684f; font-size: 10px; }
+    .text-button { border: 0; padding: 0; background: transparent; font-size: 10px; text-decoration: underline; text-decoration-color: #a7af99; text-underline-offset: 3px; }
+    .text-button:hover { background: transparent; color: var(--green); }
+    .strip { background: var(--sage); border: 1px solid #d4ddca; border-radius: 5px; padding: 12px; }
+    .strip-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .count { color: #5b6c50; font-size: 10px; white-space: nowrap; }
+    .compact-invite { margin-top: 0; border-bottom: 1px solid var(--rule); }
+    .compact-invite > summary { list-style: none; padding: 11px 1px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+    .compact-invite > summary::after { content: "+"; font-size: 16px; color: #5b654d; }
+    .compact-invite[open] > summary::after { content: "−"; }
+    .invite-form { padding: 13px 0; border-top: 1px solid var(--rule); }
+    .invite-form p { font-size: 10px; color: var(--muted); margin: 0 0 11px; line-height: 1.6; }
+    .invite-form label { display: block; font-size: 10px; font-weight: 600; margin-bottom: 5px; }
+    .invite-form textarea { display: block; width: 100%; min-height: 66px; padding: 8px; border: 1px solid #c9cdbb; border-radius: 4px; background: #fff; color: var(--ink); font: 11px/1.5 ui-monospace, monospace; resize: vertical; }
+    .invite-form textarea:focus-visible { outline: 2px solid #748066; outline-offset: 2px; }
+    .invite-actions { display: flex; gap: 7px; align-items: center; margin: 9px 0 12px; }
+    .invite-actions button { font-size: 10px; padding: 7px 9px; }
+    .invite-actions .primary { margin-left: auto; }
+    .debug { font-size: 10px; color: var(--muted); }
+    .debug summary { padding: 2px 0; }
+    .debug pre { overflow-wrap: anywhere; white-space: pre-wrap; padding: 10px; border: 1px solid var(--rule); background: white; border-radius: 4px; }
+    .player-card { border: 1px solid #cdd5c3; border-radius: 7px; background: #f3f5ed; }
+    .player-card-heading { padding: 14px 14px 0; }
+    .player-card .status-note { margin-left: 0; }
+    .player-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 15px 14px; }
+    .player { display: flex; gap: 7px; align-items: center; min-width: 0; }
+    .avatar { display: grid; place-items: center; border-radius: 50%; width: 31px; height: 31px; flex: 0 0 31px; color: #59654b; background: #e3e8d9; }
+    .avatar.other { color: #776745; background: #ece6d7; }
+    .avatar svg { width: 17px; height: 17px; }
+    .player strong { display: block; font-size: 10px; font-weight: 600; }
+    .player small { display: block; font-size: 9px; color: var(--muted); margin-top: 1px; }
+    .player-card-footer { border-top: 1px solid #dbe0d1; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; }
+    .player-card-footer .text-button { text-decoration: none; font-size: 11px; }
+    .guest-card-footer { font-size: 10px; color: #59684f; border-top: 1px solid #dbe0d1; padding: 10px 14px; }
+    .management { border: 1px solid #d1d5c4; border-radius: 6px; overflow: hidden; }
+    .management-header { padding: 11px 12px; background: #e9eee1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .management-body { padding: 12px; }
+    .roster { display: flex; flex-wrap: wrap; gap: 7px; padding-bottom: 12px; }
+    .roster span { background: #eeefe7; border: 1px solid #dedfd3; border-radius: 4px; padding: 4px 7px; font-size: 10px; }
+    .roster small { color: #6e7162; margin-left: 3px; }
+    .management .invite-form { padding-bottom: 0; }
+    .management .invite-actions { margin-bottom: 8px; }
+    .management .guest-note { padding: 0 12px 12px; font-size: 10px; color: var(--muted); margin: 0; }
+    .management .guest-only .roster { padding: 12px; }
+    .game { margin-top: 18px; }
+    .game-meta { margin: 0 0 10px; color: var(--muted); font-size: 9px; }
+    .progress-copy { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 9px; }
+    .progress-copy strong { color: var(--ink); font-weight: 600; }
+    .progress { height: 3px; border-radius: 3px; background: #e8e7dd; margin: 7px 0 14px; }
+    .progress::before { content: ""; display: block; height: 100%; width: 24%; background: var(--accent); border-radius: inherit; }
+    .guess { display: flex; align-items: center; justify-content: space-between; border: 1px solid #c5c8b8; border-radius: 6px; background: white; padding: 4px; gap: 4px; }
+    .guess > span { color: #7c7f70; font-size: 11px; padding-left: 7px; }
+    .guess > span:last-child { flex-shrink: 0; color: white; background: var(--ink); padding: 8px 11px; border-radius: 4px; }
+    .recent { margin: 12px 0 7px; display: flex; flex-wrap: wrap; gap: 5px; font-size: 9px; }
+    .recent span { padding: 3px 7px; border: 1px solid #e0e1d5; border-radius: 3px; background: white; font-weight: 600; }
+    .recent .near { color: #ae4e0c; }
+    .recent .cold { color: #2468b9; }
+    .article { border-top: 1px solid var(--rule); margin-top: 19px; padding-top: 17px; }
+    .article h4 { margin: 10px 0 13px; font: 25px/1.4 Georgia, serif; letter-spacing: -.03em; }
+    .redacted { display: inline-block; vertical-align: baseline; height: .95em; background: var(--ink); border-radius: 2px; transform: translateY(.12em); }
+    .article h4 .redacted { height: 1.1em; }
+    .article p { margin: 0; font: 15px/1.95 Georgia, serif; }
+    .concept-note { padding: 17px 2px 0; color: #5d6252; font-size: 12px; line-height: 1.65; }
+    .concept-note p { margin: 0 0 7px; }
+    .concept-note strong { color: var(--ink); font-weight: 600; }
+    .concept-note .try { font-size: 10px; color: var(--muted); }
+    .footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid #d2d4c7; margin-top: 28px; padding-top: 16px; font-size: 11px; color: var(--muted); }
+    .footer p { margin: 0; max-width: 850px; }
+    .guest-only { display: none; }
+    body[data-role="host"] .guest-only { display: none !important; }
+    body[data-role="guest"] .host-only { display: none !important; }
+    body[data-role="guest"] .guest-only { display: block; }
+    body[data-role="guest"] .source-select { opacity: .6; }
+    body[data-role="guest"] .new-game { visibility: hidden; }
+    .notice { margin: 8px 0 0 !important; font-size: 10px !important; color: var(--green) !important; }
+    dialog { width: min(430px, calc(100vw - 40px)); border: 1px solid #c9cebc; border-radius: 9px; background: var(--paper); color: var(--ink); padding: 23px; box-shadow: 0 18px 70px #28292025; }
+    dialog::backdrop { background: #28292055; }
+    .dialog-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    dialog h2 { margin: 0; font: 26px/1.2 Georgia, serif; letter-spacing: -.03em; }
+    .close { border: 0; padding: 0; font-size: 22px; width: 30px; height: 30px; }
+    dialog .invite-form { border-top: 0; padding-top: 0; }
+    dialog .invite-form p, dialog .invite-form label, dialog .invite-actions button { font-size: 12px; }
+    dialog .invite-form textarea { min-height: 100px; font-size: 12px; }
+    body[data-view]:not([data-view="all"]) .gallery { max-width: 790px; margin: 0 auto; display: block; }
+    body[data-view="one"] .concept:not([data-concept="one"]), body[data-view="two"] .concept:not([data-concept="two"]), body[data-view="three"] .concept:not([data-concept="three"]) { display: none; }
+    body[data-view]:not([data-view="all"]) .preview { padding: 32px; min-height: 0; }
+    body[data-view]:not([data-view="all"]) .preview-content { max-width: 620px; margin: auto; }
+    body[data-view]:not([data-view="all"]) .welcome h3 { font-size: 42px; }
+    body[data-view]:not([data-view="all"]) .connection, body[data-view]:not([data-view="all"]) .status-line { font-size: 13px; }
+    body[data-view]:not([data-view="all"]) .article p { font-size: 19px; }
+    body[data-view]:not([data-view="all"]) .article h4 { font-size: 32px; }
+    @media (max-width: 1120px) { .sheet { padding: 30px 20px; } .gallery { gap: 14px; } .preview { padding: 18px; } .concept-title h2 { font-size: 18px; } .recommended { display: none; } }
+    @media (max-width: 940px) { .gallery { grid-template-columns: 1fr; max-width: 620px; margin: 0 auto; gap: 34px; } .preview { padding: 24px; min-height: 0; } .recommended { display: block; } .intro h1 { font-size: 36px; } .intro { gap: 15px; } .footer { flex-direction: column; gap: 7px; } }
+    @media (max-width: 480px) { .sheet { padding: 24px 16px; } .intro h1 { font-size: 33px; max-width: 280px; } .intro .draft-tag { display: none; } .intro p:last-child { font-size: 12px; } .control-group { gap: 7px; } .view-switch { display: none; } .preview { padding: 19px; } body[data-view]:not([data-view="all"]) .preview { padding: 19px; } .welcome h3, body[data-view]:not([data-view="all"]) .welcome h3 { font-size: 32px; } .article-controls { gap: 4px; } .source-select { padding: 7px; } .guess > span { font-size: 10px; } }
+    @media print { .preview-controls, .try, .draft-tag { display: none; } .sheet { padding: 0; } .gallery { gap: 12px; } .preview { box-shadow: none; min-height: 0; padding: 16px; } body { background: white; } .concept { break-inside: avoid; } }
+  </style>
+</head>
+<body data-role="host" data-view="all">
+  <main class="sheet">
+    <header>
+      <div class="intro">
+        <div>
+          <p class="eyebrow">Denantle / Moninpeli / Kolme suuntaa</p>
+          <h1>Yhteys kunnossa. Takaisin arvoitukseen.</h1>
+          <p>Yhteyden muodostamisen jälkeen pelaaminen saa pääosan. Hostille jää reitti uusien pelaajien hyväksymiseen, kutsutulta yhteystiedot piilotetaan.</p>
+        </div>
+        <span class="draft-tag">Klikattava luonnos · 05.11.2026</span>
+      </div>
+      <div class="preview-controls">
+        <div class="control-group">
+          <span class="control-label">Katso roolissa</span>
+          <div class="segmented" aria-label="Esikatselun rooli">
+            <button type="button" data-role-choice="host" aria-pressed="true">Host</button>
+            <button type="button" data-role-choice="guest" aria-pressed="false">Kutsuttu</button>
+          </div>
+        </div>
+        <div class="segmented view-switch" aria-label="Näytettävä luonnos">
+          <button type="button" data-view-choice="all" aria-pressed="true">Rinnakkain</button>
+          <button type="button" data-view-choice="one" aria-pressed="false">01</button>
+          <button type="button" data-view-choice="two" aria-pressed="false">02</button>
+          <button type="button" data-view-choice="three" aria-pressed="false">03</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="gallery">
+      <section class="concept" data-concept="one" aria-labelledby="concept-one">
+        <div class="concept-title"><span>01</span><h2 id="concept-one">Huomaamaton tilapalkki</h2><span class="recommended">Suositus</span></div>
+        <div class="preview"><div class="preview-content">
+          <div data-shell></div>
+          <section class="connection" aria-label="Moninpelin yhteys">
+            <div class="strip">
+              <div class="strip-top"><div class="status-line"><span class="dot"></span>Yhteys muodostettu</div><span class="count"><span data-player-count>2</span> pelaajaa</span></div>
+              <p class="status-note host-only">Pelikaveri on mukana pelissäsi.</p>
+              <p class="status-note guest-only">Olet mukana kutsujan pelissä.</p>
+            </div>
+            <details class="compact-invite host-only">
+              <summary>Kutsu lisää pelaajia</summary>
+              <form class="invite-form" data-invite-form>
+                <p>Nykyinen peli jatkuu. Lähetä uusi kutsu ja liitä uuden pelaajan vastaus tähän.</p>
+                <div class="invite-actions"><button type="button" data-copy>Kopioi uusi kutsulinkki</button></div>
+                <label for="answer-one">Uuden pelaajan vastaus</label>
+                <textarea id="answer-one" required spellcheck="false" placeholder="Liitä saamasi vastaus…"></textarea>
+                <div class="invite-actions"><button class="primary" type="submit">Hyväksy pelaaja</button></div>
+                <details class="debug"><summary>Yhteyden tekniset tiedot</summary><pre>Esimerkkipayload · ei oikeaa yhteystietoa
+{ "type": "answer", "sdp": "…" }</pre></details>
+                <p class="notice" role="status" hidden></p>
+              </form>
+            </details>
+          </section>
+          <div data-game></div>
+        </div></div>
+        <div class="concept-note">
+          <p><strong>Mahdollisimman vähän tiellä.</strong> Yksi rauhallinen tilapalkki vahvistaa yhteyden. Hostin kutsukentät avautuvat tarvittaessa sen alta.</p>
+          <p class="try">Kokeile: avaa ”Kutsu lisää pelaajia” tai vaihda kutsutun näkymään.</p>
+        </div>
+      </section>
+
+      <section class="concept" data-concept="two" aria-labelledby="concept-two">
+        <div class="concept-title"><span>02</span><h2 id="concept-two">Pelaajat ensin</h2></div>
+        <div class="preview"><div class="preview-content">
+          <div data-shell></div>
+          <section class="connection player-card" aria-label="Pelaajat ja yhteys">
+            <div class="player-card-heading">
+              <div class="status-line"><span class="dot"></span>Yhteys muodostettu</div>
+              <p class="status-note">Yhteinen artikkeli, yhteiset oivallukset.</p>
+            </div>
+            <div class="player-list">
+              <div class="player"><span class="avatar" data-avatar></span><div><strong>Sinä</strong><small class="host-only">Host · paikalla</small><small class="guest-only">Kutsuttu · paikalla</small></div></div>
+              <div class="player"><span class="avatar other" data-avatar></span><div><strong class="host-only">Pelikaveri</strong><strong class="guest-only">Kutsuja</strong><small>Paikalla</small></div></div>
+            </div>
+            <div class="player-card-footer host-only"><button class="text-button" type="button" data-open-dialog>＋ Lisää pelaaja</button><span class="count"><span data-player-count>2</span> paikalla</span></div>
+            <div class="guest-card-footer guest-only">Kutsuja hallitsee pelaajia ja valitsee uuden pelin.</div>
+          </section>
+          <div data-game></div>
+        </div></div>
+        <div class="concept-note">
+          <p><strong>Yhdessä pelaaminen näkyy.</strong> Pelaajakortti kertoo, kuka on mukana ja kuka toimii hostina. Uusi pelaaja hyväksytään omassa ikkunassaan.</p>
+          <p class="try">Kokeile: paina ”Lisää pelaaja”. Pelin asettelu säilyy ikkunan taustalla.</p>
+        </div>
+      </section>
+
+      <section class="concept" data-concept="three" aria-labelledby="concept-three">
+        <div class="concept-title"><span>03</span><h2 id="concept-three">Hallinta näkyvissä</h2></div>
+        <div class="preview"><div class="preview-content">
+          <div data-shell></div>
+          <section class="connection management" aria-label="Moninpelin hallinta">
+            <div class="management-header"><div class="status-line"><span class="dot"></span>Yhteys muodostettu</div><span class="count"><span data-player-count>2</span> mukana</span></div>
+            <div class="management-body host-only">
+              <div class="roster"><span>Sinä <small>host</small></span><span>Pelikaveri <small>paikalla</small></span></div>
+              <form class="invite-form" data-invite-form>
+                <p>Lisää pelaaja katkaisematta nykyistä yhteyttä.</p>
+                <div class="invite-actions"><button type="button" data-copy>＋ Kopioi uusi kutsu</button></div>
+                <label for="answer-three">Uuden pelaajan vastaus</label>
+                <textarea id="answer-three" required spellcheck="false" placeholder="Liitä vastaus tähän…"></textarea>
+                <div class="invite-actions"><button class="primary" type="submit">Hyväksy pelaaja</button></div>
+                <details class="debug"><summary>Yhteyden tekniset tiedot</summary><pre>Esimerkkipayload · ei oikeaa yhteystietoa
+{ "type": "answer", "sdp": "…" }</pre></details>
+                <p class="notice" role="status" hidden></p>
+              </form>
+            </div>
+            <div class="guest-only">
+              <div class="roster"><span>Kutsuja <small>host</small></span><span>Sinä <small>paikalla</small></span></div>
+              <p class="guest-note">Olet mukana kutsujan pelissä. Voitte molemmat arvata.</p>
+            </div>
+          </section>
+          <div data-game></div>
+        </div></div>
+        <div class="concept-note">
+          <p><strong>Uusia liittyjiä varten.</strong> Host näkee hyväksymiskentän jatkuvasti. Kutsutun näkymä kutistuu yhteyden tilaan ja pelaajalistaan.</p>
+          <p class="try">Kokeile: liitä kenttään mitä tahansa esimerkkitekstiä ja hyväksy pelaaja.</p>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <p>Luonnokset simuloivat yhteyden jälkeistä tilaa. Kutsut ja hyväksynnät ovat esimerkkejä. Usean clientin tuki edellyttää muutoksia nykyiseen yhden vertaisyhteyden toteutukseen.</p>
+      <p>Denantlen nykyinen väripaletti ja typografia.</p>
+    </footer>
+  </main>
+
+  <dialog id="invite-dialog" aria-labelledby="invite-title">
+    <div class="dialog-top"><h2 id="invite-title">Lisää pelaaja</h2><button type="button" class="close" aria-label="Sulje kutsuikkuna" data-close-dialog>×</button></div>
+    <form class="invite-form" data-invite-form data-dialog-form>
+      <p>Peli jatkuu taustalla. Lähetä uusi kutsulinkki pelikaverille ja hyväksy hänen vastauksensa.</p>
+      <div class="invite-actions"><button type="button" data-copy>Kopioi uusi kutsulinkki</button></div>
+      <label for="answer-two">Uuden pelaajan vastaus</label>
+      <textarea id="answer-two" required spellcheck="false" placeholder="Liitä saamasi vastaus…"></textarea>
+      <div class="invite-actions"><button type="button" data-close-dialog>Takaisin peliin</button><button type="submit" class="primary">Hyväksy pelaaja</button></div>
+      <details class="debug"><summary>Yhteyden tekniset tiedot</summary><pre>Esimerkkipayload · ei oikeaa yhteystietoa
+{ "type": "answer", "sdp": "…" }</pre></details>
+      <p class="notice" role="status" hidden></p>
+    </form>
+  </dialog>
+
+  <template id="shell-template">
+    <div class="masthead">
+      <div class="brand"><img class="brand-icon" src="../images/denantle-icon.png" alt="" width="42" height="42"><div class="brand-type"><img src="../images/denantle-mark.png" alt=""><img src="../images/denantle-wordmark.png" alt="Denantle"></div></div>
+      <span class="help" aria-hidden="true">?</span>
+    </div>
+    <div class="welcome"><p class="eyebrow">Pieni arvoitus. Sana kerrallaan.</p><h3>Mitä rivien<br>väliin kätkeytyy?</h3><p>Paljasta Wikipedia-artikkeli arvaamalla sanoja.</p></div>
+    <div class="article-controls"><span class="source-select">Suomenkielinen Wikipedia <span aria-hidden="true">⌄</span></span><span class="new-game">↻ Uusi peli</span></div>
+    <div class="mode" aria-label="Pelimuoto: moninpeli lähiverkossa"><span>Yksinpeli</span><span>Moninpeli lähiverkossa</span></div>
+  </template>
+  <template id="game-template">
+    <div class="game">
+      <p class="game-meta">Pelin tunniste: <u>fi-14780592</u></p>
+      <div class="progress-copy"><span><strong>24 %</strong> sanoista paljastettu</span><span><strong>18</strong> arvausta</span></div>
+      <div class="progress" aria-hidden="true"></div>
+      <div class="guess" aria-label="Arvauskentän luonnos"><span>Arvaa seuraava sana…</span><span>Arvaa ↵</span></div>
+      <div class="recent"><span>metsä · 6</span><span class="near">puu</span><span class="cold">kaupunki</span></div>
+      <div class="article"><p class="eyebrow">Artikkeli</p><h4><span class="redacted" style="width:43%"></span> <span class="redacted" style="width:26%"></span></h4><p><span class="redacted" style="width:27%"></span> on <span class="redacted" style="width:33%"></span> ja <span class="redacted" style="width:21%"></span> metsä. <span class="redacted" style="width:37%"></span> <span class="redacted" style="width:19%"></span> Suomessa <span class="redacted" style="width:29%"></span> <span class="redacted" style="width:18%"></span>.</p></div>
+    </div>
+  </template>
+  <script>
+    for (const target of document.querySelectorAll('[data-shell]')) target.append(document.getElementById('shell-template').content.cloneNode(true));
+    for (const target of document.querySelectorAll('[data-game]')) target.append(document.getElementById('game-template').content.cloneNode(true));
+    for (const avatar of document.querySelectorAll('[data-avatar]')) {
+      avatar.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 21v-3a6.5 6.5 0 0 1 13 0v3"/></svg>';
+    }
+    const dialog = document.getElementById('invite-dialog');
+    const counts = new Map([['one', 2], ['two', 2], ['three', 2]]);
+    function setRole(role) {
+      document.body.dataset.role = role;
+      for (const button of document.querySelectorAll('[data-role-choice]')) button.setAttribute('aria-pressed', String(button.dataset.roleChoice === role));
+      for (const field of document.querySelectorAll('textarea')) field.disabled = role === 'guest';
+      dialog.close();
+    }
+    for (const button of document.querySelectorAll('[data-role-choice]')) button.addEventListener('click', () => setRole(button.dataset.roleChoice));
+    for (const button of document.querySelectorAll('[data-view-choice]')) button.addEventListener('click', () => {
+      document.body.dataset.view = button.dataset.viewChoice;
+      for (const choice of document.querySelectorAll('[data-view-choice]')) choice.setAttribute('aria-pressed', String(choice === button));
+    });
+    for (const button of document.querySelectorAll('[data-open-dialog]')) button.addEventListener('click', () => dialog.showModal());
+    for (const button of document.querySelectorAll('[data-close-dialog]')) button.addEventListener('click', () => dialog.close());
+    for (const button of document.querySelectorAll('[data-copy]')) button.addEventListener('click', () => {
+      const notice = button.closest('form').querySelector('.notice');
+      notice.textContent = 'Luonnos: tässä kopioitaisiin uusi kutsulinkki leikepöydälle.';
+      notice.hidden = false;
+    });
+    for (const form of document.querySelectorAll('[data-invite-form]')) form.addEventListener('submit', event => {
+      event.preventDefault();
+      const concept = form.hasAttribute('data-dialog-form') ? document.querySelector('[data-concept="two"]') : form.closest('[data-concept]');
+      const id = concept.dataset.concept;
+      counts.set(id, counts.get(id) + 1);
+      for (const count of concept.querySelectorAll('[data-player-count]')) count.textContent = counts.get(id);
+      if (id === 'two') {
+        const player = document.createElement('div');
+        player.className = 'player';
+        player.innerHTML = '<span class="avatar other">＋</span><div><strong>Uusi pelaaja</strong><small>Paikalla</small></div>';
+        concept.querySelector('.player-list').append(player);
+      }
+      if (id === 'three') {
+        for (const roster of concept.querySelectorAll('.roster')) {
+          const player = document.createElement('span');
+          player.textContent = 'Uusi pelaaja';
+          roster.append(player);
+        }
+      }
+      const notice = form.querySelector('.notice');
+      notice.textContent = 'Luonnos: uusi pelaaja hyväksytty. Nykyinen yhteys säilyy.';
+      notice.hidden = false;
+      form.querySelector('textarea').value = '';
+      if (form.hasAttribute('data-dialog-form')) {
+        dialog.close();
+        concept.querySelector('.player-card .status-note').textContent = 'Uusi pelaaja liittyi mukaan.';
+      }
+    });
+  </script>
+</body>
+</html>
