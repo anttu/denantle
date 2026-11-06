@@ -1,0 +1,17 @@
+{
+  "name": "denantle",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build.mts",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.embedding-worker.json --noEmit && tsc -p tsconfig.finnish-worker.json --noEmit && tsc -p tsconfig.tools.json && tsc -p tests/tsconfig.json",
+    "dev": "node tools/develop.mts",
+    "pretest": "npm run build",
+    "test": "playwright test --config tests/playwright.config.ts"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "@types/node": "26.6.6",
+    "@playwright/test": "1.64.1"
+  },
+  "type": "module"
+}

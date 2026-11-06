@@ -7,9 +7,9 @@ WORKDIR /app
 COPY .nvmrc ./
 RUN . "$NVM_DIR/nvm.sh" --no-use && nvm install
 
-WORKDIR /app/tests
-COPY tests/package.json tests/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN . "$NVM_DIR/nvm.sh" --no-use && nvm use && npm ci --ignore-scripts --no-audit --no-fund
+
 COPY . /app
 
-CMD ["bash", "-c", ". \"$NVM_DIR/nvm.sh\" --no-use && nvm use && exec npm test"]
+CMD ["bash", "-c", ". \"$NVM_DIR/nvm.sh\" --no-use && nvm use && npm run typecheck && exec npm test"]

@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-const wikipediaSources = {
+import type { SourceKey, WikipediaSource } from "./contracts.js";
+
+export const wikipediaSources: Record<SourceKey, WikipediaSource> = {
   simple: {
     language: "en",
     baseUrl: "https://simple.wikipedia.org",
@@ -42,3 +44,7 @@ const wikipediaSources = {
     ],
   },
 };
+
+export function isSourceKey(value: unknown): value is SourceKey {
+  return typeof value === "string" && Object.hasOwn(wikipediaSources, value);
+}

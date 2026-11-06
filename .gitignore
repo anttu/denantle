@@ -2,3 +2,5 @@
 /Denantle.iml
 dist/
 /.superpowers/
+/node_modules/
+/.denantle-build-*/

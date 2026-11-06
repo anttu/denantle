@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import type { Language } from "./contracts.js";
+import { isRecord } from "./validation.js";
+
 // All interface copy lives here. Article content keeps its own language.
 const translations = {
   "language.label": {
@@ -841,68 +844,76 @@ const translations = {
   }
 };
 
-const i18n = (() => {
+export type TranslationKey = keyof typeof translations;
+export interface TranslationMessage { key: TranslationKey; params: Record<string, unknown> }
+const isTranslationKey = (value: unknown): value is TranslationKey =>
+  typeof value === "string" && Object.hasOwn(translations, value);
+
+export const i18n = (() => {
   const storageKey = "denantle-language";
-  const supported = (value) => value === "fi" || value === "en";
+  const supported = (value: unknown): value is Language => value === "fi" || value === "en";
   const browserLanguage = (navigator.language || "en").toLowerCase().split(/[-_]/)[0];
-  let language = supported(browserLanguage) ? browserLanguage : "en";
+  let language: Language = supported(browserLanguage) ? browserLanguage : "en";
   try {
     const saved = localStorage.getItem(storageKey);
     if (supported(saved)) language = saved;
   } catch { /* Language selection also works when storage is unavailable. */ }
 
   // Descriptors keep live messages translatable, including shared guess feedback.
-  const bindings = new Map();
-  const message = (key, params = {}) => ({ key, params });
-  const isMessage = (value) => value && typeof value === "object"
-    && Object.hasOwn(translations, value.key) && value.params && typeof value.params === "object";
-  function format(value) {
+  const bindings = new Map<Element, Map<string, unknown>>();
+  const message = (key: TranslationKey, params: Record<string, unknown> = {}): TranslationMessage => ({ key, params });
+  const isMessage = (value: unknown): value is TranslationMessage => isRecord(value)
+    && isTranslationKey(value.key) && isRecord(value.params);
+  function format(value: unknown): string {
     if (!isMessage(value)) return String(value ?? "");
     return translations[value.key][language].replace(/\{(\w+)\}/g,
-      (_, name) => format(value.params[name]));
+      (_: string, name: string) => format(value.params[name]));
   }
-  const t = (key, params) => format(message(key, params));
+  const t = (key: TranslationKey, params?: Record<string, unknown>) => format(message(key, params));
 
-  function bind(element, attribute, value) {
+  function bind(element: Element, attribute: string, value: unknown) {
     if (!bindings.has(element)) bindings.set(element, new Map());
-    const attributes = bindings.get(element);
+    const attributes = bindings.get(element)!;
     if (isMessage(value)) attributes.set(attribute, value);
     else attributes.delete(attribute);
     const translated = format(value);
     if (attribute === "textContent") element.textContent = translated;
     else element.setAttribute(attribute, translated);
   }
-  const text = (element, value) => bind(element, "textContent", value);
-  const attr = (element, attribute, value) => bind(element, attribute, value);
-  const getMessage = (element) => bindings.get(element)?.get("textContent") ?? element.textContent;
-  function error(value, params) {
-    const translation = typeof value === "string" && Object.hasOwn(translations, value)
+  const text = (element: Element, value: unknown) => bind(element, "textContent", value);
+  const attr = (element: Element, attribute: string, value: unknown) => bind(element, attribute, value);
+  const getMessage = (element: Element) => bindings.get(element)?.get("textContent") ?? element.textContent;
+  function error(value: unknown, params?: Record<string, unknown>) {
+    const translation = isTranslationKey(value)
       ? message(value, params) : value;
     return Object.assign(new Error(format(translation)), { translation });
   }
-  const errorMessage = (error) => error.translation ?? error.message;
+  const errorMessage = (error: unknown): unknown => isRecord(error) && "translation" in error
+    ? error.translation : error instanceof Error ? error.message : String(error);
 
   function updateLanguage() {
     document.documentElement.lang = language;
-    document.querySelectorAll("[data-ui-language]").forEach((element) => { element.lang = language; });
-    document.querySelectorAll("#language-select").forEach((element) => { element.value = language; });
+    document.querySelectorAll<HTMLElement>("[data-ui-language]").forEach((element) => { element.lang = language; });
+    document.querySelectorAll<HTMLSelectElement>("#language-select").forEach((element) => { element.value = language; });
     for (const [element, attributes] of bindings) {
       if (!element.isConnected) { bindings.delete(element); continue; }
       for (const [attribute, value] of attributes) bind(element, attribute, value);
     }
   }
 
-  document.querySelectorAll("[data-i18n]").forEach((element) => {
-    text(element, message(element.dataset.i18n));
+  document.querySelectorAll<HTMLElement>("[data-i18n]").forEach((element) => {
+    const key = element.dataset.i18n;
+    if (isTranslationKey(key)) text(element, message(key));
   });
   for (const attribute of ["aria-label", "title", "placeholder", "content"]) {
     document.querySelectorAll(`[data-i18n-${attribute}]`).forEach((element) => {
-      attr(element, attribute, message(element.getAttribute(`data-i18n-${attribute}`)));
+      const key = element.getAttribute(`data-i18n-${attribute}`);
+      if (isTranslationKey(key)) attr(element, attribute, message(key));
     });
   }
   updateLanguage();
   document.getElementById("language-select")?.addEventListener("change", (event) => {
-    const selected = event.target.value;
+    const selected = event.target instanceof HTMLSelectElement ? event.target.value : null;
     if (!supported(selected) || selected === language) return;
     language = selected;
     try { localStorage.setItem(storageKey, language); } catch { /* Storage is optional. */ }

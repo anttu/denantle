@@ -1,32 +1,38 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-function matchingFinnishForms(forms, guess) {
+import type { InflectionRequest, InflectionResponse } from "./worker-messages.js";
+
+import type { FinnishForms, FinnishInflections } from "./contracts.js";
+
+import { i18n } from "./i18n.js";
+
+function matchingFinnishForms(forms: Map<string, string[]>, guess: string) {
   return new Set([guess, ...(forms.get(guess) || [])]);
 }
 
-function createFinnishInflections() {
-  let worker = null;
+function createFinnishInflections(): FinnishInflections {
+  let worker: Worker | null = null;
   let revision = 0;
-  let pending = null;
-  let forms = new Map();
+  let pending: { resolve: (forms: FinnishForms) => void; reject: (reason: unknown) => void } | null = null;
+  let forms = new Map<string, string[]>();
 
   function clear() {
     revision += 1;
     forms = new Map();
     pending?.reject(new DOMException(i18n.t("article.changed"), "AbortError"));
     pending = null;
-    worker?.postMessage({ type: "clear", revision });
+    worker?.postMessage({ type: "clear", revision } satisfies InflectionRequest);
   }
 
-  async function build(words) {
+  async function build(words: string[]) {
     clear();
     const requestedRevision = revision;
-    const result = await new Promise((resolve, reject) => {
+    const result = await new Promise<FinnishForms>((resolve, reject) => {
       pending = { resolve, reject };
       if (!worker) {
-        const activeWorker = worker = new Worker("src/finnish-inflections-worker.js");
-        activeWorker.onmessage = ({ data }) => {
+        const activeWorker = worker = new Worker(new URL("./finnish-inflections-worker.js", import.meta.url));
+        activeWorker.onmessage = ({ data }: MessageEvent<InflectionResponse>) => {
           if (data.revision !== revision || !pending) return;
           const request = pending;
           pending = null;
@@ -41,7 +47,7 @@ function createFinnishInflections() {
           worker = null;
         };
       }
-      worker.postMessage({ type: "index", revision: requestedRevision, words });
+      worker.postMessage({ type: "index", revision: requestedRevision, words } satisfies InflectionRequest);
     });
     if (requestedRevision !== revision) {
       throw new DOMException(i18n.t("article.changed"), "AbortError");
@@ -52,4 +58,4 @@ function createFinnishInflections() {
   return { clear, build, matchingForms: (guess) => matchingFinnishForms(forms, guess) };
 }
 
-const finnishInflections = createFinnishInflections();
+export const finnishInflections = createFinnishInflections();

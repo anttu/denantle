@@ -1,20 +1,26 @@
 // SPDX-FileCopyrightText: 2026 Antero Fagerstedt
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import type { ArticleVectors, FinnishInflections, GameState, GuessHandler, Language, RecentGuess, SearchResult, SharedGameState, WordState } from "./contracts.js";
+import { errorName, isArray, isRecord } from "./validation.js";
+
+import { elementById } from "./dom.js";
+import { i18n } from "./i18n.js";
+
 // Cosine similarity between the model's normalized word vectors.
 const SIMILARITY_THRESHOLD = 0.6;
 const DETAIL_SIMILARITY_THRESHOLD = 0.5;
-const GUESS_PATTERN = /^\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*$/u;
+export const GUESS_PATTERN = /^\p{L}[\p{L}\p{M}]*(?:['-]\p{L}[\p{L}\p{M}]*)*$/u;
 
-function normalizeGuess(text) {
+function normalizeGuess(text: string) {
   return text.normalize("NFKC").replaceAll("’", "'").toLowerCase();
 }
 
-function guessForms(guess, language = "en") {
+function guessForms(guess: string, language: Language = "en") {
   const forms = new Set([guess]);
   // Compromise generates English inflections only.
   if (language !== "en") return forms;
-  const add = (form) => {
+  const add = (form: string) => {
     const word = normalizeGuess(form);
     if (GUESS_PATTERN.test(word)) forms.add(word);
   };
@@ -41,14 +47,14 @@ function guessForms(guess, language = "en") {
   return forms;
 }
 
-function proximityColor(score) {
+function proximityColor(score: number) {
   const closeness = Math.max(0, Math.min(1, score));
   return `rgb(${Math.round(80 + 175 * closeness)}, ${Math.round(160 - 64 * closeness)}, ${Math.round(255 - 159 * closeness)})`;
 }
 
 // Game data contains no DOM nodes. Each transition returns a new state.
-function gameTextTokens(text) {
-  const tokens = [];
+function gameTextTokens(text: string) {
+  const tokens: { text: string; word: string | null }[] = [];
   let offset = 0;
   for (const match of text.matchAll(/\p{L}[\p{L}\p{M}]*(?:['’-]\p{L}[\p{L}\p{M}]*)*/gu)) {
     tokens.push({ text: text.slice(offset, match.index), word: null });
@@ -58,9 +64,9 @@ function gameTextTokens(text) {
   return [...tokens, { text: text.slice(offset), word: null }];
 }
 
-function createGameState(title = "", body = "", language = "en") {
+function createGameState(title = "", body = "", language: Language = "en"): GameState {
   const titleTokens = gameTextTokens(title);
-  const words = new Map();
+  const words = new Map<string, WordState>();
   for (const { word } of [...titleTokens, ...gameTextTokens(body)]) {
     if (word === null) continue;
     const previous = words.get(word);
@@ -68,14 +74,14 @@ function createGameState(title = "", body = "", language = "en") {
       revealed: false, score: -1, guess: null, latestScore: null });
   }
   return {
-    language, words, titleWords: new Set(titleTokens.filter(({ word }) => word !== null).map(({ word }) => word)),
+    language, words, titleWords: new Set(titleTokens.flatMap(({ word }) => word === null ? [] : [word])),
     titleSolved: false, latestGuess: null, recentGuesses: [], guesses: new Map(),
     total: [...words.values()].reduce((count, entry) => count + entry.count, 0),
     revealed: 0, active: false, busy: false, inflectionsLoading: false,
   };
 }
 
-function revealGameWords(state, forms) {
+function revealGameWords(state: GameState, forms: Set<string>) {
   const words = new Map(state.words);
   let matchCount = 0;
   let revealedCount = 0;
@@ -90,8 +96,8 @@ function revealGameWords(state, forms) {
   return { state: { ...state, words, revealed: state.revealed + revealedCount }, matchCount, revealedCount };
 }
 
-function applyGameHints(state, results, guess) {
-  const words = new Map([...state.words].map(([word, entry]) => [word, { ...entry, latestScore: null }]));
+function applyGameHints(state: GameState, results: SearchResult[], guess: string) {
+  const words = new Map<string, WordState>([...state.words].map(([word, entry]) => [word, { ...entry, latestScore: null }]));
   let nearMatches = 0;
   for (const { word, score } of results) {
     const entry = words.get(word);
@@ -104,30 +110,30 @@ function applyGameHints(state, results, guess) {
   return { state: { ...state, words, latestGuess: guess }, nearMatches };
 }
 
-function recentGameGuesses(recent, guess, matches, nearMatches) {
+function recentGameGuesses(recent: RecentGuess[], guess: string, matches: number, nearMatches: number) {
   return [{ word: guess, matches, nearMatches }, ...recent.filter(({ word }) => word !== guess)].slice(0, 10);
 }
 
-function exportGameState(state) {
+function exportGameState(state: GameState): SharedGameState {
   return {
     guesses: [...state.guesses], recent: state.recentGuesses.map((item) => ({ ...item })), latestGuess: state.latestGuess,
     words: [...state.words].map(([word, { revealed, score, guess, latestScore }]) => ({ word, revealed, score, guess, latestScore })),
   };
 }
 
-function validateSharedGameState(shared, words) {
-  const validWord = (word) => typeof word === "string" && word.length <= 200 && GUESS_PATTERN.test(word);
-  const validScore = (score) => Number.isFinite(score) && score >= -1 && score <= 1;
-  if (!shared || !Array.isArray(shared.guesses) || shared.guesses.length > 10000
-    || !shared.guesses.every((item) => Array.isArray(item) && validWord(item[0]) && typeof item[1] === "boolean")
-    || !Array.isArray(shared.recent) || shared.recent.length > 10
-    || !shared.recent.every((item) => item && validWord(item.word)
-      && Number.isSafeInteger(item.matches) && item.matches >= 0
-      && Number.isSafeInteger(item.nearMatches) && item.nearMatches >= 0)
+export function validateSharedGameState(shared: unknown, words: Map<string, WordState>): asserts shared is SharedGameState {
+  const validWord = (word: unknown): word is string => typeof word === "string" && word.length <= 200 && GUESS_PATTERN.test(word);
+  const validScore = (score: unknown) => typeof score === "number" && Number.isFinite(score) && score >= -1 && score <= 1;
+  if (!isRecord(shared) || !isArray(shared.guesses) || shared.guesses.length > 10000
+    || !shared.guesses.every((item) => isArray(item) && validWord(item[0]) && typeof item[1] === "boolean")
+    || !isArray(shared.recent) || shared.recent.length > 10
+    || !shared.recent.every((item) => isRecord(item) && validWord(item.word)
+      && typeof item.matches === "number" && Number.isSafeInteger(item.matches) && item.matches >= 0
+      && typeof item.nearMatches === "number" && Number.isSafeInteger(item.nearMatches) && item.nearMatches >= 0)
     || !(shared.latestGuess === null || validWord(shared.latestGuess))
-    || !Array.isArray(shared.words) || shared.words.length !== words.size
-    || new Set(shared.words.map((item) => item?.word)).size !== words.size
-    || !shared.words.every((item) => item && words.has(item.word)
+    || !isArray(shared.words) || shared.words.length !== words.size
+    || new Set(shared.words.map((item) => isRecord(item) ? item.word : undefined)).size !== words.size
+    || !shared.words.every((item) => isRecord(item) && typeof item.word === "string" && words.has(item.word)
       && typeof item.revealed === "boolean" && validScore(item.score)
       && (item.latestScore === null || validScore(item.latestScore))
       && (item.guess === null || validWord(item.guess)))) {
@@ -135,10 +141,10 @@ function validateSharedGameState(shared, words) {
   }
 }
 
-function mergeSharedGameState(state, shared) {
+function mergeSharedGameState(state: GameState, shared: unknown): GameState {
   validateSharedGameState(shared, state.words);
-  const words = new Map(shared.words.map(({ word, revealed, score, guess, latestScore }) => {
-    const previous = state.words.get(word);
+  const words = new Map<string, WordState>(shared.words.map(({ word, revealed, score, guess, latestScore }) => {
+    const previous = state.words.get(word)!;
     return [word, { ...previous, revealed: previous.revealed || revealed, score, guess, latestScore }];
   }));
   return { ...state, words, guesses: new Map(shared.guesses),
@@ -146,31 +152,31 @@ function mergeSharedGameState(state, shared) {
     revealed: [...words.values()].reduce((count, entry) => count + (entry.revealed ? entry.count : 0), 0) };
 }
 
-function createArticleGame(vectors, inflections = null) {
+export function createArticleGame(vectors: ArticleVectors, inflections: FinnishInflections | null = null) {
   const elements = {
-    inflectionStatus: document.getElementById("inflection-status"),
-    title: document.getElementById("article-title"),
-    body: document.getElementById("article-body"),
-    form: document.getElementById("guess-form"),
-    input: document.getElementById("guess-input"),
-    button: document.getElementById("guess-submit"),
-    feedback: document.getElementById("guess-feedback"),
-    progress: document.getElementById("game-progress"),
-    completion: document.getElementById("game-completion"),
-    celebration: document.getElementById("title-celebration"),
-    recent: document.getElementById("recent-guesses"),
-    tooltip: document.getElementById("word-tooltip"),
-    article: document.getElementById("article"),
+    inflectionStatus: elementById("inflection-status", HTMLElement),
+    title: elementById("article-title", HTMLElement),
+    body: elementById("article-body", HTMLElement),
+    form: elementById("guess-form", HTMLFormElement),
+    input: elementById("guess-input", HTMLInputElement),
+    button: elementById("guess-submit", HTMLButtonElement),
+    feedback: elementById("guess-feedback", HTMLElement),
+    progress: elementById("game-progress", HTMLElement),
+    completion: elementById("game-completion", HTMLProgressElement),
+    celebration: elementById("title-celebration", HTMLElement),
+    recent: elementById("recent-guesses", HTMLElement),
+    tooltip: elementById("word-tooltip", HTMLElement),
+    article: elementById("article", HTMLElement),
   };
   let state = createGameState();
   let revision = 0;
-  let nodeDetails = new WeakMap();
-  let wordOccurrences = new Map();
-  let tooltipTarget = null;
-  let pinnedWord = null;
-  let fireworks = null;
-  let fireworksTimeout;
-  let onGuessRequest = null;
+  let nodeDetails = new WeakMap<HTMLElement, { node: HTMLElement; original: string; word: string }>();
+  let wordOccurrences = new Map<string, { node: HTMLElement; original: string; word: string }[]>();
+  let tooltipTarget: HTMLElement | null = null;
+  let pinnedWord: HTMLElement | null = null;
+  let fireworks: HTMLDivElement | null = null;
+  let fireworksTimeout: number | undefined;
+  let onGuessRequest: GuessHandler | null = null;
 
   function reset() {
     hideTooltip();
@@ -198,7 +204,7 @@ function createArticleGame(vectors, inflections = null) {
     elements.body.replaceChildren();
   }
 
-  function start(title, body, language = "en") {
+  function start(title: string, body: string, language: Language = "en") {
     reset();
     state = { ...createGameState(title, body, language), active: true };
     render(elements.title, title);
@@ -214,18 +220,18 @@ function createArticleGame(vectors, inflections = null) {
     state = { ...state, inflectionsLoading: true };
     i18n.text(elements.inflectionStatus, i18n.message("inflections.loading"));
     try {
-      await inflections.build([...state.words.keys()]);
+      await inflections?.build([...state.words.keys()]);
       if (requestedRevision !== revision) return;
       i18n.text(elements.inflectionStatus, i18n.message("inflections.ready"));
     } catch (error) {
-      if (requestedRevision !== revision || error.name === "AbortError") return;
+      if (requestedRevision !== revision || errorName(error) === "AbortError") return;
       i18n.text(elements.inflectionStatus, i18n.message("inflections.unavailable"));
     } finally {
       if (requestedRevision === revision) state = { ...state, inflectionsLoading: false };
     }
   }
 
-  function render(element, text) {
+  function render(element: HTMLElement, text: string) {
     const fragment = document.createDocumentFragment();
     for (const { text: original, word } of gameTextTokens(text)) {
       if (word === null) {
@@ -235,12 +241,12 @@ function createArticleGame(vectors, inflections = null) {
       const node = document.createElement("span");
       node.className = "redacted";
       node.lang = i18n.language;
-      node.style.setProperty("--word-length", [...original].length);
+      node.style.setProperty("--word-length", String([...original].length));
       node.setAttribute("role", "button");
       node.tabIndex = 0;
       const occurrence = { node, original, word };
       if (!wordOccurrences.has(word)) wordOccurrences.set(word, []);
-      wordOccurrences.get(word).push(occurrence);
+      wordOccurrences.get(word)!.push(occurrence);
       nodeDetails.set(node, occurrence);
       node.setAttribute("aria-label", wordDetails(node));
       fragment.append(node);
@@ -249,7 +255,7 @@ function createArticleGame(vectors, inflections = null) {
   }
 
   function bindWordDetails() {
-    const wordAt = (event) => event.target.closest?.(".redacted");
+    const wordAt = (event: Event) => event.target instanceof Element ? event.target.closest<HTMLElement>(".redacted") : null;
     elements.article.addEventListener("pointerover", (event) => {
       const node = wordAt(event);
       if (node && !pinnedWord) showTooltip(node);
@@ -261,10 +267,10 @@ function createArticleGame(vectors, inflections = null) {
         showTooltip(node);
       }
     });
-    for (const type of ["pointerout", "focusout"]) {
+    for (const type of ["pointerout", "focusout"] as const) {
       elements.article.addEventListener(type, (event) => {
         const node = wordAt(event);
-        if (node && !node.contains(event.relatedTarget) && !pinnedWord) hideTooltip();
+        if (node && !node.contains(event.relatedTarget instanceof Node ? event.relatedTarget : null) && !pinnedWord) hideTooltip();
       });
     }
     elements.article.addEventListener("click", (event) => {
@@ -288,14 +294,14 @@ function createArticleGame(vectors, inflections = null) {
     window.addEventListener("scroll", () => hideTooltip(), { passive: true });
   }
 
-  function wordDetails(node) {
-    const { original, word } = nodeDetails.get(node);
-    const entry = state.words.get(word);
+  function wordDetails(node: HTMLElement) {
+    const { original, word } = nodeDetails.get(node)!;
+    const entry = state.words.get(word)!;
     const lines = [i18n.t("word.length", { length: [...original].length })];
     if (entry.guess && entry.score >= DETAIL_SIMILARITY_THRESHOLD) {
       lines.push(i18n.t("word.hint", { guess: entry.guess, score: Math.round(entry.score * 100) }));
     }
-    if (state.latestGuess && state.latestGuess !== entry.guess && entry.latestScore >= DETAIL_SIMILARITY_THRESHOLD) {
+    if (state.latestGuess && state.latestGuess !== entry.guess && entry.latestScore !== null && entry.latestScore >= DETAIL_SIMILARITY_THRESHOLD) {
       lines.push(i18n.t("word.latest", { guess: state.latestGuess, score: Math.round(entry.latestScore * 100) }));
     } else if (!state.latestGuess && !entry.guess) {
       lines.push(i18n.t("word.noGuess"));
@@ -303,7 +309,7 @@ function createArticleGame(vectors, inflections = null) {
     return lines.join("\n");
   }
 
-  function showTooltip(node) {
+  function showTooltip(node: HTMLElement) {
     tooltipTarget?.removeAttribute("aria-describedby");
     tooltipTarget = node;
     node.setAttribute("aria-describedby", "word-tooltip");
@@ -316,7 +322,7 @@ function createArticleGame(vectors, inflections = null) {
     elements.tooltip.style.top = `${Math.max(8, Math.min(top >= 8 ? top : word.bottom + 8, window.innerHeight - tooltip.height - 8))}px`;
   }
 
-  function toggleTooltip(node) {
+  function toggleTooltip(node: HTMLElement) {
     if (pinnedWord === node) hideTooltip();
     else {
       pinnedWord = node;
@@ -331,7 +337,7 @@ function createArticleGame(vectors, inflections = null) {
     elements.tooltip.hidden = true;
   }
 
-  function showRecentGuess(guess, matches, nearMatches = 0) {
+  function showRecentGuess(guess: string, matches: number, nearMatches = 0) {
     state = { ...state, recentGuesses: recentGameGuesses(state.recentGuesses, guess, matches, nearMatches) };
     renderRecentGuesses();
   }
@@ -356,7 +362,7 @@ function createArticleGame(vectors, inflections = null) {
     return exportGameState(state);
   }
 
-  function applySharedState(shared) {
+  function applySharedState(shared: unknown) {
     state = mergeSharedGameState(state, shared);
     renderWords();
     renderRecentGuesses();
@@ -366,7 +372,7 @@ function createArticleGame(vectors, inflections = null) {
     if (tooltipTarget) showTooltip(tooltipTarget);
   }
 
-  function setBusy(busy) {
+  function setBusy(busy: boolean) {
     state = { ...state, busy };
     elements.input.disabled = busy;
     elements.button.disabled = busy;
@@ -390,7 +396,7 @@ function createArticleGame(vectors, inflections = null) {
 
   function checkTitleCompletion() {
     if (state.titleSolved || state.titleWords.size === 0
-      || ![...state.titleWords].every((word) => state.words.get(word).revealed)) return;
+      || ![...state.titleWords].every((word) => state.words.get(word)!.revealed)) return;
     state = { ...state, titleSolved: true };
     elements.celebration.hidden = false;
     i18n.text(elements.celebration, i18n.message("game.solved"));
@@ -399,7 +405,7 @@ function createArticleGame(vectors, inflections = null) {
     fireworks = document.createElement("div");
     fireworks.className = "fireworks";
     fireworks.setAttribute("aria-hidden", "true");
-    const bursts = [
+    const bursts: [number, number, string][] = [
       [22, 35, "#df4a17"], [76, 28, "#137dce"], [48, 45, "#ba268c"],
       [32, 22, "#148754"], [72, 50, "#b07b00"],
     ];
@@ -418,7 +424,7 @@ function createArticleGame(vectors, inflections = null) {
         spark.style.setProperty("--spark-y", `${Math.sin(angle) * distance + 6}vmin`);
         burst.append(spark);
       }
-      fireworks.append(burst);
+      fireworks!.append(burst);
     });
     document.body.append(fireworks);
     fireworksTimeout = window.setTimeout(() => clearFireworks(), 3200);
@@ -448,7 +454,7 @@ function createArticleGame(vectors, inflections = null) {
     }
   }
 
-  function showHints(results, guess) {
+  function showHints(results: SearchResult[], guess: string) {
     const update = applyGameHints(state, results, guess);
     state = update.state;
     renderWords();
@@ -469,7 +475,7 @@ function createArticleGame(vectors, inflections = null) {
     const forms = state.language === "fi" && inflections
       ? inflections.matchingForms(guess)
       : guessForms(guess, state.language);
-    const matches = [...forms].map((form) => state.words.get(form)).filter(Boolean);
+    const matches = [...forms].map((form) => state.words.get(form)).filter((entry): entry is WordState => entry !== undefined);
     const matchCount = matches.reduce((count, entry) => count + entry.count, 0);
     if (state.guesses.has(guess) && !vectors.info && matches.every((entry) => entry.revealed)) {
       showHints([], guess);
@@ -507,7 +513,7 @@ function createArticleGame(vectors, inflections = null) {
       if (clearInput) elements.input.value = "";
       return true;
     } catch (error) {
-      if (requestedRevision !== revision || error.name === "AbortError") return;
+      if (requestedRevision !== revision || errorName(error) === "AbortError") return;
       if (revealed > 0) {
         showHints([], guess);
         showRecentGuess(guess, matchCount);
@@ -547,6 +553,6 @@ function createArticleGame(vectors, inflections = null) {
     get busy() { return state.busy; },
     get input() { return elements.input; },
     get feedback() { return elements.feedback; },
-    set onGuessRequest(handler) { onGuessRequest = handler; },
+    set onGuessRequest(handler: GuessHandler | null) { onGuessRequest = handler; },
   };
 }

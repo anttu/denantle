@@ -10,3 +10,4 @@ services:
     network_mode: bridge
     volumes:
       - ./reports:/app/tests/reports
+      - ../dist:/app/dist
