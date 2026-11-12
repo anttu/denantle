@@ -191,6 +191,23 @@
             >
           </fieldset>
           <div id="multiplayer-panel" hidden>
+            <div class="multiplayer-name">
+              <label for="multiplayer-name" data-i18n="multiplayer.name"
+                >Player name</label
+              >
+              <input
+                id="multiplayer-name"
+                type="text"
+                maxlength="32"
+                required
+                autocomplete="nickname"
+                spellcheck="false"
+                aria-describedby="multiplayer-name-help"
+              >
+              <p id="multiplayer-name-help" data-i18n="multiplayer.nameHelp">
+                Your name is visible to the other players.
+              </p>
+            </div>
             <div
               id="multiplayer-connected"
               class="multiplayer-connected"
@@ -202,6 +219,12 @@
                 <span id="multiplayer-player-count"></span>
               </div>
               <p id="multiplayer-connected-note"></p>
+              <ul
+                id="multiplayer-players"
+                class="multiplayer-players"
+                aria-label="Players"
+                data-i18n-aria-label="multiplayer.playerList"
+              ></ul>
             </div>
             <div
               id="multiplayer-auto"

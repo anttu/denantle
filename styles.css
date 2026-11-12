@@ -262,6 +262,44 @@ button:disabled {
 #multiplayer-panel {
   margin-top: 10px;
 }
+.multiplayer-name {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 5px 12px;
+  margin-bottom: 12px;
+}
+#multiplayer-name {
+  min-width: 0;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+#multiplayer-name-help {
+  grid-column: 2;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.multiplayer-players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.multiplayer-players li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.multiplayer-players small {
+  color: #59684f;
+}
 .multiplayer-connected {
   padding: 13px 15px;
   border: 1px solid #d4ddca;

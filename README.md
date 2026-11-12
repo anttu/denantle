@@ -162,6 +162,12 @@ Valitse moninpeli ja kutsulinkin **Yhteysverkko**:
 - **Internet** selvittää myös julkiset yhteysosoitteet STUN-palvelimella.
   Eri verkkojen välinen yhteys onnistuu, kun NAT- ja palomuuriasetukset sallivat sen.
 
+Moninpelipaneelin **Pelaajanimi** näkyy kaikille liittyneille pelaajille
+pelaajalistassa. Jokainen saa aluksi automaattisen nimen, jonka voi vaihtaa
+myös pelin aikana. Nimi tallentuu Enterillä tai kentästä poistuttaessa ja
+muistetaan samassa selaimessa. Nimen pituus on 1–32 merkkiä. Pelaajalista
+päivittyy myös pelaajien liittyessä ja poistuessa.
+
 Luo kutsulinkki ja jaa sama linkki kaikille pelikavereille. Valittu verkko kulkee
 linkissä myös liittyjille. Verkkoa voi vaihtaa moninpeli-istunnon lopettamisen
 jälkeen. Vanhat automaattikutsut käyttävät internet-tilaa.

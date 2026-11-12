@@ -84,6 +84,10 @@ export interface FinnishInflections {
 export type GuessHandler = (
   guess: string,
 ) => boolean | undefined | Promise<boolean | void>
+export interface MultiplayerPlayer {
+  id: string
+  name: string
+}
 export type MultiplayerMessage =
   | {
       type: 'guess'
@@ -91,7 +95,13 @@ export type MultiplayerMessage =
       guess: string
       request: number
     }
-  | { type: 'players'; count: number }
+  | { type: 'player-name'; name: string }
+  | {
+      type: 'players'
+      count: number
+      players?: MultiplayerPlayer[]
+      self?: string
+    }
   | { type: 'loading' | 'unavailable' }
   | { type: 'game'; article: Article; state: SharedGameState }
   | {

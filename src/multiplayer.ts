@@ -4,6 +4,7 @@
 import type {
   Article,
   MultiplayerMessage,
+  MultiplayerPlayer,
   ReceivedMessage,
 } from './contracts.js'
 import {
@@ -22,7 +23,13 @@ import {
   randomInvitationToken,
   validPeerInvite,
 } from './peerjs-session.js'
-import { errorName, isRecord } from './validation.js'
+import {
+  isPlayerName,
+  loadPlayerName,
+  normalizePlayerName,
+  savePlayerName,
+} from './player-names.js'
+import { errorName, isArray, isRecord } from './validation.js'
 
 type ManualPeer = ReturnType<typeof createManualPeerConnection>
 interface MultiplayerHooks {
@@ -103,6 +110,10 @@ export function validateMultiplayerMessage(
   const validSession =
     message.session === undefined || typeof message.session === 'string'
   if (!isGuest) {
+    if (message.type === 'player-name') {
+      if (!isPlayerName(message.name)) throw new Error()
+      return
+    }
     if (
       message.type !== 'guess' ||
       typeof message.guess !== 'string' ||
@@ -124,6 +135,23 @@ export function validateMultiplayerMessage(
         message.count < 2
       )
         throw new Error()
+      if (message.players !== undefined || message.self !== undefined) {
+        if (
+          !isArray(message.players) ||
+          message.players.length !== message.count ||
+          !message.players.every(
+            (player): player is MultiplayerPlayer =>
+              isRecord(player) &&
+              typeof player.id === 'string' &&
+              /^[a-f0-9]{32}$/.test(player.id) &&
+              isPlayerName(player.name),
+          ) ||
+          new Set(message.players.map((player) => player.id)).size !==
+            message.count ||
+          !message.players.some((player) => player.id === message.self)
+        )
+          throw new Error()
+      }
       return
     case 'loading':
     case 'unavailable':
@@ -181,6 +209,8 @@ export function createMultiplayerGame(
     manual: elementById('multiplayer-manual', HTMLDetailsElement),
     enabled: elementById('multiplayer-enabled', HTMLInputElement),
     panel: elementById('multiplayer-panel', HTMLElement),
+    name: elementById('multiplayer-name', HTMLInputElement),
+    playerList: elementById('multiplayer-players', HTMLElement),
     connectedPanel: elementById('multiplayer-connected', HTMLElement),
     playerCount: elementById('multiplayer-player-count', HTMLElement),
     connectedNote: elementById('multiplayer-connected-note', HTMLElement),
@@ -242,6 +272,13 @@ export function createMultiplayerGame(
   let peers = new Set<GamePeer>()
   let peer: ManualPeer | null = null
   let remotePlayerCount = 2
+  const localPlayer = createPlayer()
+  localPlayer.name = loadPlayerName(localPlayer.name)
+  elements.name.value = localPlayer.name
+  savePlayerName(localPlayer.name)
+  const peerPlayers = new Map<GamePeer, MultiplayerPlayer>()
+  let remotePlayers: MultiplayerPlayer[] = []
+  let ownPlayerId = ''
   let generation = 0
   let localPayload = ''
   let remotePayload = ''
@@ -262,6 +299,53 @@ export function createMultiplayerGame(
     return connectedPeers().length > 0
   }
 
+  function createPlayer(): MultiplayerPlayer {
+    const id = randomInvitationToken()
+    return {
+      id,
+      name: i18n.t('multiplayer.defaultName', { id: id.slice(0, 6) }),
+    }
+  }
+
+  function renderPlayers() {
+    const players = isGuest()
+      ? remotePlayers
+      : [localPlayer, ...connectedPeers().map((peer) => peerPlayers.get(peer)!)]
+    elements.playerList.hidden = players.length === 0
+    elements.playerList.replaceChildren(
+      ...players.map((player) => {
+        const item = document.createElement('li')
+        item.textContent = player.name
+        if (player.id === (isGuest() ? ownPlayerId : localPlayer.id)) {
+          const label = document.createElement('small')
+          label.textContent = i18n.t('multiplayer.you')
+          item.append(' · ', label)
+        }
+        return item
+      }),
+    )
+  }
+
+  function updatePlayerName(report = false) {
+    const name = normalizePlayerName(elements.name.value)
+    if (!isPlayerName(name)) {
+      elements.name.setCustomValidity(i18n.t('multiplayer.invalidName'))
+      if (report) elements.name.reportValidity()
+      return false
+    }
+    elements.name.setCustomValidity('')
+    elements.name.value = name
+    if (name !== localPlayer.name) {
+      localPlayer.name = name
+      savePlayerName(name)
+      if (isGuest()) {
+        if (remotePlayers.length > 0) send({ type: 'player-name', name })
+      } else sharePlayers()
+      renderPlayers()
+    }
+    return true
+  }
+
   function renderConnection() {
     const view = connectionView({
       role,
@@ -280,6 +364,7 @@ export function createMultiplayerGame(
     elements.panel.classList.toggle('is-connected', connected)
     elements.panel.dataset.role = view.role
     elements.connectedPanel.hidden = !connected
+    renderPlayers()
     i18n.text(
       elements.playerCount,
       i18n.message('multiplayer.players', { count }),
@@ -492,6 +577,7 @@ export function createMultiplayerGame(
 
   function registerPeer(newPeer: GamePeer, manual = false) {
     peers.add(newPeer)
+    peerPlayers.set(newPeer, createPlayer())
     if (isGuest()) {
       cancelLoading()
       game.setBusy(true)
@@ -573,6 +659,7 @@ export function createMultiplayerGame(
 
   async function startAutomaticHost() {
     if (isGuest() || autoConnecting) return
+    if (!updatePlayerName(true)) return
     i18n.text(elements.status, '')
     i18n.text(elements.error, '')
     if (autoSession) {
@@ -742,6 +829,7 @@ export function createMultiplayerGame(
       (create && (peer || isGuest()))
     )
       return
+    if (!updatePlayerName(true)) return
     i18n.text(elements.error, '')
     // Validate pasted data before disturbing an existing invitation or solo game.
     try {
@@ -842,6 +930,7 @@ export function createMultiplayerGame(
       removedPeer === peer &&
       elements.invitations.contains(document.activeElement)
     peers.delete(removedPeer)
+    peerPlayers.delete(removedPeer)
     removedPeer.close()
     if (removedPeer === peer) {
       peer = null
@@ -865,8 +954,22 @@ export function createMultiplayerGame(
   }
 
   function sharePlayers() {
-    if (!isGuest())
-      send({ type: 'players', count: connectedPeers().length + 1 })
+    if (isGuest()) return
+    const peers = connectedPeers()
+    const players = [
+      localPlayer,
+      ...peers.map((peer) => peerPlayers.get(peer)!),
+    ]
+    for (const peer of peers)
+      send(
+        {
+          type: 'players',
+          count: players.length,
+          players,
+          self: peerPlayers.get(peer)!.id,
+        },
+        peer,
+      )
   }
 
   async function copyAutomaticInvite() {
@@ -996,6 +1099,15 @@ export function createMultiplayerGame(
     if (!peers.has(peer)) return
     try {
       validateMultiplayerMessage(message, isGuest())
+      if (message.type === 'player-name') {
+        const player = peerPlayers.get(peer)!
+        if (player.name !== message.name) {
+          player.name = message.name
+          sharePlayers()
+          renderPlayers()
+        }
+        return
+      }
       if (message.type === 'guess') {
         if (message.session === getArticle()?.session)
           void enqueueGuess(message.guess, message.request, peer)
@@ -1003,6 +1115,11 @@ export function createMultiplayerGame(
       }
       if (message.type === 'players') {
         remotePlayerCount = message.count
+        remotePlayers = message.players ?? []
+        ownPlayerId = message.self ?? ''
+        const self = remotePlayers.find((player) => player.id === ownPlayerId)
+        if (self && self.name !== localPlayer.name)
+          send({ type: 'player-name', name: localPlayer.name })
         renderConnection()
       } else if (message.type === 'loading') {
         clearTimeout(guessTimeout)
@@ -1062,6 +1179,9 @@ export function createMultiplayerGame(
     autoAvailable = true
     elements.autoLocal.value = ''
     peers = new Set()
+    peerPlayers.clear()
+    remotePlayers = []
+    ownPlayerId = ''
     peer = null
     role = null
     joining = false
@@ -1098,6 +1218,16 @@ export function createMultiplayerGame(
       i18n.text(elements.error, i18n.message('multiplayer.unsupported'))
   })
   elements.autoCreate.addEventListener('click', () => void startAutomaticHost())
+  elements.name.addEventListener('input', () =>
+    elements.name.setCustomValidity(''),
+  )
+  elements.name.addEventListener('change', () => updatePlayerName())
+  elements.name.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      updatePlayerName(true)
+    }
+  })
   elements.autoNetwork.addEventListener('change', () => {
     if (
       !autoSession &&

@@ -1,8 +1,10 @@
 # TODO
 
-- [ ] Edellytä jokaiselta moninpelin pelaajalta nimi.
-- [ ] Näytä moninpelissä pelaajien nimet ja pisteet: oikein arvatusta sanasta
+- [x] Edellytä jokaiselta moninpelin pelaajalta nimi ja näytä nimet pelaajalistassa.
+- [ ] Lisää pelaajalistaan pisteet: oikein arvatusta sanasta
   saa yhden pisteen ja merkitykseltään läheisestä sanasta puoli pistettä.
+- [ ] Tiivistä moninpeliyhteyden muodostamisen näkymää: se vie valtaosan
+  käyttöliittymästä myös pelin ollessa jo käynnissä.
 - [x] Varmista, että sanan peittävä musta palkki on vähintään yhtä leveä kuin
   lähellä oleva vihjesana (`hint`), mutta ei koskaan kapeampi kuin oikea sana.
 - [ ] Suunnittele tiiviimpi näkymä, jossa suurempi osa artikkelin sisällöstä näkyy

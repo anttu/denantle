@@ -191,6 +191,30 @@ const translations = {
     fi: 'Yhteys muodostettu',
     en: 'Connected',
   },
+  'multiplayer.name': {
+    fi: 'Pelaajanimi',
+    en: 'Player name',
+  },
+  'multiplayer.nameHelp': {
+    fi: 'Nimi näkyy muille pelaajille. Voit vaihtaa sitä myös pelin aikana.',
+    en: 'Your name is visible to the other players. You can also change it during the game.',
+  },
+  'multiplayer.defaultName': {
+    fi: 'Pelaaja {id}',
+    en: 'Player {id}',
+  },
+  'multiplayer.invalidName': {
+    fi: 'Anna pelaajanimi (1–32 merkkiä).',
+    en: 'Enter a player name (1–32 characters).',
+  },
+  'multiplayer.playerList': {
+    fi: 'Pelaajat',
+    en: 'Players',
+  },
+  'multiplayer.you': {
+    fi: 'sinä',
+    en: 'you',
+  },
   'multiplayer.inviteMore': {
     fi: 'Kutsu lisää pelaajia',
     en: 'Invite more players',
