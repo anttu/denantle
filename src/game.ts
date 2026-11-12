@@ -550,9 +550,9 @@ export function createArticleGame(
     if (tooltipTarget) showTooltip(tooltipTarget)
   }
 
-  function setBusy(busy: boolean) {
+  function setBusy(busy: boolean, { disableInput = true } = {}) {
     state = { ...state, busy }
-    elements.input.disabled = busy
+    elements.input.disabled = busy && disableInput
     elements.button.disabled = busy
     elements.form.setAttribute('aria-busy', String(busy))
   }
@@ -674,7 +674,12 @@ export function createArticleGame(
 
   async function submitGuess(
     value = elements.input.value,
-    { shared = false, focus = true, clearInput = true } = {},
+    {
+      shared = false,
+      focus = true,
+      clearInput = true,
+      disableInput = true,
+    } = {},
   ) {
     if (!state.active || state.busy) return false
     const guess = normalizeGuess(value.trim())
@@ -723,7 +728,7 @@ export function createArticleGame(
     renderWords()
     checkTitleCompletion()
     const canSearch = Boolean(vectors.info)
-    setBusy(true)
+    setBusy(true, { disableInput })
     updateProgress()
     i18n.text(elements.feedback, '')
     try {

@@ -964,6 +964,7 @@ export function createMultiplayerGame(
           shared: true,
           focus: request === null,
           clearInput: request === null,
+          disableInput: request === null,
         })
         if (
           requestedGeneration !== generation ||

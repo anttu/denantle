@@ -7,7 +7,7 @@
   lähellä oleva vihjesana (`hint`), mutta ei koskaan kapeampi kuin oikea sana.
 - [ ] Suunnittele tiiviimpi näkymä, jossa suurempi osa artikkelin sisällöstä näkyy
   ilman vierittämistä samassa näkymässä `guess`-syöttökentän kanssa.
-- [ ] Korjaa moninpelin mahdollinen fokusongelma: `guess`-syöttökentän pitää
+- [x] Korjaa moninpelin mahdollinen fokusongelma: `guess`-syöttökentän pitää
   säilyttää fokus, kun muut pelaajat arvaavat ja pelin näkymä päivittyy.
 - [ ] Korjaa ensimmäisen sivulatauksen API-virheistä toipuminen: esimerkiksi
   epäonnistunut Wikipedia-kutsu ei saa jättää palvelua tai sivua pysyvästi
