@@ -148,8 +148,8 @@ const translations = {
     en: 'Also for players on different networks. Some mobile networks and firewalls may block a direct connection.',
   },
   'multiplayer.autoRetry': {
-    fi: 'Yritä uudelleen',
-    en: 'Try again',
+    fi: 'Palauta kutsulinkin toiminta',
+    en: 'Restore invite link',
   },
   'multiplayer.autoJoining': {
     fi: 'Liitytään kaverin peliin',
@@ -173,19 +173,19 @@ const translations = {
   },
   'multiplayer.signalingUnavailable': {
     fi: featureFlags.manualMultiplayer
-      ? 'Automaattinen liittyminen ei onnistu. Yritä uudelleen tai yhdistä käsin.'
-      : 'Automaattinen liittyminen ei onnistu. Yritä uudelleen.',
+      ? 'Uudet pelaajat eivät voi juuri nyt liittyä kutsulinkillä. Jo liittyneet pelaajat voivat jatkaa peliä. Uudet pelaajat voivat myös yhdistää käsin.'
+      : 'Uudet pelaajat eivät voi juuri nyt liittyä kutsulinkillä. Jo liittyneet pelaajat voivat jatkaa peliä.',
     en: featureFlags.manualMultiplayer
-      ? 'Automatic joining is unavailable. Try again or connect manually.'
-      : 'Automatic joining is unavailable. Try again.',
+      ? 'New players cannot join through the invite link right now. Players already connected can keep playing. New players can also connect manually.'
+      : 'New players cannot join through the invite link right now. Players already connected can keep playing.',
   },
   'multiplayer.hostUnavailable': {
     fi: 'Kutsujan peliä ei löydy. Pyydä uusi kutsulinkki.',
     en: 'The host’s game could not be found. Ask for a new invite link.',
   },
   'multiplayer.signalingError': {
-    fi: 'Yhteydenmuodostus epäonnistui ({code}). Tarkista verkkoyhteys ja yritä uudelleen.',
-    en: 'Connection setup failed ({code}). Check your network connection and try again.',
+    fi: 'Kutsupalveluun ei saada yhteyttä ({code}). Jo liittyneet pelaajat voivat jatkaa peliä.',
+    en: 'The invite service is unreachable ({code}). Players already connected can keep playing.',
   },
   'multiplayer.connected': {
     fi: 'Yhteys muodostettu',
