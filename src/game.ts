@@ -371,7 +371,10 @@ export function createArticleGame(
       const node = document.createElement('span')
       node.className = 'redacted'
       node.lang = i18n.language
-      node.style.setProperty('--word-length', String([...original].length))
+      node.dataset.original = original
+      const hint = document.createElement('span')
+      hint.className = 'redacted-hint'
+      node.append(hint)
       node.setAttribute('role', 'button')
       node.tabIndex = 0
       const occurrence = { node, original, word }
@@ -648,11 +651,12 @@ export function createArticleGame(
             'aria-label',
             'title',
             'lang',
+            'data-original',
           ])
             node.removeAttribute(attribute)
         } else {
           node.lang = i18n.language
-          node.textContent = entry.guess || ''
+          node.firstElementChild!.textContent = entry.guess || ''
           node.style.color = entry.guess ? proximityColor(entry.score) : ''
           node.setAttribute('aria-label', wordDetails(node))
         }
