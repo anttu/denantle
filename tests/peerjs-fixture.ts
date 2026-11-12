@@ -6,6 +6,19 @@ import { type BrowserContext, test as base } from '@playwright/test'
 import { PeerServer } from 'peer'
 import { enableMultiplayer } from './feature-flags-fixture.js'
 
+// Same-machine tests need only host candidates. Keep real WebRTC and ICE
+// gathering without waiting for public STUN; topology tests cover real STUN/NAT.
+export async function useHostIceCandidates(context: BrowserContext) {
+  await context.addInitScript(() => {
+    window.RTCPeerConnection = new Proxy(window.RTCPeerConnection, {
+      construct(target, args: ConstructorParameters<typeof RTCPeerConnection>) {
+        args[0] = { ...args[0], iceServers: [] }
+        return new target(...args)
+      },
+    })
+  })
+}
+
 // Only redirect the external signaling endpoint. PeerJS, PeerServer and WebRTC
 // all run for real, so this suite does not depend on the shared public cloud.
 export async function useLocalPeerServer(

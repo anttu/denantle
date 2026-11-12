@@ -4,7 +4,11 @@
 import { createServer } from 'node:net'
 import { expect } from '@playwright/test'
 import { enableManualMultiplayer } from './feature-flags-fixture.js'
-import { test, useLocalPeerServer } from './peerjs-fixture.js'
+import {
+  test,
+  useHostIceCandidates,
+  useLocalPeerServer,
+} from './peerjs-fixture.js'
 
 test('sama kutsulinkki yhdistää kaksi vierasta automaattisesti ja säilyy käytössä', async ({
   page: host,
@@ -12,6 +16,7 @@ test('sama kutsulinkki yhdistää kaksi vierasta automaattisesti ja säilyy käy
   browser,
   peerServer,
 }) => {
+  await useHostIceCandidates(context)
   await useLocalPeerServer(context, peerServer)
   await enableManualMultiplayer(context)
   await host.goto('/?game=invalid')
@@ -31,6 +36,7 @@ test('sama kutsulinkki yhdistää kaksi vierasta automaattisesti ja säilyy käy
     for (let index = 0; index < 2; index++) {
       const guestContext = await browser.newContext()
       contexts.push(guestContext)
+      await useHostIceCandidates(guestContext)
       await useLocalPeerServer(guestContext, peerServer)
       const guest = await guestContext.newPage()
       await guest.goto(link)
@@ -59,6 +65,7 @@ test('sama kutsulinkki yhdistää kaksi vierasta automaattisesti ja säilyy käy
     const manualInvite = host.locator('#multiplayer-local')
     await expect(manualInvite).not.toHaveValue('')
     const manualContext = await browser.newContext()
+    await useHostIceCandidates(manualContext)
     await enableManualMultiplayer(manualContext)
     contexts.push(manualContext)
     const manualGuest = await manualContext.newPage()
@@ -150,7 +157,7 @@ test('automaattinen liittyminen jakaa arvaukset ja myöhemmin liittyvä saa nyky
           sockets[0]!.close()
         })
         await expect(host.locator('#multiplayer-auto-status')).toContainText(
-          'Automaattinen liittyminen ei onnistu',
+          'Uudet pelaajat eivät voi juuri nyt liittyä kutsulinkillä. Jo liittyneet pelaajat voivat jatkaa peliä.',
         )
         await guest
           .getByRole('textbox', { name: 'Arvaa sana', exact: true })
@@ -171,7 +178,10 @@ test('automaattinen liittyminen jakaa arvaukset ja myöhemmin liittyvä saa nyky
       }
       if (index === 0) {
         await host
-          .getByRole('button', { name: 'Yritä uudelleen', exact: true })
+          .getByRole('button', {
+            name: 'Palauta kutsulinkin toiminta',
+            exact: true,
+          })
           .click()
         await expect(host.locator('#multiplayer-auto-status')).toContainText(
           'Linkki on valmis',
@@ -349,6 +359,6 @@ test('signalointivirheen alkuperäinen koodi säilyy käyttöliittymässä', asy
   )![1]
   await page.getByLabel('Kieli', { exact: true }).selectOption('en')
   await expect(error).toHaveText(
-    `Connection setup failed (${code}). Check your network connection and try again.`,
+    `The invite service is unreachable (${code}). Players already connected can keep playing.`,
   )
 })

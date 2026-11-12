@@ -131,8 +131,10 @@ for (const scenario of [
       )
       if (scenario.name === 'separate-nat-lan-selection') {
         expect(await outcome.jsonValue()).toBe('failed')
+        // ICE may fail before the connection deadline, or the deadline may win.
+        // Both paths must leave the guest disconnected with a useful message.
         await expect(guest!.locator('#multiplayer-status')).toHaveText(
-          'Yhteys epäonnistui. Kokeile uutta kutsua tai toista verkkoa.',
+          /^(?:Yhteys epäonnistui\. Kokeile uutta kutsua tai toista verkkoa\.|Yhteyttä ei saatu\. Kokeile samaa lähiverkkoa tai luo uusi kutsu\.)$/,
         )
         // The invite URL loads the same article independently. The host's
         // existing guess must remain absent without a data channel.

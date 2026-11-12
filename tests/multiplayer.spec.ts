@@ -3,8 +3,10 @@
 
 import { expect, test } from '@playwright/test'
 import { enableManualMultiplayer } from './feature-flags-fixture.js'
+import { useHostIceCandidates } from './peerjs-fixture.js'
 
 test.beforeEach(async ({ page, context }) => {
+  await useHostIceCandidates(context)
   await enableManualMultiplayer(context)
   await page.goto('/?game=invalid')
   await page.getByText('Moninpeli', { exact: true }).click()
@@ -92,6 +94,7 @@ test('kutsulinkki ja vastaus muodostavat moninpeliyhteyden kahden pelaajan väli
   browser,
 }) => {
   const guestContext = await browser.newContext()
+  await useHostIceCandidates(guestContext)
   await enableManualMultiplayer(guestContext)
   try {
     const guest = await guestContext.newPage()
@@ -168,6 +171,7 @@ test('vieraan arvaus paljastaa artikkelin sanat molemmille pelaajille', async ({
   await host.getByText('Moninpeli', { exact: true }).click()
   await host.getByText('Yhdistä käsin', { exact: true }).click()
   const guestContext = await browser.newContext()
+  await useHostIceCandidates(guestContext)
   await enableManualMultiplayer(guestContext)
   try {
     const guest = await guestContext.newPage()
