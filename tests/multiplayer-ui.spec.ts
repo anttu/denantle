@@ -4,7 +4,7 @@
 import { expect } from '@playwright/test'
 import { test, useLocalPeerServer } from './peerjs-fixture.js'
 
-test('tuotannon moninpelivalinta avautuu URL-parametrilla ilman asetuksen jakamista kutsussa', async ({
+test('tuotannon moninpelivalinta näkyy oletuksena ilman asetuksen jakamista kutsussa', async ({
   page,
   context,
   peerServer,
@@ -14,13 +14,13 @@ test('tuotannon moninpelivalinta avautuu URL-parametrilla ilman asetuksen jakami
   const sockets: string[] = []
   page.on('websocket', (socket) => sockets.push(socket.url()))
   await page.goto('/?game=invalid')
-  await expect(page.locator('#game-mode')).toBeHidden()
-  await expect(page.locator('#multiplayer-help')).toBeHidden()
+  await expect(page.locator('#game-mode')).toBeVisible()
+  await page.getByLabel('Näin pelaat').click()
+  await expect(page.locator('#multiplayer-help')).toBeVisible()
+  await page.getByLabel('Näin pelaat').click()
   await expect(page.locator('#multiplayer-panel')).toBeHidden()
   expect(sockets).toEqual([])
 
-  await page.goto('/?game=invalid&multiplayer=1')
-  await expect(page.locator('#game-mode')).toBeVisible()
   await expect(page.locator('#multiplayer-enabled')).toBeEnabled()
   await page.getByText('Moninpeli', { exact: true }).click()
   await page.getByLabel('Yhteysverkko').selectOption('lan')
@@ -70,7 +70,12 @@ for (const entry of ['navigation', 'hashchange']) {
     const guestContext = await browser.newContext()
     try {
       await useLocalPeerServer(guestContext, peerServer)
-      await guestContext.unroute('**/src/feature-flags.js')
+      await guestContext.route('**/src/feature-flags.js', (route) =>
+        route.fulfill({
+          contentType: 'application/javascript',
+          body: 'export const featureFlags = { multiplayer: false, manualMultiplayer: false }',
+        }),
+      )
       await guestContext.route('https://huggingface.co/**', (route) =>
         route.abort(),
       )

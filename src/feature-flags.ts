@@ -4,7 +4,7 @@
 // Defaults for production builds. Local development overrides are kept below.
 export const featureFlags = {
   // Controls multiplayer discovery in the UI; shared invitations still work.
-  multiplayer: false,
+  multiplayer: true,
   manualMultiplayer: false,
 }
 

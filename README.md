@@ -74,11 +74,11 @@ poikkeukset:
 
 | Lippu | Tuotanto | Paikallinen kehitys |
 | --- | --- | --- |
-| `multiplayer` | `false` | `true` |
+| `multiplayer` | `true` | `true` |
 | `manualMultiplayer` | `false` | `false` |
 
 `npm run build` tekee tuotantokoonnin, jossa moninpelin valinta ja ohje ovat
-oletuksena piilossa. `multiplayer` ohjaa vain käyttöliittymää: jaetulla
+oletuksena näkyvissä. `multiplayer` ohjaa vain käyttöliittymää: jaetulla
 automaattisella kutsulinkillä voi liittyä peliin myös lipun ollessa pois päältä.
 Liittyjälle näkyvät yhteyden tila ja pelistä poistuminen.
 GitHub Pagesiin julkaistaan tämä sama tuotantokoonti.
@@ -86,14 +86,12 @@ GitHub Pagesiin julkaistaan tämä sama tuotantokoonti.
 Pelkkä kehityskoonti syntyy komennolla `npm run build -- --development`.
 Flagien muutokset tulevat voimaan uudelleenkokoamisen ja sivun päivityksen jälkeen.
 
-Tuotannon käyttöliittymän saa päälle omaa käyttöä varten avaamalla
+Jos `multiplayer`-lippu on pois päältä, käyttöliittymän saa päälle omaa käyttöä
+varten avaamalla
 [pelin parametrilla `multiplayer=1`](https://anttu.github.io/denantle/?multiplayer=1).
 Jos URL:ssa on jo pelitunniste, lisää loppuun `&multiplayer=1`.
 Valinta koskee kyseistä URL:ia, eikä sitä tallenneta selaimeen tai kopioida
 kutsulinkkiin. Ilman parametria tuotannon oletus on jälleen voimassa.
-Jos haluat näyttää moninpelivalinnan kaikille, muuta
-`src/feature-flags.ts`-tiedoston `featureFlags.multiplayer` arvoon `true`, kokoa
-ja julkaise sivusto normaalisti.
 
 ## Tarkistukset ja julkaisuversio
 
@@ -152,8 +150,8 @@ muuttavat tekstin numeerisiksi vektoreiksi. Vektorien läheisyyden perusteella
 peli tunnistaa merkitykseltään samankaltaisia sanoja. Mallit ajetaan paikallisesti
 selaimessa Transformers.js:n ja WebAssemblyn avulla.
 
-Moninpelin valinta näkyy oletuksena kehityskoonnissa ja tuotannossa parametrilla
-`multiplayer=1`. Kutsulinkillä liittyminen toimii myös ilman valinnan näyttämistä.
+Moninpelin valinta näkyy oletuksena sekä kehitys- että tuotantokoonnissa.
+Kutsulinkillä liittyminen toimii myös ilman valinnan näyttämistä.
 Moninpeli välittää pelitilan suoraan selainten välillä WebRTC-datakanavilla.
 Valitse moninpeli ja kutsulinkin **Yhteysverkko**:
 
